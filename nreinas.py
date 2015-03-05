@@ -93,10 +93,10 @@ def prueba_temple_simulado(problema=ProblemaNreinas(8), K=100, delta=0.01):
     """ Prueba el algoritmo de temple simulado con calendarizador exponencial """
 
     solucion = blocales.temple_simulado(problema, lambda i: K * exp(-delta * i))
-    print u"\n\nUtilizando temple simulado con calendarización exponencial"
+    print "\n\nUtilizando temple simulado con calendarización exponencial"
     print "K= ", K, " y delta= ", delta
-    print u"\nEl costo de la solución utilizando temple simulado es ", problema.costo(solucion)
-    print u"Y la solución es: "
+    print "\nEl costo de la solución utilizando temple simulado es ", problema.costo(solucion)
+    print "Y la solución es: "
     print solucion
 
 
