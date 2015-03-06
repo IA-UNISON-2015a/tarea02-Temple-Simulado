@@ -127,8 +127,10 @@ class problema_grafica_grafo(blocales.Problema):
             num = ( round( random.uniform(-1,1) ), round(random.uniform(-1,1) ) )             
         pos = self.estado2dic(estado)
         valores = pos[vertice]
-        vecino[vecino.index(valores[0])] += num[0]
-        vecino[vecino.index(valores[1])] += num[1]        
+        vecino[vecino.index(valores[0])] = max(
+            10, min(self.dim - 10, vecino[vecino.index(valores[0])] + num[0]))
+        vecino[vecino.index(valores[1])] = max(
+            10, min(self.dim - 10, vecino[vecino.index(valores[1])] + num[1]))
         return vecino
 
 
