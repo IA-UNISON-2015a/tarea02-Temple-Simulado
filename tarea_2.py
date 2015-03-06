@@ -32,6 +32,7 @@ import math
 import Image
 import ImageDraw
 import time
+from itertools import combinations
 
 
 class problema_grafica_grafo(blocales.Problema):
@@ -150,7 +151,7 @@ class problema_grafica_grafo(blocales.Problema):
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
         K1 = 1.0
-        K2 = 0.0
+        K2 = 1.0
         K3 = 0.0
         K4 = 0.0
 
@@ -242,6 +243,7 @@ class problema_grafica_grafo(blocales.Problema):
                 total += (1.0 - (dist / min_dist))
         return total
 
+
     def angulo_aristas(self, estado_dic):
         """
         A partir de una posicion "estado", devuelve una penalizacion proporcional 
@@ -254,7 +256,16 @@ class problema_grafica_grafo(blocales.Problema):
         @return: Un número.
 
         """
-        
+        def angulo_rectas(x1, y1, x2, y2):
+            """
+            @param x1, y2, x2, y2: Coordenadas de las rectas
+            @return: angulo entro dos vectores
+            """
+            numerador = abs(x1*y1 + x2*y2)
+            denominador = math.sqrt(x1*x1 + x2*x2)*math.sqrt(y1*y1 + y2*y2)
+            cos = numerador / denominador
+            print cos
+            return math.acos(cos)
         
         #######################################################################
         #                          20 PUNTOS
@@ -267,17 +278,27 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+        costo = 0
+        for vertice in self.vertices:
 
-    def angulo_rectas(x1, y1, x2, y2):
-        """
-        @param x1, y2, x2, y2: Coordenadas de las rectas
-        @return: angulo entro dos vectores
-        """
-        numerador = abs(x1*y1 + x2*y2*)
-        denominador = math.sqrt(x1*x1 + x2*x2)*math.sqrt(y1*y1 + y2*y2)
-        cos = numerador / denominador
-        return math.degrees(math.acos(cos))
+            insidencias = filter(lambda par: vertice in par, self.aristas)
+            lista = []
+            cord_vertice = estado_dic[vertice]
+            for i in xrange(len(insidencias)):
+                for r in xrange(len(insidencias[i])):
+                    if insidencias[i][r] != vertice:
+                        lista.append(insidencias[i][r])
+            comb = list(combinations(lista,2))
+            for i in comb:
+                cord0 = estado_dic[i[0]]
+                cord1 = estado_dic[i[1]]
+                a = cord0[0] - cord_vertice[0], cord0[1] - cord_vertice[1]
+                b = cord1[0] - cord_vertice[0], cord1[1] - cord_vertice[1]
+                angulo = angulo_rectas(a[0], a[1], b[0], b[1]) 
+                if angulo < math.pi/6:
+                    costo += math.pi/6 - angulo
+
+        return costo
 
 
     def criterio_propio(self, estado_dic):
