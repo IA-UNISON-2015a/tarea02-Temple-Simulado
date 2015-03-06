@@ -25,10 +25,10 @@ import blocales
 import random
 import itertools
 import math
-import Image
+#import Image
 import ImageDraw
 import time
-
+from PIL import Image
 
 class problema_grafica_grafo(blocales.Problema):
 
@@ -68,7 +68,7 @@ class problema_grafica_grafo(blocales.Problema):
         """
         return tuple(random.randint(10, self.dim - 10) for _ in range(2 * len(self.vertices)))
 
-    def vecino_aleatorio(self, estado, dispersion=None):
+    def vecino_aleatorio(self, estado, dispersion=4):
         """
         Encuentra un vecino en forma aleatoria. En estea primera versión lo que hacemos es tomar un valor aleatorio,
         y sumarle o restarle uno al azar.
@@ -82,11 +82,12 @@ class problema_grafica_grafo(blocales.Problema):
         @return: Una tupla con un estado vecino al estado de entrada.
 
         """
-        vecino = list(estado)
-        i = random.randint(0, len(vecino) - 1)
-        vecino[i] = max(
-            10, min(self.dim - 10, vecino[i] + random.choice([-1, 1])))
-        return vecino
+        #vecino = list(estado)
+        #i = random.randint(0, len(vecino) - 1)
+        #vecino[i] = max(
+        #    10, min(self.dim - 10, vecino[i] + random.choice([-1, 1])))
+        #print vecino
+        #return vecino
         #######################################################################
         #                          20 PUNTOS
         #######################################################################
@@ -106,6 +107,27 @@ class problema_grafica_grafo(blocales.Problema):
         # -- Comenta la función ya programada, programa inmediatamenta despues de este comentario 
         #    tu solución. ¿Como integras esta dispersión para utilizar la temperatura del temple simulado?
         #    ¿Que resultados obtienes con el nuevo método? Comenta tus resultados.
+
+        lugar = self.estado2dic(estado)
+        vertice = random.choice(self.vertices)
+        vecino = list(estado)
+        #print vertice
+        #print lugar
+        #print list(estado).index(lugar[vertice][0])
+        #print estado
+        #print lugar[vertice]
+        #print self.aristas
+        #i = random.randint(0, len(vecino) - 1)
+        valor1 = math.floor(random.randrange(-1,1) * dispersion)
+        valor2 = math.floor(random.randrange(-1,1) * dispersion)
+        #print valor1
+        vecino[vecino.index(lugar[vertice][0])] += valor1
+        vecino[vecino.index(lugar[vertice][1])] += valor2
+        #print vecino
+        #print lugar[vertice]
+        #vecino[i] = max(
+        #    10, min(self.dim - 10, vecino[i] + random.choice([-1, 1])))
+        return vecino
 
     def costo(self, estado):
         """
