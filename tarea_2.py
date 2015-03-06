@@ -119,6 +119,7 @@ class problema_grafica_grafo(blocales.Problema):
         # -- Comenta la función ya programada, programa inmediatamenta despues de este comentario
         #    tu solución. ¿Como integras esta dispersión para utilizar la temperatura del temple simulado?
         #    ¿Que resultados obtienes con el nuevo método? Comenta tus resultados.
+        
         vecino = list(estado)
         vertice = random.choice(self.vertices)
         if dispersion:
@@ -243,9 +244,9 @@ class problema_grafica_grafo(blocales.Problema):
 
     def angulo_aristas(self, estado_dic):
         """
-        A partir de una posicion "estado", devuelve una penalizacion proporcional a cada angulo entre aristas
-        menor a pi/6 rad (30 grados). Los angulos de pi/6 o mayores no llevan ninguna penalización, y la penalizacion
-        crece conforme el angulo es menor.
+        A partir de una posicion "estado", devuelve una penalizacion proporcional 
+        a cada angulo entre aristas menor a pi/6 rad (30 grados). Los angulos de pi/6
+        o mayores no llevan ninguna penalización, y la penalizacion crece conforme el angulo es menor.
 
         @param estado_dic: Diccionario cuyas llaves son los vértices del grafo y cuyos valores es una
                            tupla con la posición (x, y) de ese vértice en el dibujo.
@@ -253,6 +254,8 @@ class problema_grafica_grafo(blocales.Problema):
         @return: Un número.
 
         """
+        
+        
         #######################################################################
         #                          20 PUNTOS
         #######################################################################
@@ -265,6 +268,17 @@ class problema_grafica_grafo(blocales.Problema):
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
         return 0
+
+    def angulo_rectas(x1, y1, x2, y2):
+        """
+        @param x1, y2, x2, y2: Coordenadas de las rectas
+        @return: angulo entro dos vectores
+        """
+        numerador = abs(x1*y1 + x2*y2*)
+        denominador = math.sqrt(x1*x1 + x2*x2)*math.sqrt(y1*y1 + y2*y2)
+        cos = numerador / denominador
+        return math.degrees(math.acos(cos))
+
 
     def criterio_propio(self, estado_dic):
         """
