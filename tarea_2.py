@@ -121,8 +121,11 @@ class problema_grafica_grafo(blocales.Problema):
         valor1 = math.floor(random.randrange(-1,1) * dispersion)
         valor2 = math.floor(random.randrange(-1,1) * dispersion)
         #print valor1
-        vecino[vecino.index(lugar[vertice][0])] += valor1
-        vecino[vecino.index(lugar[vertice][1])] += valor2
+        #vecino[vecino.index(lugar[vertice][0])] += valor1
+        vecino[vecino.index(lugar[vertice][0])] = max(
+            10, min(self.dim - 10, vecino[vecino.index(lugar[vertice][0])] + valor1))
+        vecino[vecino.index(lugar[vertice][1])] = max(
+            10, min(self.dim - 10, vecino[vecino.index(lugar[vertice][1])] + valor2))
         #print vecino
         #print lugar[vertice]
         #vecino[i] = max(
@@ -259,7 +262,41 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+        total = 0
+        for (v1, v2) in itertools.combinations(self.aristas, 2):
+            comun = None
+            if(v1[0] in v2):
+                #print v2.index(v1[0])
+                comun = v1[0]
+            elif(v1[1] in v2):
+                comun = v1[1]
+            if comun:
+                #print "V1:",v1,"V2:",v2,"en comun:",comun,":",estado_dic[comun]
+                for i in v1:
+                    if i != comun:
+                        A = (estado_dic[v1[v1.index(i)]][0]-estado_dic[comun][0],estado_dic[v1[v1.index(i)]][1]-estado_dic[comun][1])
+                        #print A
+                for j in v2:
+                    if j != comun:
+                        B = (estado_dic[v2[v2.index(j)]][0]-estado_dic[comun][0],estado_dic[v2[v2.index(j)]][1]-estado_dic[comun][1])
+                        #print B
+                #print (math.sqrt(math.pow(A[0],2) + math.pow(A[1],2)) * math.sqrt(math.pow(B[0],2) + math.pow(B[1],2)))
+                #print abs(A[0]*B[0] + A[1]*B[1])/(math.sqrt(math.pow(A[0],2) + math.pow(A[1],2)) * math.sqrt(math.pow(B[0],2) + math.pow(B[1],2))+0.0000001)
+                angulo = math.acos(abs(A[0]*B[0] + A[1]*B[1])/(math.sqrt(math.pow(A[0],2) + math.pow(A[1],2)) * math.sqrt(math.pow(B[0],2) + math.pow(B[1],2))+0.0000001))
+                #print "angulo:",angulo
+                if(angulo < math.pi/6):
+                    costo = math.floor(10*(math.pi/6 - angulo))
+                    total += costo
+        """
+            # Calcula la distancia entre dos vertices
+            (x1, y1), (x2, y2) = estado_dic[v1], estado_dic[v2]
+            dist = math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
+
+            # Penaliza la distancia si es menor a min_dist
+            if dist < min_dist:
+                total += (1.0 - (dist / min_dist))
+        """
+        return total
 
     def criterio_propio(self, estado_dic):
         """
