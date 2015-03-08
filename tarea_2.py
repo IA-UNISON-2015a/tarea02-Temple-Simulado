@@ -32,6 +32,7 @@ import math
 import Image
 import ImageDraw
 import time
+import numpy as np
 from itertools import combinations
 
 
@@ -150,10 +151,10 @@ class problema_grafica_grafo(blocales.Problema):
 
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
-        K1 = 1.0
-        K2 = 1.0
-        K3 = 0.0
-        K4 = 0.0
+        K1 = 10.0
+        K2 = 10.0
+        K3 = 10.0
+        K4 = 10.0
 
         # Genera un diccionario con el estado y la posición para facilidad
         estado_dic = self.estado2dic(estado)
@@ -263,8 +264,7 @@ class problema_grafica_grafo(blocales.Problema):
             """
             numerador = abs(x1*y1 + x2*y2)
             denominador = math.sqrt(x1*x1 + x2*x2)*math.sqrt(y1*y1 + y2*y2)
-            cos = numerador / denominador
-            print cos
+            cos = numerador / (denominador + .001)
             return math.acos(cos)
         
         #######################################################################
@@ -274,7 +274,9 @@ class problema_grafica_grafo(blocales.Problema):
         # hasta lograr que el sistema realice gráficas "bonitas"
         #
         # ¿Que valores de diste a K1, K2 y K3 respectivamente?
-        #
+        # K1 = 10
+        # K2 = 10
+        # K3 = 10
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
@@ -295,8 +297,8 @@ class problema_grafica_grafo(blocales.Problema):
                 a = cord0[0] - cord_vertice[0], cord0[1] - cord_vertice[1]
                 b = cord1[0] - cord_vertice[0], cord1[1] - cord_vertice[1]
                 angulo = angulo_rectas(a[0], a[1], b[0], b[1]) 
-                if angulo < math.pi/6:
-                    costo += math.pi/6 - angulo
+                if angulo < math.pi/4:
+                    costo += math.pi/4 - angulo
 
         return costo
 
@@ -312,18 +314,35 @@ class problema_grafica_grafo(blocales.Problema):
         @return: Un número.
 
         """
+
+        #coord = [estado_dic[i] for i in estado_dic]
+        #sumas_coord = map(lambda x: sum(x), coord)
+        #prom = np.mean(sumas_coord)
+        #desv = np.std(sumas_coord)
+
+        dim = self.dim /4
+        puntos = estado_dic.values()
+        costo = 0
+        for punto in puntos:
+            if (punto[0] < dim or punto[0] > 3*dim) or (punto[1] < dim or punto[1] > dim*3 ): 
+                costo += 1
         #######################################################################
         #                          20 PUNTOS
         #######################################################################
         # ¿Crees que hubiera sido bueno incluir otro criterio? ¿Cual?
+        # Creo que un criterio bueno a considerar seria hacer que todas las aristas midan
+        # lo mismo.
         #
-        # Desarrolla un criterio propio y ajusta su importancia en el costo total con K4 ¿Mejora el resultado? ¿En
-        # que mejora el resultado final?
+        # Desarrolla un criterio propio y ajusta su importancia en el costo total con K4
+        # ¿Mejora el resultado? ¿En que mejora el resultado final?
+        # Me parece que si mejoro el resultado las graficas se ven mejor con
+        # la implementacion del criterio
+        #
         #
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+        return costo
 
     def estado2dic(self, estado):
         """
@@ -412,9 +431,13 @@ def main():
     #                          20 PUNTOS
     ##########################################################################
     # ¿Que valores para ajustar el temple simulado (T0 y K) son los que mejor resultado dan?
-    #
+    # Me parecio ver buen resultado al aumentar la temperatura inicial, pero tampoco
+    # un valor muy alto. La variacion de enfriamiento tambien hace notar un poco la mejora,
+    # pero siempre hay que mantener balanceados ambos valores.
+
     # ¿Que encuentras en los resultados?, ¿Cual es el criterio mas importante?
-    #
+    # En lo personal creo que los criterios mas importantes son el de angulo entre
+    # aristas y la separacion de vertices.
 
     ##########################################################################
     #                          20 PUNTOS
