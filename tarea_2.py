@@ -151,10 +151,10 @@ class problema_grafica_grafo(blocales.Problema):
 
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
-        K1 = 10.0
-        K2 = 10.0
-        K3 = 10.0
-        K4 = 10.0
+        K1 = 50.0
+        K2 = 30.0
+        K3 = 2.0
+        K4 = 5.0
 
         # Genera un diccionario con el estado y la posición para facilidad
         estado_dic = self.estado2dic(estado)
@@ -274,9 +274,9 @@ class problema_grafica_grafo(blocales.Problema):
         # hasta lograr que el sistema realice gráficas "bonitas"
         #
         # ¿Que valores de diste a K1, K2 y K3 respectivamente?
-        # K1 = 10
-        # K2 = 10
-        # K3 = 10
+        # K1 = 50
+        # K2 = 30
+        # K3 = 8
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
@@ -336,9 +336,11 @@ class problema_grafica_grafo(blocales.Problema):
         # Desarrolla un criterio propio y ajusta su importancia en el costo total con K4
         # ¿Mejora el resultado? ¿En que mejora el resultado final?
         # Me parece que si mejoro el resultado las graficas se ven mejor con
-        # la implementacion del criterio
+        # la implementacion del criterio.
         #
-        #
+        # Lo que trate con este criterio es que el grafo aparezca centrado dentro del canvas 
+        # partiendo la dimension de este en 4, asi, se supone que lo correcto seria que 
+        # los nodos aparecieran dentro de las 2 divisiones del centro
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
