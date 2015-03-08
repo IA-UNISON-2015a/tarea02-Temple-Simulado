@@ -90,7 +90,7 @@ def descenso_colinas(problema, maxit=1000000):
     return estado
 
 
-def temple_simulado(problema, calendarizador=lambda i: cal_expon(i, 100, 0.01), maxit=1000000):
+def temple_simulado(problema, calendarizador=lambda i: cal_boltzmann(i, .01), maxit=1000000):
     """
     Busqueda local por temple simulado
 
@@ -140,3 +140,9 @@ def cal_expon(iteracion, K=100, delta=0.01):
 
     """
     return K * exp(-delta * iteracion)
+
+def cal_boltzmann(t = 100, delta = .001):
+    """
+    Calendarizador de la distribucion de boltzmann
+    """
+    return exp(-delta/t)

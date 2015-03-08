@@ -6,20 +6,24 @@ tarea_2.py
 
 Tarea 2a: Dibujar un grafo utilizando métodos de optimización
 
-Si bien estos métodos no son los que se utilizan en el dibujo de gráfos por computadora (son
-algoritmos realmente muy complejos lo que se usan actualmente). Si da una idea de la utilidad de
+Si bien estos métodos no son los que se utilizan en el dibujo de 
+gráfos por computadora (son algoritmos realmente muy complejos lo 
+que se usan actualmente). Si da una idea de la utilidad de
 los métodos de optimización en un problema divertido.
 
-Obviamente el problema se encuentra muy simplificado para poder ser visto dentro de una práctica.
+Obviamente el problema se encuentra muy simplificado para poder ser
+visto dentro de una práctica.
 
-Para realizar este problema es ecesario contar con el módulo PIL (Python Image Library) instalada.
-Si instalaste EPD o EPD free, no hay problema, PIL viene ya incluido. Si no, hay que instalarlo.
+Para realizar este problema es ecesario contar con el módulo
+PIL (Python Image Library) instalada. Si instalaste EPD o EPD free,
+no hay problema, PIL viene ya incluido. Si no, hay que instalarlo.
 
-Para que funcione, este modulo debe de encontrarse en la misma carpeta que blocales.py (incluida en piazza)
+Para que funcione, este modulo debe de encontrarse en la misma carpeta
+que blocales.py (incluida en piazza)
 
 """
 
-__author__ = 'Escribe aquí tu nombre'
+__author__ = 'Gerardo Tarragona Serna'
 
 import blocales
 import random
@@ -28,6 +32,8 @@ import math
 import Image
 import ImageDraw
 import time
+import numpy as np
+from itertools import combinations
 
 
 class problema_grafica_grafo(blocales.Problema):
@@ -39,15 +45,18 @@ class problema_grafica_grafo(blocales.Problema):
 
     def __init__(self, vertices, aristas, dimension_imagen=400):
         """
-        Un grafo se define como un conjunto de vertices, en forma de lista (no conjunto, el orden es importante
-        a la hora de graficar), y un conjunto (tambien en forma de lista) de pares ordenados de vertices, lo que
+        Un grafo se define como un conjunto de vertices, en forma de lista 
+        (no conjunto, el orden es importante a la hora de graficar), y un conjunto
+        (tambien en forma de lista) de pares ordenados de vertices, lo que
         forman las aristas.
 
-        Igualmente es importante indicar la resolución de la imagen a mostrar (por default de 400x400 pixeles).
+        Igualmente es importante indicar la resolución de la imagen a mostrar
+        (por default de 400x400 pixeles).
 
         @param vertices: Lista con el nombre de los vertices.
         @param aristas: Lista con pares de vertices, los cuales definen las aristas.
-        @param dimension_imagen: Entero con la dimension de la imagen en pixeles (cuadrada por facilidad).
+        @param dimension_imagen: Entero con la dimension de la imagen 
+            en pixeles (cuadrada por facilidad).
 
         """
         self.vertices = vertices
@@ -70,11 +79,12 @@ class problema_grafica_grafo(blocales.Problema):
 
     def vecino_aleatorio(self, estado, dispersion=None):
         """
-        Encuentra un vecino en forma aleatoria. En estea primera versión lo que hacemos es tomar un valor aleatorio,
-        y sumarle o restarle uno al azar.
+        Encuentra un vecino en forma aleatoria. En estea primera versión lo que 
+        hacemos es tomar un valor aleatorio, y sumarle o restarle uno al azar.
 
-        Este es un vecino aleatorio muy malo. Por lo que deberás buscar como hacer un mejor vecino aleatorio y comparar
-        las ventajas de hacer un mejor vecino en el algoritmo de temple simulado.
+        Este es un vecino aleatorio muy malo. Por lo que deberás buscar como hacer
+        un mejor vecino aleatorio y comparar las ventajas de hacer un mejor vecino
+        en el algoritmo de temple simulado.
 
         @param estado: Una tupla con el estado.
         @param dispersion: Un flotante con el valor de dispersión para el vertice seleccionado
@@ -82,17 +92,22 @@ class problema_grafica_grafo(blocales.Problema):
         @return: Una tupla con un estado vecino al estado de entrada.
 
         """
-        vecino = list(estado)
-        i = random.randint(0, len(vecino) - 1)
-        vecino[i] = max(
-            10, min(self.dim - 10, vecino[i] + random.choice([-1, 1])))
-        return vecino
+        
+#        vecino = list(estado)
+ #       i = random.randint(0, len(vecino) - 1)
+  #      vecino[i] = max(
+   #         10, min(self.dim - 10, vecino[i] + random.choice([-1, 1])))
+    #    return vecino
+        
+
+        """
+        """
         #######################################################################
         #                          20 PUNTOS
         #######################################################################
         # Por supuesto que esta no es la mejor manera de generar vecino para este problema.
         #
-        # Modifica la funcion para generar vecinos de tal manera que el vecino aleatorio se realice de 
+        # Modifica la funcion para generar vecinos de tal manera que el vecino aleatorio se realice de
         # la siguiente manera:
         #
         #   1. Selecciona un vertice al azar.
@@ -103,9 +118,24 @@ class problema_grafica_grafo(blocales.Problema):
         #      los límites que tiene la imagen (en numero máximo de pixeles).
         #
         #
-        # -- Comenta la función ya programada, programa inmediatamenta despues de este comentario 
+        # -- Comenta la función ya programada, programa inmediatamenta despues de este comentario
         #    tu solución. ¿Como integras esta dispersión para utilizar la temperatura del temple simulado?
         #    ¿Que resultados obtienes con el nuevo método? Comenta tus resultados.
+        
+        vecino = list(estado)
+        vertice = random.choice(self.vertices)
+        if dispersion:
+            num = ( round( random.uniform(-1,1)*dispersion ), round(random.uniform(-1,1)*dispersion) ) 
+        else:
+            num = ( round( random.uniform(-1,1) ), round(random.uniform(-1,1) ) )             
+        pos = self.estado2dic(estado)
+        valores = pos[vertice]
+        vecino[vecino.index(valores[0])] = max(
+            10, min(self.dim - 10, vecino[vecino.index(valores[0])] + num[0]))
+        vecino[vecino.index(valores[1])] = max(
+            10, min(self.dim - 10, vecino[vecino.index(valores[1])] + num[1]))
+        return vecino
+
 
     def costo(self, estado):
         """
@@ -121,10 +151,10 @@ class problema_grafica_grafo(blocales.Problema):
 
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
-        K1 = 1.0
-        K2 = 0.0
-        K3 = 0.0
-        K4 = 0.0
+        K1 = 50.0
+        K2 = 30.0
+        K3 = 2.0
+        K4 = 5.0
 
         # Genera un diccionario con el estado y la posición para facilidad
         estado_dic = self.estado2dic(estado)
@@ -143,7 +173,7 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # Así, vamos a calcular el costo en tres partes, una es el numero de cruces (ya programada), otra
         # la distancia entre nodos (ya programada) y otro el angulo entre arista de cada nodo (para programar) y cada
-        # uno de estos criterios hay que agregarlo a la función de costo con un peso. Por último, puedes mejor el 
+        # uno de estos criterios hay que agregarlo a la función de costo con un peso. Por último, puedes mejor el
         #
 
     def numero_de_cruces(self, estado_dic):
@@ -214,11 +244,12 @@ class problema_grafica_grafo(blocales.Problema):
                 total += (1.0 - (dist / min_dist))
         return total
 
+
     def angulo_aristas(self, estado_dic):
         """
-        A partir de una posicion "estado", devuelve una penalizacion proporcional a cada angulo entre aristas
-        menor a pi/6 rad (30 grados). Los angulos de pi/6 o mayores no llevan ninguna penalización, y la penalizacion
-        crece conforme el angulo es menor.
+        A partir de una posicion "estado", devuelve una penalizacion proporcional 
+        a cada angulo entre aristas menor a pi/6 rad (30 grados). Los angulos de pi/6
+        o mayores no llevan ninguna penalización, y la penalizacion crece conforme el angulo es menor.
 
         @param estado_dic: Diccionario cuyas llaves son los vértices del grafo y cuyos valores es una
                            tupla con la posición (x, y) de ese vértice en el dibujo.
@@ -226,6 +257,16 @@ class problema_grafica_grafo(blocales.Problema):
         @return: Un número.
 
         """
+        def angulo_rectas(x1, y1, x2, y2):
+            """
+            @param x1, y2, x2, y2: Coordenadas de las rectas
+            @return: angulo entro dos vectores
+            """
+            numerador = abs(x1*y1 + x2*y2)
+            denominador = math.sqrt(x1*x1 + x2*x2)*math.sqrt(y1*y1 + y2*y2)
+            cos = numerador / (denominador + .001)
+            return math.acos(cos)
+        
         #######################################################################
         #                          20 PUNTOS
         #######################################################################
@@ -233,11 +274,34 @@ class problema_grafica_grafo(blocales.Problema):
         # hasta lograr que el sistema realice gráficas "bonitas"
         #
         # ¿Que valores de diste a K1, K2 y K3 respectivamente?
-        #
+        # K1 = 50
+        # K2 = 30
+        # K3 = 8
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+        costo = 0
+        for vertice in self.vertices:
+
+            insidencias = filter(lambda par: vertice in par, self.aristas)
+            lista = []
+            cord_vertice = estado_dic[vertice]
+            for i in xrange(len(insidencias)):
+                for r in xrange(len(insidencias[i])):
+                    if insidencias[i][r] != vertice:
+                        lista.append(insidencias[i][r])
+            comb = list(combinations(lista,2))
+            for i in comb:
+                cord0 = estado_dic[i[0]]
+                cord1 = estado_dic[i[1]]
+                a = cord0[0] - cord_vertice[0], cord0[1] - cord_vertice[1]
+                b = cord1[0] - cord_vertice[0], cord1[1] - cord_vertice[1]
+                angulo = angulo_rectas(a[0], a[1], b[0], b[1]) 
+                if angulo < math.pi/4:
+                    costo += math.pi/4 - angulo
+
+        return costo
+
 
     def criterio_propio(self, estado_dic):
         """
@@ -250,18 +314,37 @@ class problema_grafica_grafo(blocales.Problema):
         @return: Un número.
 
         """
+
+        #coord = [estado_dic[i] for i in estado_dic]
+        #sumas_coord = map(lambda x: sum(x), coord)
+        #prom = np.mean(sumas_coord)
+        #desv = np.std(sumas_coord)
+
+        dim = self.dim /4
+        puntos = estado_dic.values()
+        costo = 0
+        for punto in puntos:
+            if (punto[0] < dim or punto[0] > 3*dim) or (punto[1] < dim or punto[1] > dim*3 ): 
+                costo += 1
         #######################################################################
         #                          20 PUNTOS
         #######################################################################
         # ¿Crees que hubiera sido bueno incluir otro criterio? ¿Cual?
+        # Creo que un criterio bueno a considerar seria hacer que todas las aristas midan
+        # lo mismo.
         #
-        # Desarrolla un criterio propio y ajusta su importancia en el costo total con K4 ¿Mejora el resultado? ¿En
-        # que mejora el resultado final?
+        # Desarrolla un criterio propio y ajusta su importancia en el costo total con K4
+        # ¿Mejora el resultado? ¿En que mejora el resultado final?
+        # Me parece que si mejoro el resultado las graficas se ven mejor con
+        # la implementacion del criterio.
         #
+        # Lo que trate con este criterio es que el grafo aparezca centrado dentro del canvas 
+        # partiendo la dimension de este en 4, asi, se supone que lo correcto seria que 
+        # los nodos aparecieran dentro de las 2 divisiones del centro
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+        return costo
 
     def estado2dic(self, estado):
         """
@@ -332,6 +415,7 @@ def main():
         vertices_sencillo, aristas_sencillo, dimension)
 
     estado_aleatorio = grafo_sencillo.estado_aleatorio()
+    print estado_aleatorio
     grafo_sencillo.dibuja_grafo(estado_aleatorio)
     print "Costo del estado aleatorio: ", grafo_sencillo.costo(estado_aleatorio)
 
@@ -340,6 +424,7 @@ def main():
     solucion = blocales.temple_simulado(
         grafo_sencillo, lambda i: 1000 * math.exp(-0.0001 * i))
     tiempo_final = time.time()
+
     grafo_sencillo.dibuja_grafo(solucion)
     print "\nUtilizando una calendarización exponencial con K = 1000 y delta = 0.0001"
     print "Costo de la solución encontrada: ", grafo_sencillo.costo(solucion)
@@ -348,9 +433,13 @@ def main():
     #                          20 PUNTOS
     ##########################################################################
     # ¿Que valores para ajustar el temple simulado (T0 y K) son los que mejor resultado dan?
-    #
+    # Me parecio ver buen resultado al aumentar la temperatura inicial, pero tampoco
+    # un valor muy alto. La variacion de enfriamiento tambien hace notar un poco la mejora,
+    # pero siempre hay que mantener balanceados ambos valores.
+
     # ¿Que encuentras en los resultados?, ¿Cual es el criterio mas importante?
-    #
+    # En lo personal creo que los criterios mas importantes son el de angulo entre
+    # aristas y la separacion de vertices.
 
     ##########################################################################
     #                          20 PUNTOS
@@ -358,7 +447,7 @@ def main():
     # En general para obtener mejores resultados del temple simulado, es necesario utilizar una
     # función de calendarización acorde con el metodo en que se genera el vecino aleatorio.
     # Existen en la literatura varias combinaciones. Busca en la literatura diferentes métodos de
-    # calendarización (al menos uno más diferente al exponencial) y ajusta los parámetros 
+    # calendarización (al menos uno más diferente al exponencial) y ajusta los parámetros
     # para que obtenga la mejor solución posible en el menor tiempo posible.
     #
     # Escribe aqui tus comentarios y prueba otro metodo de claendarización para compararlo con el
