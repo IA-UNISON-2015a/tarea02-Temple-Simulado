@@ -19,16 +19,16 @@ Para que funcione, este modulo debe de encontrarse en la misma carpeta que bloca
 
 """
 
-__author__ = 'Escribe aquí tu nombre'
+__author__ = 'Luis Roberto Alcazar Ortega'
 
 import blocales
 import random
 import itertools
 import math
-import Image
+#import Image
 import ImageDraw
 import time
-
+from PIL import Image
 
 class problema_grafica_grafo(blocales.Problema):
 
@@ -68,7 +68,7 @@ class problema_grafica_grafo(blocales.Problema):
         """
         return tuple(random.randint(10, self.dim - 10) for _ in range(2 * len(self.vertices)))
 
-    def vecino_aleatorio(self, estado, dispersion=None):
+    def vecino_aleatorio(self, estado, dispersion=4):
         """
         Encuentra un vecino en forma aleatoria. En estea primera versión lo que hacemos es tomar un valor aleatorio,
         y sumarle o restarle uno al azar.
@@ -82,11 +82,12 @@ class problema_grafica_grafo(blocales.Problema):
         @return: Una tupla con un estado vecino al estado de entrada.
 
         """
-        vecino = list(estado)
-        i = random.randint(0, len(vecino) - 1)
-        vecino[i] = max(
-            10, min(self.dim - 10, vecino[i] + random.choice([-1, 1])))
-        return vecino
+        #vecino = list(estado)
+        #i = random.randint(0, len(vecino) - 1)
+        #vecino[i] = max(
+        #    10, min(self.dim - 10, vecino[i] + random.choice([-1, 1])))
+        #print vecino
+        #return vecino
         #######################################################################
         #                          20 PUNTOS
         #######################################################################
@@ -107,6 +108,17 @@ class problema_grafica_grafo(blocales.Problema):
         #    tu solución. ¿Como integras esta dispersión para utilizar la temperatura del temple simulado?
         #    ¿Que resultados obtienes con el nuevo método? Comenta tus resultados.
 
+        lugar = self.estado2dic(estado)
+        vertice = random.choice(self.vertices)
+        vecino = list(estado)
+        valor1 = math.floor(random.randrange(-1,1) * dispersion)
+        valor2 = math.floor(random.randrange(-1,1) * dispersion)
+        vecino[vecino.index(lugar[vertice][0])] = max(
+            10, min(self.dim - 10, vecino[vecino.index(lugar[vertice][0])] + valor1))
+        vecino[vecino.index(lugar[vertice][1])] = max(
+            10, min(self.dim - 10, vecino[vecino.index(lugar[vertice][1])] + valor2))
+        return vecino
+
     def costo(self, estado):
         """
         Encuentra el costo de un estado. En principio el costo de un estado es la cantidad de veces que dos
@@ -121,10 +133,10 @@ class problema_grafica_grafo(blocales.Problema):
 
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
-        K1 = 1.0
-        K2 = 0.0
-        K3 = 0.0
-        K4 = 0.0
+        K1 = 5.0
+        K2 = 20.0
+        K3 = 5.0
+        K4 = 5.0
 
         # Genera un diccionario con el estado y la posición para facilidad
         estado_dic = self.estado2dic(estado)
@@ -233,11 +245,42 @@ class problema_grafica_grafo(blocales.Problema):
         # hasta lograr que el sistema realice gráficas "bonitas"
         #
         # ¿Que valores de diste a K1, K2 y K3 respectivamente?
+        #    K1 = 5.0
+        #    K2 = 20.0
+        #    K3 = 5.0
+        #   Le di mas prioridad a la distancia entre los vertices
         #
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+        total = 0
+        for (v1, v2) in itertools.combinations(self.aristas, 2):
+            comun = None
+            if(v1[0] in v2):
+                comun = v1[0]
+            elif(v1[1] in v2):
+                comun = v1[1]
+            if comun:
+                for i in v1:
+                    if i != comun:
+                        A = (estado_dic[v1[v1.index(i)]][0]-estado_dic[comun][0],estado_dic[v1[v1.index(i)]][1]-estado_dic[comun][1])
+                for j in v2:
+                    if j != comun:
+                        B = (estado_dic[v2[v2.index(j)]][0]-estado_dic[comun][0],estado_dic[v2[v2.index(j)]][1]-estado_dic[comun][1])
+                angulo = math.acos(abs(A[0]*B[0] + A[1]*B[1])/(math.sqrt(math.pow(A[0],2) + math.pow(A[1],2)) * math.sqrt(math.pow(B[0],2) + math.pow(B[1],2))+0.1))
+                if(angulo < math.pi/6):
+                    costo = angulo / (math.pi/6)
+                    total += costo
+        """
+            # Calcula la distancia entre dos vertices
+            (x1, y1), (x2, y2) = estado_dic[v1], estado_dic[v2]
+            dist = math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
+
+            # Penaliza la distancia si es menor a min_dist
+            if dist < min_dist:
+                total += (1.0 - (dist / min_dist))
+        """
+        return total
 
     def criterio_propio(self, estado_dic):
         """
@@ -257,11 +300,25 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # Desarrolla un criterio propio y ajusta su importancia en el costo total con K4 ¿Mejora el resultado? ¿En
         # que mejora el resultado final?
-        #
+        # Mi criterio penaliza si hay lineas paralelas. Las lineas aparecen menos pegadas que antes.
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+
+        total = 0
+
+        for (aristaA, aristaB) in itertools.combinations(self.aristas, 2):
+
+            (x0A, y0A), (xFA, yFA) = estado_dic[
+                aristaA[0]], estado_dic[aristaA[1]]
+            (x0B, y0B), (xFB, yFB) = estado_dic[
+                aristaB[0]], estado_dic[aristaB[1]]
+
+            den = (xFA - x0A) * (yFB - y0B) - (xFB - x0B) * (yFA - y0A) + 0.0
+            if den == 0:
+                total+=1
+
+        return total
 
     def estado2dic(self, estado):
         """
@@ -303,6 +360,7 @@ class problema_grafica_grafo(blocales.Problema):
             dibujar.text(lugar[v], v, (0, 0, 0))
 
         imagen.show()
+        time.sleep(5)
 
 
 def main():
@@ -338,7 +396,7 @@ def main():
     # Ahora vamos a encontrar donde deben de estar los puntos
     tiempo_inicial = time.time()
     solucion = blocales.temple_simulado(
-        grafo_sencillo, lambda i: 1000 * math.exp(-0.0001 * i))
+        grafo_sencillo, lambda i: 100000 * math.exp(-0.1 * i))
     tiempo_final = time.time()
     grafo_sencillo.dibuja_grafo(solucion)
     print "\nUtilizando una calendarización exponencial con K = 1000 y delta = 0.0001"
@@ -348,9 +406,9 @@ def main():
     #                          20 PUNTOS
     ##########################################################################
     # ¿Que valores para ajustar el temple simulado (T0 y K) son los que mejor resultado dan?
-    #
+    #   Con T0 = 100000 y delta = 0.1 me da resultados rapidos y se ve aceptable
     # ¿Que encuentras en los resultados?, ¿Cual es el criterio mas importante?
-    #
+    #   Entre mas grande sea T0 hay mas probabilidad de escoger un vecino aleatorio
 
     ##########################################################################
     #                          20 PUNTOS
@@ -366,6 +424,17 @@ def main():
     #
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
     #
+    tiempo_inicial = time.time()
+    #Me base en el siguiente metodo:
+    #   Ti = T0(Tn/T0)^(i/n)
+    #Donde T0 es la temperatura inicial y Tn la final.
+    solucion = blocales.temple_simulado(
+        grafo_sencillo, lambda i: 10000*math.pow((10/1000),(i/10000)), 10000)
+    tiempo_final = time.time()
+    grafo_sencillo.dibuja_grafo(solucion)
+    print "\nUtilizando la calendarización Ti = T0(Tn/T0)^(i/n) con T0 = 10000, Tn = 10"
+    print "Costo de la solución encontrada: ", grafo_sencillo.costo(solucion)
+    print "Tiempo de ejecución en segundos: ", tiempo_final - tiempo_inicial
 
 
 if __name__ == '__main__':
