@@ -104,7 +104,7 @@ def temple_simulado(problema, calendarizador=lambda i: cal_expon(i, 100, 0.01), 
 
     estado = problema.estado_aleatorio()
     costo = problema.costo(estado)
-    
+
     e_mejor, c_mejor = estado, costo
 
     for i in xrange(maxit):
@@ -112,13 +112,13 @@ def temple_simulado(problema, calendarizador=lambda i: cal_expon(i, 100, 0.01), 
         if temperatura < 1e-8:
             break
 
-        vecino = problema.vecino_aleatorio(estado)
+        vecino = problema.vecino_aleatorio(estado, i * temperatura % 400)
         costo_vecino = problema.costo(vecino)
         error = costo - costo_vecino
 
         if error > 0 or random() < exp(error / temperatura):
             estado, costo = vecino, costo_vecino
-        
+
             if c_mejor - costo > 0:
                 e_mejor, c_mejor = estado, costo
 
