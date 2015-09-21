@@ -19,11 +19,11 @@ Para que funcione, este modulo debe de encontrarse en la misma carpeta que bloca
 
 """
 
-__author__ = 'Escribe aquí tu nombre'
+__author__ = 'Luis Fernando Suarez Astiazaran'
 
 import blocales
 import random
-import itertools
+import itertools    #para crear rangos infinitos
 import math
 import Image
 import ImageDraw
@@ -81,6 +81,23 @@ class problema_grafica_grafo(blocales.Problema):
 
         @return: Una tupla con un estado vecino al estado de entrada.
 
+        """
+
+        """
+		#  intente mejorar vecino_aleatorio
+        vecino=list(estado)
+        y=[]
+        for i in range(1,len(self.vertices)*2,2):
+             if(i%2!=0):y.append(vecino[i])
+             #se intercambian dos elementos del vector
+        i, j = sample(range(len(self.vertices)), 2)
+        y[i], y[j] = y[j], y[i]
+           
+        for i in range(1,len(self.vertices)*2,2):
+             if(i%2!=0):vecino[i]=y[i/2]
+        
+        return vecino
+        
         """
         vecino = list(estado)
         i = random.randint(0, len(vecino) - 1)
@@ -237,7 +254,29 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+        for (v1, v2) in itertools.combinations(self.vertices, 2):
+            total = 0
+            # Calcula el angulo entre dos estados
+            (x1, y1), (x2, y2) = estado_dic[v1], estado_dic[v2]
+                    
+            paso1 = (x1*x2) + (y1*y2)
+            paso2 = math.sqrt((x1*x1) + (y1*y1))
+            paso3 = math.sqrt((x2*x2) + (y2*y2))
+            div = paso1 / (paso2*paso3)
+            div = round(div, 6)
+            
+            if(div > 0 or div == 0):
+                
+                angulo_decimal = div
+                dato = acos(angulo_decimal)
+                angulo_grados = (degrees(dato))
+            
+                if angulo_grados<30:
+                #penalizacion es la distancia entre los 30 grados y los grados del angulo de los vertices
+                    penalizacion = 30 - angulo_grados
+                    total += 0.1 * (penalizacion)   
+         
+        return total
 
     def criterio_propio(self, estado_dic):
         """
@@ -261,6 +300,20 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
+
+        """
+        que se contasen el numero de aristas del grafo y compararlo con el numero de vertices y si el numero
+        de aristas en mayor que el numero de vertices tendra una penalizacion mayor tomando un valor como el uno 
+        y de hay que partiesen si son menores a este o mayores
+        
+        el tamanio de las aristas dividiendolo por el tamanio de los vertices
+        
+        
+       
+                         return (len(self.aristas)/len(self.vertices))   
+         
+         
+        """
         return 0
 
     def estado2dic(self, estado):
@@ -352,6 +405,14 @@ def main():
     # ¿Que encuentras en los resultados?, ¿Cual es el criterio mas importante?
     #
 
+    """
+        los dos parametros fueron importantes pues el producto de T0 y K 
+        pero al hacer las modificaciones en la prueba solo movi K para hacerlo mas chico o mas grande
+        
+                                        t0=10 y k=0.00000001
+        
+    
+    """
     ##########################################################################
     #                          20 PUNTOS
     ##########################################################################
@@ -366,7 +427,15 @@ def main():
     #
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
     #
-
+    """
+        Implemente esta funcion donde solamente es el resultado del producto de los parametros
+        
+        solucion = blocales.temple_simulado(grafo_sencillo, lambda i: 10000 * (0.01))
+        
+        se obtienen buenos resultados
+    """
 
 if __name__ == '__main__':
+    main()
+
     main()
