@@ -18,8 +18,7 @@ Si instalaste EPD o EPD free, no hay problema, PIL viene ya incluido. Si no, hay
 Para que funcione, este modulo debe de encontrarse en la misma carpeta que blocales.py (incluida en piazza)
 
 """
-
-__author__ = 'Luis Fernando Suarez Astiazaran' 
+__author__ = 'Luis Fernando Suarez Astiazaran'
 
 import blocales
 import random
@@ -82,6 +81,7 @@ class problema_grafica_grafo(blocales.Problema):
         @return: Una tupla con un estado vecino al estado de entrada.
 
         """
+        
         """
 		#  intente mejorar vecino_aleatorio
         vecino=list(estado)
@@ -98,7 +98,6 @@ class problema_grafica_grafo(blocales.Problema):
         return vecino
         
         """
-        
         vecino = list(estado)
         i = random.randint(0, len(vecino) - 1)
         vecino[i] = max(
@@ -254,7 +253,7 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-
+        
         for (v1, v2) in itertools.combinations(self.vertices, 2):
             total = 0
             # Calcula el angulo entre dos estados
@@ -301,6 +300,7 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
+        
         """
         que se contasen el numero de aristas del grafo y compararlo con el numero de vertices y si el numero
         de aristas en mayor que el numero de vertices tendra una penalizacion mayor tomando un valor como el uno 
@@ -415,6 +415,14 @@ def main():
     
     """
 
+    """
+        los dos parametros fueron importantes pues el producto de T0 y K 
+        pero al hacer las modificaciones en la prueba solo movi K para hacerlo mas chico o mas grande
+        
+                                        t0=10 y k=0.00000001
+        
+    
+    """
     ##########################################################################
     #                          20 PUNTOS
     ##########################################################################
