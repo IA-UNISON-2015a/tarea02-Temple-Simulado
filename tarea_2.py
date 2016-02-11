@@ -19,7 +19,7 @@ Para que funcione, este modulo debe de encontrarse en la misma carpeta que bloca
 
 """
 
-__author__ = 'Escribe aquí tu nombre'
+__author__ = 'Nan'
 
 import blocales
 import random
@@ -68,7 +68,7 @@ class problema_grafica_grafo(blocales.Problema):
         """
         return tuple(random.randint(10, self.dim - 10) for _ in range(2 * len(self.vertices)))
 
-    def vecino_aleatorio(self, estado, dispersion=None):
+    def vecino_aleatorio(self, estado, dispersion=5.0):
         """
         Encuentra un vecino en forma aleatoria. En estea primera versión lo que hacemos es tomar un valor aleatorio,
         y sumarle o restarle uno al azar.
@@ -83,10 +83,12 @@ class problema_grafica_grafo(blocales.Problema):
 
         """
         vecino = list(estado)
-        i = random.randint(0, len(vecino) - 1)
-        vecino[i] = max(
-            10, min(self.dim - 10, vecino[i] + random.choice([-1, 1])))
-        return vecino
+        i = random.randint(0, len(vecino) - 2)
+        vecino[i] = max(10, min(vecino[i] + 
+            int(2*(random.random()-0.5)*dispersion), self.dim-10))
+        vecino[i+1] = max(10, min(vecino[i+1] + 
+            int(2*(random.random()-0.5)*dispersion), self.dim-10))
+        return vecino[i]
         #######################################################################
         #                          20 PUNTOS
         #######################################################################
@@ -122,9 +124,9 @@ class problema_grafica_grafo(blocales.Problema):
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
         K1 = 1.0
-        K2 = 0.0
-        K3 = 0.0
-        K4 = 0.0
+        K2 = 1.0
+        K3 = 1.0
+        K4 = 2.0
 
         # Genera un diccionario con el estado y la posición para facilidad
         estado_dic = self.estado2dic(estado)
@@ -237,12 +239,25 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+        total = 0
+        for vertice in self.vertices:
+            aristas = [a for a in self.aristas if vertice in a]
+            for (a,b) in itertools.combinations(aristas, 2):
+                (ax1, ay1), (ax2, ay2), (bx1, by1), (bx2, by2) = 
+                    estado_dic[a[0]], estado_dic[a[1]], estado_dic[b[0]], estado_dic[b[1]]
+                m1, m2 = (ay2 - ay1)/(ax2 - ax1), (by2 - by1)/(bx2 - bx1)
+                alpha = abs(math.atan((m2-m1)/(1-m2*m1)))
+                total += 1e100 if alpha == 0 else 0.25/alpha if alpha < math.pi/12 else 0 
+
+        return total
 
     def criterio_propio(self, estado_dic):
         """
         Implementa y comenta correctamente un criterio de costo que sea conveniente para que un grafo
         luzca bien.
+
+        Criterio: algun nodo debe estar centrado, se penaliza respecto
+            a la distancia del centro al vertice mas cercano
 
         @param estado_dic: Diccionario cuyas llaves son los vértices del grafo y cuyos valores es una
                            tupla con la posición (x, y) de ese vértice en el dibujo.
@@ -261,7 +276,13 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+        cx = self.dim/2
+        cy = cx
+        dist = self.dim
+        for vertice in self.vertices:
+            (x, y) = estado_dic[vertice]
+            dist = min(math.sqrt((x - cx) ** 2 + (y - cy) ** 2), dist)
+        return dist
 
     def estado2dic(self, estado):
         """
