@@ -25,8 +25,8 @@ import blocales
 import random
 import itertools
 import math
-import Image
-import ImageDraw
+from PIL import Image
+from PIL import ImageDraw
 import time
 
 
@@ -84,11 +84,13 @@ class problema_grafica_grafo(blocales.Problema):
         """
         vecino = list(estado)
         i = random.randint(0, len(vecino) - 2)
+        if i%2 != 0:
+            i--
         vecino[i] = max(10, min(vecino[i] + 
             int(2*(random.random()-0.5)*dispersion), self.dim-10))
         vecino[i+1] = max(10, min(vecino[i+1] + 
             int(2*(random.random()-0.5)*dispersion), self.dim-10))
-        return vecino[i]
+        return vecino
         #######################################################################
         #                          20 PUNTOS
         #######################################################################
@@ -109,13 +111,13 @@ class problema_grafica_grafo(blocales.Problema):
         #    tu solución. ¿Como integras esta dispersión para utilizar la temperatura del temple simulado?
         #    ¿Que resultados obtienes con el nuevo método? Comenta tus resultados.
 
-    def costo(self, estado):
+    def costo(self, estado, verbose = False):
         """
         Encuentra el costo de un estado. En principio el costo de un estado es la cantidad de veces que dos
         aristas se cruzan cuando se dibujan. Esto hace que el dibujo se organice para tener el menor numero
         posible de cruces entre aristas.
 
-        @param: Una tupla con un estado
+        @param: Una tupla con un estado y si se va a imprimir los costos por separado
 
         @return: Un número flotante con el costo del estado.
 
@@ -123,18 +125,28 @@ class problema_grafica_grafo(blocales.Problema):
 
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
-        K1 = 1.0
-        K2 = 1.0
-        K3 = 1.0
-        K4 = 2.0
+        K1 = 5.0
+        K2 = 10.0
+        K3 = 10.0
+        K4 = 20.0
 
         # Genera un diccionario con el estado y la posición para facilidad
         estado_dic = self.estado2dic(estado)
 
-        return (K1 * self.numero_de_cruces(estado_dic) +
-                K2 * self.separacion_vertices(estado_dic) +
-                K3 * self.angulo_aristas(estado_dic) +
-                K4 * self.criterio_propio(estado_dic))
+        cruces = self.numero_de_cruces(estado_dic)
+        separacion = self.separacion_vertices(estado_dic)
+        angulo = self.angulo_aristas(estado_dic)
+        propio = self.criterio_propio(estado_dic)
+
+        if verbose:
+            print "Numero de cruces: ", cruces
+            print "Separacion de vertices: ", separacion
+            print "Angulo entre aristas: ", angulo
+            print "Criterio propio", propio
+            print "Total: " + str(K1 * cruces +
+                K2 * separacion + K3 * angulo + K4 * propio)
+
+        return K1 * cruces + K2 * separacion + K3 * angulo + K4 * propio
 
         # Como podras ver en los resultados, el costo inicial propuesto no hace figuras particularmente
         # bonitas, y esto es porque lo único que considera es el numero de cruces.
@@ -243,21 +255,20 @@ class problema_grafica_grafo(blocales.Problema):
         for vertice in self.vertices:
             aristas = [a for a in self.aristas if vertice in a]
             for (a,b) in itertools.combinations(aristas, 2):
-                (ax1, ay1), (ax2, ay2), (bx1, by1), (bx2, by2) = 
-                    estado_dic[a[0]], estado_dic[a[1]], estado_dic[b[0]], estado_dic[b[1]]
-                m1, m2 = (ay2 - ay1)/(ax2 - ax1), (by2 - by1)/(bx2 - bx1)
-                alpha = abs(math.atan((m2-m1)/(1-m2*m1)))
-                total += 1e100 if alpha == 0 else 0.25/alpha if alpha < math.pi/12 else 0 
+                (ax1, ay1), (ax2, ay2), (bx1, by1), (bx2, by2) = estado_dic[a[0]], estado_dic[a[1]], estado_dic[b[0]], estado_dic[b[1]]
+                m1 = (ay2 - ay1)/((ax2 - ax1) if ax2 - ax1 != 0 else 1e-100)
+                m2 = (by2 - by1)/((bx2 - bx1) if bx2 - bx1 != 0 else 1e-100)
+                alpha = abs(math.atan((m2-m1)/(1-m2*m1))) if m2*m1 != 1 else 0
+                total += 1/(alpha*180/math.pi+1)
 
         return total
 
-    def criterio_propio(self, estado_dic):
+    def criterio_propio(self, estado_dic, min_dist=50):
         """
         Implementa y comenta correctamente un criterio de costo que sea conveniente para que un grafo
         luzca bien.
 
-        Criterio: algun nodo debe estar centrado, se penaliza respecto
-            a la distancia del centro al vertice mas cercano
+        Criterio: la distancia de un nodo a alguna arista no debe ser mayor a min_dist
 
         @param estado_dic: Diccionario cuyas llaves son los vértices del grafo y cuyos valores es una
                            tupla con la posición (x, y) de ese vértice en el dibujo.
@@ -276,13 +287,20 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        cx = self.dim/2
-        cy = cx
-        dist = self.dim
-        for vertice in self.vertices:
-            (x, y) = estado_dic[vertice]
-            dist = min(math.sqrt((x - cx) ** 2 + (y - cy) ** 2), dist)
-        return dist
+        total = 0
+        for nodo in self.vertices:
+            for arista in self.aristas:
+                if not nodo in arista:
+                    (x0, y0) = estado_dic[nodo]
+                    (x1, y1) = estado_dic[arista[0]]
+                    (x2, y2) = estado_dic[arista[1]]
+                    if x1 == x2 and y1 == y2:
+                        continue
+                    distancia = abs((y2-y1)*x0 - (x2-x1)*y0 + x2*y1 - y2*x1)/math.sqrt((y2-y1)**2 + (x2-x1)**2)
+                    # penalizaciones entre (0,1) por cada nodo
+                    if distancia < min_dist:
+                        total += 1.0 - distancia/min_dist
+        return total 
 
     def estado2dic(self, estado):
         """
@@ -354,16 +372,19 @@ def main():
 
     estado_aleatorio = grafo_sencillo.estado_aleatorio()
     grafo_sencillo.dibuja_grafo(estado_aleatorio)
-    print "Costo del estado aleatorio: ", grafo_sencillo.costo(estado_aleatorio)
+    print "Costo del estado aleatorio: "
+    grafo_sencillo.costo(estado_aleatorio, True)
 
     # Ahora vamos a encontrar donde deben de estar los puntos
     tiempo_inicial = time.time()
+    K, delta = 100, 0.00001
     solucion = blocales.temple_simulado(
-        grafo_sencillo, lambda i: 1000 * math.exp(-0.0001 * i))
+        grafo_sencillo, lambda i: K * math.exp(-delta * i))
     tiempo_final = time.time()
     grafo_sencillo.dibuja_grafo(solucion)
-    print "\nUtilizando una calendarización exponencial con K = 1000 y delta = 0.0001"
-    print "Costo de la solución encontrada: ", grafo_sencillo.costo(solucion)
+    print "\nUtilizando una calendarización exponencial con K = "+str(K)+" y delta = "+str(delta)
+    print "Costo de la solución encontrada: "
+    grafo_sencillo.costo(solucion, True)
     print "Tiempo de ejecución en segundos: ", tiempo_final - tiempo_inicial
     ##########################################################################
     #                          20 PUNTOS
