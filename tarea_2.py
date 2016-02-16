@@ -83,14 +83,12 @@ class problema_grafica_grafo(blocales.Problema):
 
         """
         vecino = list(estado)
-        i = random.randint(0, len(vecino) - 2)
-        if i%2 != 0:
-            i--
+        i = random.randint(0, len(vecino)/2-1)*2
         vecino[i] = max(10, min(vecino[i] + 
             int(2*(random.random()-0.5)*dispersion), self.dim-10))
         vecino[i+1] = max(10, min(vecino[i+1] + 
             int(2*(random.random()-0.5)*dispersion), self.dim-10))
-        return vecino
+        return tuple(vecino)
         #######################################################################
         #                          20 PUNTOS
         #######################################################################
@@ -125,10 +123,10 @@ class problema_grafica_grafo(blocales.Problema):
 
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
-        K1 = 5.0
-        K2 = 10.0
-        K3 = 10.0
-        K4 = 20.0
+        K1 = 1.0
+        K2 = 1.0
+        K3 = 2.0
+        K4 = 2.0
 
         # Genera un diccionario con el estado y la posición para facilidad
         estado_dic = self.estado2dic(estado)
@@ -142,7 +140,7 @@ class problema_grafica_grafo(blocales.Problema):
             print "Numero de cruces: ", cruces
             print "Separacion de vertices: ", separacion
             print "Angulo entre aristas: ", angulo
-            print "Criterio propio", propio
+            print "Criterio propio: ", propio
             print "Total: " + str(K1 * cruces +
                 K2 * separacion + K3 * angulo + K4 * propio)
 
@@ -377,12 +375,12 @@ def main():
 
     # Ahora vamos a encontrar donde deben de estar los puntos
     tiempo_inicial = time.time()
-    K, delta = 100, 0.00001
+    K, delta = 1000, 0.01
+    print "\nUtilizando una calendarización lineal con K = ", K, " y delta = ", delta
     solucion = blocales.temple_simulado(
-        grafo_sencillo, lambda i: K * math.exp(-delta * i))
+        grafo_sencillo, lambda i: calen_lineal(K, delta, i))
     tiempo_final = time.time()
     grafo_sencillo.dibuja_grafo(solucion)
-    print "\nUtilizando una calendarización exponencial con K = "+str(K)+" y delta = "+str(delta)
     print "Costo de la solución encontrada: "
     grafo_sencillo.costo(solucion, True)
     print "Tiempo de ejecución en segundos: ", tiempo_final - tiempo_inicial
@@ -390,9 +388,9 @@ def main():
     #                          20 PUNTOS
     ##########################################################################
     # ¿Que valores para ajustar el temple simulado (T0 y K) son los que mejor resultado dan?
-    #
+    # delta = 0.0005 y K = 1000
     # ¿Que encuentras en los resultados?, ¿Cual es el criterio mas importante?
-    #
+    # la separacion de vertices y el propio son los que suelen terminar sin costos
 
     ##########################################################################
     #                          20 PUNTOS
@@ -403,12 +401,15 @@ def main():
     # calendarización (al menos uno más diferente al exponencial) y ajusta los parámetros 
     # para que obtenga la mejor solución posible en el menor tiempo posible.
     #
-    # Escribe aqui tus comentarios y prueba otro metodo de claendarización para compararlo con el
+    # Escribe aqui tus comentarios y prueba otro metodo de calendarización para compararlo con el
     # exponencial.
     #
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
     #
 
+def calen_lineal(K, delta, x):
+
+    return K - delta*x
 
 if __name__ == '__main__':
     main()
