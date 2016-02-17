@@ -25,8 +25,8 @@ import blocales
 import random
 import itertools
 import math
-import Image
-import ImageDraw
+from PIL import Image
+from PIL import ImageDraw
 import time
 
 
@@ -83,13 +83,22 @@ class problema_grafica_grafo(blocales.Problema):
 
         """
         vecino = list(estado)
-        i = random.randint(0, len(vecino) - 1)
-        vecino[i] = max(
-            10, min(self.dim - 10, vecino[i] + random.choice([-1, 1])))
+        v = random.choice(self.vertices)
+        if dispersion: i,j = round(dispersion*random.uniform(-1,1),4),round(dispersion*random.uniform(-1,1),4)
+        else: i,j = round(random.uniform(-1,1),4),round(random.uniform(-1,1),4)
+        pos = self.estado2dic(estado)
+        aristas = pos[v]
+        vecino[vecino.index(aristas[0])] = max(10, min(self.dim - 10, vecino.index(aristas[0]) + i))
+        vecino[vecino.index(aristas[1])] = max(10, min(self.dim - 10, vecino.index(aristas[1]) + j))
         return vecino
         #######################################################################
         #                          20 PUNTOS
         #######################################################################
+        #vecino = list(estado)
+        #i = random.randint(0, len(vecino) - 1)
+        #vecino[i] = max(
+        #    10, min(self.dim - 10, vecino[i] + random.choice([-1, 1])))
+        #return vecino
         # Por supuesto que esta no es la mejor manera de generar vecino para este problema.
         #
         # Modifica la funcion para generar vecinos de tal manera que el vecino aleatorio se realice de 
@@ -333,7 +342,7 @@ def main():
 
     estado_aleatorio = grafo_sencillo.estado_aleatorio()
     grafo_sencillo.dibuja_grafo(estado_aleatorio)
-    print "Costo del estado aleatorio: ", grafo_sencillo.costo(estado_aleatorio)
+    print ("Costo del estado aleatorio: ", grafo_sencillo.costo(estado_aleatorio))
 
     # Ahora vamos a encontrar donde deben de estar los puntos
     tiempo_inicial = time.time()
@@ -341,9 +350,9 @@ def main():
         grafo_sencillo, lambda i: 1000 * math.exp(-0.0001 * i))
     tiempo_final = time.time()
     grafo_sencillo.dibuja_grafo(solucion)
-    print "\nUtilizando una calendarización exponencial con K = 1000 y delta = 0.0001"
-    print "Costo de la solución encontrada: ", grafo_sencillo.costo(solucion)
-    print "Tiempo de ejecución en segundos: ", tiempo_final - tiempo_inicial
+    print ("\nUtilizando una calendarización exponencial con K = 1000 y delta = 0.0001")
+    print ("Costo de la solución encontrada: ", grafo_sencillo.costo(solucion))
+    print ("Tiempo de ejecución en segundos: ", tiempo_final - tiempo_inicial)
     ##########################################################################
     #                          20 PUNTOS
     ##########################################################################
