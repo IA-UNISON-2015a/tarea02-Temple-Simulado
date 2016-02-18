@@ -130,10 +130,10 @@ class problema_grafica_grafo(blocales.Problema):
 
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
-        K1 = 20.0
-        K2 = 15.0
-        K3 = 20.0
-        K4 = 0.0
+        K1 = 3.0
+        K2 = 5.0
+        K3 = 2.0
+        K4 = 8.0
 
         # Genera un diccionario con el estado y la posición para facilidad
         estado_dic = self.estado2dic(estado)
@@ -243,7 +243,7 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ¿Que valores de diste a K1, K2 y K3 respectivamente?
         #
-        #
+        #   Los mejores resultados me dieron con k1 = 3, k2 = 5 y k3 = 2
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
         total = 0
@@ -270,7 +270,7 @@ class problema_grafica_grafo(blocales.Problema):
                     total += costo
         return total
 
-    def criterio_propio(self, estado_dic):
+    def criterio_propio(self, estado_dic,min_dist=50):
         """
         Implementa y comenta correctamente un criterio de costo que sea conveniente para que un grafo
         luzca bien.
@@ -288,11 +288,27 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # Desarrolla un criterio propio y ajusta su importancia en el costo total con K4 ¿Mejora el resultado? ¿En
         # que mejora el resultado final?
-        #
+        #Si mejora un poco ya que cuando aparecen la gráfica echa bola, la solución final se ve más separada.
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
-        #
-        return 0
+        # Penalizara si la distancia entre los puntos medios de dos aristas es menor a 50
+        total = 0 
+        for (A, B) in itertools.combinations(self.aristas, 2):
+
+            (x1, y1), (x2, y2) = estado_dic[A[0]], estado_dic[A[1]]
+            (x3, y3), (x4, y4) = estado_dic[B[0]], estado_dic[B[1]]
+            #encontramos el punto medio de cada arista
+            xm, ym = (x1 + x2)/2, (y1 + y2)/2
+            xn, yn = (x3 + x4)/2, (y3 + y4)/2
+            #calculamos la distancia de la misma manera que el profesor
+            dist = math.sqrt((xm - xn) ** 2 + (ym - yn) ** 2)
+            if dist <= min_dist:
+                total+=1
+            #se me ocurre penalizar tambien por el hecho de que sean paralelas
+            den = (x2 - x1) * (y2 - y1) - (x4 - x3) * (y4 - y3) + 0.0
+            if den == 0:
+                total+=1
+        return total
 
     def estado2dic(self, estado):
         """
