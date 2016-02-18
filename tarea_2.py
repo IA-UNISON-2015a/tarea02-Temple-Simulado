@@ -140,7 +140,7 @@ class problema_grafica_grafo(blocales.Problema):
         K1 = 1.0
         K2 = 1.0
         K3 = 0.2
-        K4 = 0.0
+        K4 = 0.01
 
         # Genera un diccionario con el estado y la posición para facilidad
         estado_dic = self.estado2dic(estado)
@@ -264,8 +264,6 @@ class problema_grafica_grafo(blocales.Problema):
             m1 = (yFA - y0A) / (xFA - x0A)
             m2 = (yFB - y0B) / (xFB - x0B)
             try:
-
-
                 angulo = math.degrees(math.atan(abs((m2 - m1) / (1+(m1*m2)))))
             except ZeroDivisionError:
                 None
@@ -299,7 +297,24 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+        """
+        acumulador = 0
+
+        for (aristaA, aristaB) in itertools.combinations(self.aristas, 2):
+
+            (x0A, y0A), (xFA, yFA) = estado_dic[
+                aristaA[0]], estado_dic[aristaA[1]]
+            (x0B, y0B), (xFB, yFB) = estado_dic[
+                aristaB[0]], estado_dic[aristaB[1]]
+
+            distancia = math.sqrt(((xFA - x0A)**2) + ((yFA - y0A)**2))
+            distanciaB = math.sqrt(((xFB - x0B)**2) + ((yFB - y0B)**2))
+            acumulador += distancia
+
+        return acumulador / len(self.aristas)
+        """
+
+
 
     def estado2dic(self, estado):
         """
