@@ -19,7 +19,7 @@ Para que funcione, este modulo debe de encontrarse en la misma carpeta que bloca
 
 """
 
-__author__ = 'Escribe aquí tu nombre'
+__author__ = 'Ernesto Jaramillo'
 
 import blocales
 import random
@@ -68,7 +68,7 @@ class problema_grafica_grafo(blocales.Problema):
         """
         return tuple(random.randint(10, self.dim - 10) for _ in range(2 * len(self.vertices)))
 
-    def vecino_aleatorio(self, estado, dispersion=None):
+    def vecino_aleatorio(self, estado, dispersion=0.01):
         """
         Encuentra un vecino en forma aleatoria. En estea primera versión lo que hacemos es tomar un valor aleatorio,
         y sumarle o restarle uno al azar.
@@ -82,11 +82,14 @@ class problema_grafica_grafo(blocales.Problema):
         @return: Una tupla con un estado vecino al estado de entrada.
 
         """
+        """
         vecino = list(estado)
         i = random.randint(0, len(vecino) - 1)
         vecino[i] = max(
             10, min(self.dim - 10, vecino[i] + random.choice([-1, 1])))
         return vecino
+        """
+
         #######################################################################
         #                          20 PUNTOS
         #######################################################################
@@ -106,6 +109,19 @@ class problema_grafica_grafo(blocales.Problema):
         # -- Comenta la función ya programada, programa inmediatamenta despues de este comentario 
         #    tu solución. ¿Como integras esta dispersión para utilizar la temperatura del temple simulado?
         #    ¿Que resultados obtienes con el nuevo método? Comenta tus resultados.
+
+        vecino = list(estado)
+        i = random.randint(0, len(self.vertices)-1)
+        i = i * 2 - 2
+        n1 = random.randint(-1, 1)
+        n2 = random.randint(-1, 1)
+        n1 *= dispersion
+        n2 *= dispersion
+        vecino[i] += int(n1)
+        vecino[i+1] += int(n2)
+        return vecino
+
+
 
     def costo(self, estado):
         """
@@ -274,7 +290,7 @@ class problema_grafica_grafo(blocales.Problema):
         """
         return {self.vertices[i]: (estado[2 * i], estado[2 * i + 1]) for i in range(len(self.vertices))}
 
-    def dibuja_grafo(self, estado=None):
+    def dibuja_grafo(self, estado=None,mine=0):
         """
         Dibuja el grafo utilizando PIL, donde estado es una
         lista de dimensión 2*len(vertices), donde cada valor es
@@ -297,7 +313,10 @@ class problema_grafica_grafo(blocales.Problema):
         dibujar = ImageDraw.ImageDraw(imagen)
 
         for (v1, v2) in self.aristas:
-            dibujar.line((lugar[v1], lugar[v2]), fill=(255, 0, 0))
+            if mine == 0:
+                dibujar.line((lugar[v1], lugar[v2]), fill=(255, 0, 0))
+            else:
+                dibujar.line((lugar[v1], lugar[v2]), fill=(0, 255, 0))
 
         for v in self.vertices:
             dibujar.text(lugar[v], v, (0, 0, 0))
@@ -340,7 +359,7 @@ def main():
     solucion = blocales.temple_simulado(
         grafo_sencillo, lambda i: 1000 * math.exp(-0.0001 * i))
     tiempo_final = time.time()
-    grafo_sencillo.dibuja_grafo(solucion)
+    grafo_sencillo.dibuja_grafo(solucion,1)
     print "\nUtilizando una calendarización exponencial con K = 1000 y delta = 0.0001"
     print "Costo de la solución encontrada: ", grafo_sencillo.costo(solucion)
     print "Tiempo de ejecución en segundos: ", tiempo_final - tiempo_inicial
