@@ -130,9 +130,9 @@ class problema_grafica_grafo(blocales.Problema):
 
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
-        K1 = 1.0
-        K2 = 0.0
-        K3 = 0.0
+        K1 = 20.0
+        K2 = 15.0
+        K3 = 20.0
         K4 = 0.0
 
         # Genera un diccionario con el estado y la posición para facilidad
@@ -246,7 +246,29 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+        total = 0
+        for (a1, a2) in itertools.combinations(self.aristas, 2):
+            # encontrar incidencias
+            incidencia = None
+            if a1[0] == a2[0] or a1[0] == a2[1]: incidencia = a1[0]
+            elif a1[1] == a1[0] or a1[1] == a2[1]: incidencia = a1[1]
+
+            if incidencia:
+                for i in a1:
+                    if i != incidencia:
+                        A = (estado_dic[a1[a1.index(i)]][0]-estado_dic[incidencia][0],
+                             estado_dic[a1[a1.index(i)]][1]-estado_dic[incidencia][1])
+                for j in a2:
+                    if j != incidencia:
+                        B = (estado_dic[a2[a2.index(j)]][0]-estado_dic[incidencia][0],
+                             estado_dic[a2[a2.index(j)]][1]-estado_dic[incidencia][1])
+                # formula para encontrar el angulo entre dos vectores
+                angulo = math.acos(abs(A[0]*B[0] + A[1]*B[1])/(math.sqrt(math.pow(A[0],2) + math.pow(A[1],2)) *
+                        math.sqrt(math.pow(B[0],2) + math.pow(B[1],2))+0.1))
+                if(angulo < math.pi/6):
+                    costo = angulo / (math.pi/6)
+                    total += costo
+        return total
 
     def criterio_propio(self, estado_dic):
         """
