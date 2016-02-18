@@ -112,7 +112,7 @@ def temple_simulado(problema, calendarizador=lambda i: cal_expon(i, 100, 0.01), 
         if temperatura < 1e-8:
             break
 
-        vecino = problema.vecino_aleatorio(estado, 0.05)
+        vecino = problema.vecino_aleatorio(estado, 0.5)
         costo_vecino = problema.costo(vecino)
         error = costo - costo_vecino
 

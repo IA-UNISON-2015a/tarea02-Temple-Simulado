@@ -138,8 +138,8 @@ class problema_grafica_grafo(blocales.Problema):
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
         K1 = 1.0
-        K2 = 0.0
-        K3 = 0.0
+        K2 = 1.0
+        K3 = 0.2
         K4 = 0.0
 
         # Genera un diccionario con el estado y la posición para facilidad
@@ -252,8 +252,30 @@ class problema_grafica_grafo(blocales.Problema):
         #
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
-        #
-        return 0
+
+        total = 0
+
+        for (aristaA, aristaB) in itertools.combinations(self.aristas, 2):
+
+            (x0A, y0A), (xFA, yFA) = estado_dic[
+                aristaA[0]], estado_dic[aristaA[1]]
+            (x0B, y0B), (xFB, yFB) = estado_dic[
+                aristaB[0]], estado_dic[aristaB[1]]
+            m1 = (yFA - y0A) / (xFA - x0A)
+            m2 = (yFB - y0B) / (xFB - x0B)
+            try:
+
+
+                angulo = math.degrees(math.atan(abs((m2 - m1) / (1+(m1*m2)))))
+            except ZeroDivisionError:
+                None
+
+            if angulo > 30:
+                continue
+            penalizacion_base = 1
+            total += penalizacion_base * ((30-angulo) / 2)
+
+        return total
 
     def criterio_propio(self, estado_dic):
         """
