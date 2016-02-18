@@ -385,17 +385,20 @@ def main():
     # Ahora vamos a encontrar donde deben de estar los puntos
     tiempo_inicial = time.time()
     solucion = blocales.temple_simulado(
-        grafo_sencillo, lambda i: 1000 * math.exp(-0.0001 * i))
+        grafo_sencillo, lambda i: 10000 * math.exp(-0.01 * i))
     tiempo_final = time.time()
     grafo_sencillo.dibuja_grafo(solucion)
-    print ("\nUtilizando una calendarización exponencial con K = 1000 y delta = 0.0001")
+    print ("\nUtilizando una calendarización exponencial con K = 100000 y delta = 0.01")
     print ("Costo de la solución encontrada: ", grafo_sencillo.costo(solucion))
     print ("Tiempo de ejecución en segundos: ", tiempo_final - tiempo_inicial)
     ##########################################################################
     #                          20 PUNTOS
     ##########################################################################
     # ¿Que valores para ajustar el temple simulado (T0 y K) son los que mejor resultado dan?
-    #
+    #   Después de muchas pruebas pude observar que es importante que la temperatura inicial sea alta,
+    #   sin embargo llega un momento el que ya no se observan cambios así se siga aumentando. De misma
+    #   manera la delta tiene que ser chica, pero si lo es demasiado, el programa tardara más. Los valores 
+    #   que me arrojaron mejores resultados fueron T0 = 1000 y delta = 0.01
     # ¿Que encuentras en los resultados?, ¿Cual es el criterio mas importante?
     #
 
@@ -411,6 +414,8 @@ def main():
     # Escribe aqui tus comentarios y prueba otro metodo de claendarización para compararlo con el
     # exponencial.
     #
+    # Implemente boltzman para reducir la temperatura y el metodo lineal para compararlo y
+    # este fue mucho mas lento que el primero
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
     #
 
