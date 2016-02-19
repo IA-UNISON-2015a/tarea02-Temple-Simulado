@@ -261,9 +261,9 @@ class problema_grafica_grafo(blocales.Problema):
                 aristaA[0]], estado_dic[aristaA[1]]
             (x0B, y0B), (xFB, yFB) = estado_dic[
                 aristaB[0]], estado_dic[aristaB[1]]
-            m1 = (yFA - y0A) / (xFA - x0A)
-            m2 = (yFB - y0B) / (xFB - x0B)
             try:
+                m1 = (yFA - y0A) / (xFA - x0A)
+                m2 = (yFB - y0B) / (xFB - x0B)
                 angulo = math.degrees(math.atan(abs((m2 - m1) / (1+(m1*m2)))))
             except ZeroDivisionError:
                 None
@@ -394,7 +394,7 @@ def main():
     # Ahora vamos a encontrar donde deben de estar los puntos
     tiempo_inicial = time.time()
     solucion = blocales.temple_simulado(
-        grafo_sencillo, lambda i: 10 * math.exp(-0.0000005 * i))
+        grafo_sencillo, lambda i: 10 * math.exp(-0.05 * i))
     tiempo_final = time.time()
     grafo_sencillo.dibuja_grafo(solucion,1)
     print "\nUtilizando una calendarización exponencial con K = 1000 y delta = 0.0001"
