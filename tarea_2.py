@@ -138,9 +138,9 @@ class problema_grafica_grafo(blocales.Problema):
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
         K1 = 1.0
-        K2 = 1.0
-        K3 = 0.5
-        K4 = 0.5
+        K2 = 0.1
+        K3 = 0.01
+        K4 = 0.001
 
         # Genera un diccionario con el estado y la posición para facilidad
         estado_dic = self.estado2dic(estado)
@@ -352,8 +352,10 @@ class problema_grafica_grafo(blocales.Problema):
         for (v1, v2) in self.aristas:
             if mine == 0:
                 dibujar.line((lugar[v1], lugar[v2]), fill=(255, 0, 0))
-            else:
+            elif mine == 1:
                 dibujar.line((lugar[v1], lugar[v2]), fill=(0, 255, 0))
+            else:
+                dibujar.line((lugar[v1], lugar[v2]), fill=(0, 0, 255))
 
         for v in self.vertices:
             dibujar.text(lugar[v], v, (0, 0, 0))
@@ -394,7 +396,7 @@ def main():
     # Ahora vamos a encontrar donde deben de estar los puntos
     tiempo_inicial = time.time()
     solucion = blocales.temple_simulado(
-        grafo_sencillo, lambda i: 10 * math.exp(-0.05 * i))
+        grafo_sencillo, lambda i: 10000 * math.exp(-0.0005 * i))
     tiempo_final = time.time()
     grafo_sencillo.dibuja_grafo(solucion,1)
     print "\nUtilizando una calendarización exponencial con K = 1000 y delta = 0.0001"
@@ -429,6 +431,14 @@ def main():
     #
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
     #
+
+    tiempo_inicial = time.time()
+    solucion = blocales.temple_simulado(
+        grafo_sencillo, lambda i: 10000 * -math.log10(abs(i/10000)+0.1))
+    tiempo_final = time.time()
+    grafo_sencillo.dibuja_grafo(solucion,2)
+    print "Costo de la solución encontrada: ", grafo_sencillo.costo(solucion)
+    print "Tiempo de ejecución en segundos: ", tiempo_final - tiempo_inicial
 
 
 if __name__ == '__main__':
