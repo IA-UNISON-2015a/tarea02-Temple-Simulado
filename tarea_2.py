@@ -68,7 +68,7 @@ class problema_grafica_grafo(blocales.Problema):
         """
         return tuple(random.randint(10, self.dim - 10) for _ in range(2 * len(self.vertices)))
 
-    def vecino_aleatorio(self, estado, dispersion=0.01):
+    def vecino_aleatorio(self, estado, dispersion):
         """
         Encuentra un vecino en forma aleatoria. En estea primera versión lo que hacemos es tomar un valor aleatorio,
         y sumarle o restarle uno al azar.
@@ -139,8 +139,8 @@ class problema_grafica_grafo(blocales.Problema):
         # (default solo cuanta el criterio 1)
         K1 = 1.0
         K2 = 1.0
-        K3 = 0.2
-        K4 = 0.01
+        K3 = 0.5
+        K4 = 0.5
 
         # Genera un diccionario con el estado y la posición para facilidad
         estado_dic = self.estado2dic(estado)
@@ -297,7 +297,7 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        """
+
         acumulador = 0
 
         for (aristaA, aristaB) in itertools.combinations(self.aristas, 2):
@@ -309,10 +309,10 @@ class problema_grafica_grafo(blocales.Problema):
 
             distancia = math.sqrt(((xFA - x0A)**2) + ((yFA - y0A)**2))
             distanciaB = math.sqrt(((xFB - x0B)**2) + ((yFB - y0B)**2))
-            acumulador += distancia
+            acumulador += distancia + distanciaB
 
         return acumulador / len(self.aristas)
-        """
+
 
 
 
@@ -394,7 +394,7 @@ def main():
     # Ahora vamos a encontrar donde deben de estar los puntos
     tiempo_inicial = time.time()
     solucion = blocales.temple_simulado(
-        grafo_sencillo, lambda i: 1000 * math.exp(-0.0001 * i))
+        grafo_sencillo, lambda i: 10 * math.exp(-0.0000005 * i))
     tiempo_final = time.time()
     grafo_sencillo.dibuja_grafo(solucion,1)
     print "\nUtilizando una calendarización exponencial con K = 1000 y delta = 0.0001"
