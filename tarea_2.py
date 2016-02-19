@@ -407,6 +407,13 @@ def main():
     #
     # ¿Que encuentras en los resultados?, ¿Cual es el criterio mas importante?
     #
+    """
+        Al hacer varias pruebas pensé haber llegado a un buen punto donde K = 10 y
+        t0 con -0.00005, pero al querer generar una imagen rapida para corroborar un poco
+        mas mi criterio, llegué a dar con que con K = 10 y T0 = -0.05 tenía un ratio de
+        7 u 8 de 10 con mejor imagen que la original, hice commit a esto solo para mostrar los cambios.
+    """
+
 
     ##########################################################################
     #                          20 PUNTOS
