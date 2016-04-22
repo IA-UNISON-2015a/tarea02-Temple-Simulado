@@ -19,16 +19,15 @@ Para que funcione, este modulo debe de encontrarse en la misma carpeta que bloca
 
 """
 
-__author__ = 'Escribe aquí tu nombre'
+__author__ = 'Jorge Arturo Carvajal Siller'
 
 import blocales
 import random
 import itertools
 import math
-import Image
-import ImageDraw
+from PIL import Image
+from PIL import ImageDraw
 import time
-
 
 class problema_grafica_grafo(blocales.Problema):
 
@@ -53,7 +52,15 @@ class problema_grafica_grafo(blocales.Problema):
         self.vertices = vertices
         self.aristas = aristas
         self.dim = dimension_imagen
-
+        self.lista_num_aristas = []
+        max_aristas = len(self.vertices)-1
+        for i in xrange(max_aristas+1):
+            counter = 0
+            for j in xrange(len(self.aristas)):
+                if(self.vertices[i] in self.aristas[j]):
+                    counter=counter+1
+            self.lista_num_aristas.append(counter)
+        self.mayor_aristas = len(self.vertices)-1
     def estado_aleatorio(self):
         """
         Devuelve un estado aleatorio.
@@ -68,7 +75,7 @@ class problema_grafica_grafo(blocales.Problema):
         """
         return tuple(random.randint(10, self.dim - 10) for _ in range(2 * len(self.vertices)))
 
-    def vecino_aleatorio(self, estado, dispersion=None):
+    def vecino_aleatorio(self, estado, dispersion=5):
         """
         Encuentra un vecino en forma aleatoria. En estea primera versión lo que hacemos es tomar un valor aleatorio,
         y sumarle o restarle uno al azar.
@@ -82,10 +89,22 @@ class problema_grafica_grafo(blocales.Problema):
         @return: Una tupla con un estado vecino al estado de entrada.
 
         """
+        """
         vecino = list(estado)
         i = random.randint(0, len(vecino) - 1)
         vecino[i] = max(
             10, min(self.dim - 10, vecino[i] + random.choice([-1, 1])))
+        return vecino
+        """
+        vecino = list(estado)
+        i = random.choice(range(0,len(vecino)-2,2))
+        rx = (random.random()*2-1)*dispersion
+        while(rx+vecino[i] < 10 or vecino[i]+rx > self.dim-10):
+            rx = (random.random()*2 - 1)*dispersion
+        ry = (random.random()*2-1)*dispersion
+        while(ry+vecino[i+1] < 10 or ry+vecino[i+1] > self.dim-10):
+            ry = (random.random()*2 - 1)*dispersion
+        vecino[i],vecino[i+1] = vecino[i] + rx,vecino[i+1] + ry
         return vecino
         #######################################################################
         #                          20 PUNTOS
@@ -119,12 +138,12 @@ class problema_grafica_grafo(blocales.Problema):
 
         """
 
-        # Inicializa fáctores lineales para los criterios más importantes
+        # Ivecino[i]nicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
-        K1 = 1.0
-        K2 = 0.0
-        K3 = 0.0
-        K4 = 0.0
+        K1 = 10.0
+        K2 = 2.0
+        K3 = 3.0
+        K4 = 4.0
 
         # Genera un diccionario con el estado y la posición para facilidad
         estado_dic = self.estado2dic(estado)
@@ -211,10 +230,23 @@ class problema_grafica_grafo(blocales.Problema):
 
             # Penaliza la distancia si es menor a min_dist
             if dist < min_dist:
-                total += (1.0 - (dist / min_dist))
+                total += round((1.0 - (dist / min_dist)))
         return total
 
     def angulo_aristas(self, estado_dic):
+        costo = 0
+        for v1 in self.vertices:
+            # v1 = vertice base. v2,v3 = Vertices conectados a V1
+            for (a1,a2) in itertools.combinations(self.aristas,2):
+                if(v1 in a1 and v1 in a2):
+                    v2,v3 = a1[abs(a1.index(v1)-1)],a2[abs(a2.index(v1)-1)]
+
+                    (x1,y1),(x2,y2),(x3,y3) = estado_dic[v1], estado_dic[v2], estado_dic[v3]
+                    m1,m2 = -((float)(y2-y1)/(x2-x1)), -((float)(y3-y1)/(x3-x1))
+                    angulo = math.degrees( math.atan( abs( (m1-m2)/(1+m2*m1) ) ) )
+                    if(angulo < 30):
+                        costo= costo + math.ceil(5 - (angulo / 6))
+        return costo
         """
         A partir de una posicion "estado", devuelve una penalizacion proporcional a cada angulo entre aristas
         menor a pi/6 rad (30 grados). Los angulos de pi/6 o mayores no llevan ninguna penalización, y la penalizacion
@@ -238,8 +270,22 @@ class problema_grafica_grafo(blocales.Problema):
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
         return 0
-
+        import time
     def criterio_propio(self, estado_dic):
+        # Intentare hacer un criterio de tal forma que los nodos tiendan hacia el centro entre mas aristas tengan conectadas
+        # Esto tambien sera en base a la cantidad de aristas de los demas nodos; si todos tienen una cantidad igual,
+        # no se dara alguna preferencia en particular
+        
+        
+        costo = 0
+        centro = self.dim/2.0
+        margen = 10
+        for i in xrange(len(self.vertices)):
+            razon=self.mayor_aristas-self.lista_num_aristas[i] + 1.0
+            (x,y) = estado_dic[self.vertices[i]]
+            costo = costo +  math.floor( (abs(x-centro)/centro)*(margen/razon)) + math.floor( (abs(y-centro)/centro)*(margen/razon) )
+
+        return costo
         """
         Implementa y comenta correctamente un criterio de costo que sea conveniente para que un grafo
         luzca bien.
@@ -258,10 +304,11 @@ class problema_grafica_grafo(blocales.Problema):
         # Desarrolla un criterio propio y ajusta su importancia en el costo total con K4 ¿Mejora el resultado? ¿En
         # que mejora el resultado final?
         #
+        # Los resultados fueron buenos, ya que al hacer que los nodos tiendan mas hacia el centro, hace que el grafo sea mas compacto,
+        # y por lo tanto mas 'bonito', en mi opinion.
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
 
     def estado2dic(self, estado):
         """
@@ -304,7 +351,6 @@ class problema_grafica_grafo(blocales.Problema):
 
         imagen.show()
 
-
 def main():
     """
     La función principal
@@ -324,6 +370,11 @@ def main():
                         ('F', 'A'),
                         ('C', 'B'),
                         ('H', 'F')]
+    """
+    vertices_sencillo = ['A','B','C']
+    
+    aristas_sencillo = [('A','B'),('A','C')]
+    """
     dimension = 400
 
     # Y vamos a hacer un dibujo del grafo sin decirle como hacer para
@@ -336,21 +387,29 @@ def main():
     print "Costo del estado aleatorio: ", grafo_sencillo.costo(estado_aleatorio)
 
     # Ahora vamos a encontrar donde deben de estar los puntos
+    
     tiempo_inicial = time.time()
     solucion = blocales.temple_simulado(
-        grafo_sencillo, lambda i: 1000 * math.exp(-0.0001 * i))
+        # k = 100, d = .0001
+        grafo_sencillo,
+        lambda i: (100*abs(math.sin(i)))/(i+1) + 0.001)
+        #lambda i: 1000 * math.exp(-0.0001 * i))
     tiempo_final = time.time()
     grafo_sencillo.dibuja_grafo(solucion)
-    print "\nUtilizando una calendarización exponencial con K = 1000 y delta = 0.0001"
+    print "\nUtilizando una calendarización senoidal con K = 100 y delta = 0.001"
     print "Costo de la solución encontrada: ", grafo_sencillo.costo(solucion)
     print "Tiempo de ejecución en segundos: ", tiempo_final - tiempo_inicial
+    
     ##########################################################################
     #                          20 PUNTOS
     ##########################################################################
     # ¿Que valores para ajustar el temple simulado (T0 y K) son los que mejor resultado dan?
     #
     # ¿Que encuentras en los resultados?, ¿Cual es el criterio mas importante?
-    #
+    # RESPUESTA
+    # Encontre los mejores resultados con K = 100 y delta  = 0.001. Cambiar delta 
+    # hizo que los resultados empeoraran significativamente, y cambiar K no mostraba
+    # mucha diferencia
 
     ##########################################################################
     #                          20 PUNTOS
@@ -365,8 +424,10 @@ def main():
     # exponencial.
     #
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
-    #
-
+    # calendarizacion = K*sin(iteracion*delta)/iteracion
+    # La calendarizacion es notablemente mas lenta, pero me dio resultados excelentes en las pruebas
+    # La calendarizacion exponencial me daba costos entre 20 y 40, mientras que la sinoidal eventualmente
+    # llego a costo 0.
 
 if __name__ == '__main__':
     main()
