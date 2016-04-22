@@ -19,14 +19,21 @@ Para que funcione, este modulo debe de encontrarse en la misma carpeta que bloca
 
 """
 
-__author__ = 'Escribe aquí tu nombre'
+__author__ = 'Jaime A Lopez'
 
+from itertools import combinations
 import blocales
 import random
 import itertools
 import math
-import Image
-import ImageDraw
+try:
+    from PIL import Image
+except ImportError:
+    import Image
+try:
+    from PIL import ImageDraw
+except ImportError:
+    import ImageDraw
 import time
 
 
@@ -82,11 +89,13 @@ class problema_grafica_grafo(blocales.Problema):
         @return: Una tupla con un estado vecino al estado de entrada.
 
         """
+        """
         vecino = list(estado)
         i = random.randint(0, len(vecino) - 1)
         vecino[i] = max(
             10, min(self.dim - 10, vecino[i] + random.choice([-1, 1])))
         return vecino
+        """
         #######################################################################
         #                          20 PUNTOS
         #######################################################################
@@ -107,6 +116,20 @@ class problema_grafica_grafo(blocales.Problema):
         #    tu solución. ¿Como integras esta dispersión para utilizar la temperatura del temple simulado?
         #    ¿Que resultados obtienes con el nuevo método? Comenta tus resultados.
 
+        vecino = list(estado)
+        vertice = random.choice(self.vertices)
+
+        if dispersion:
+            num = ( round( random.uniform(-1,1)*dispersion ), round(random.uniform(-1,1)*dispersion) ) 
+        else:
+            num = ( round( random.uniform(-1,1) ), round(random.uniform(-1,1) ) )             
+        
+        pos = self.estado2dic(estado)
+        val = pos[vertice]
+        vecino[vecino.index(val[0])] = max(10, min(self.dim - 10, vecino[vecino.index(val[0])] + num[0]))
+        vecino[vecino.index(val[1])] = max(10, min(self.dim - 10, vecino[vecino.index(val[1])] + num[1]))
+        return vecino
+
     def costo(self, estado):
         """
         Encuentra el costo de un estado. En principio el costo de un estado es la cantidad de veces que dos
@@ -121,10 +144,10 @@ class problema_grafica_grafo(blocales.Problema):
 
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
-        K1 = 1.0
-        K2 = 0.0
-        K3 = 0.0
-        K4 = 0.0
+        K1 = 5.0
+        K2 = 20.0
+        K3 = 10.0
+        K4 = 10.0
 
         # Genera un diccionario con el estado y la posición para facilidad
         estado_dic = self.estado2dic(estado)
@@ -237,7 +260,34 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+
+        def angulo_rectas(x1, y1, x2, y2):#funcion que regresa el angulo entre 2 puntos
+            numerador = abs(x1*y1 + x2*y2)
+            denominador = math.sqrt(x1*x1 + x2*x2)*math.sqrt(y1*y1 + y2*y2)
+            cos = numerador / (denominador + .001)
+            return math.acos(cos)
+
+        total = 0
+        for vertice in self.vertices:
+
+            insidencias = filter(lambda par: vertice in par, self.aristas)
+            lista = []
+            cord_vertice = estado_dic[vertice]
+            for i in xrange(len(insidencias)):
+                for r in xrange(len(insidencias[i])):
+                    if insidencias[i][r] != vertice:
+                        lista.append(insidencias[i][r])
+            comb = list(combinations(lista,2))
+            for i in comb:
+                cord0 = estado_dic[i[0]]
+                cord1 = estado_dic[i[1]]
+                a = cord0[0] - cord_vertice[0], cord0[1] - cord_vertice[1]
+                b = cord1[0] - cord_vertice[0], cord1[1] - cord_vertice[1]
+                angulo = angulo_rectas(a[0], a[1], b[0], b[1]) 
+                if angulo < math.pi/4:
+                    total += math.pi/4 - angulo
+
+        return total
 
     def criterio_propio(self, estado_dic):
         """
@@ -261,7 +311,16 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+        total = 0
+
+        for (aristaA, aristaB) in itertools.combinations(self.aristas, 2):
+            (x0A, y0A), (xFA, yFA) = estado_dic[aristaA[0]], estado_dic[aristaA[1]]
+            (x0B, y0B), (xFB, yFB) = estado_dic[aristaB[0]], estado_dic[aristaB[1]]
+            den = (xFA - x0A) * (yFB - y0B) - (xFB - x0B) * (yFA - y0A) + 0.0
+            if den == 0:
+                total+=1
+
+        return total
 
     def estado2dic(self, estado):
         """
