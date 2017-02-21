@@ -81,7 +81,7 @@ def descenso_colinas(problema, maxit=1000000):
     estado = problema.estado_aleatorio()
     costo = problema.costo(estado)
 
-    for _ in xrange(maxit):
+    for _ in range(maxit):
         e = min(problema.vecinos(estado), key=problema.costo)
         c = problema.costo(e)
         if c >= costo:
@@ -90,7 +90,7 @@ def descenso_colinas(problema, maxit=1000000):
     return estado
 
 
-def temple_simulado(problema, calendarizador=lambda i: cal_expon(i, 100, 0.01), maxit=1000000):
+def temple_simulado(problema, calendarizador = lambda i: cal_expon(i,1000,.01), maxit=1000000):
     """
     Busqueda local por temple simulado
 
@@ -107,7 +107,7 @@ def temple_simulado(problema, calendarizador=lambda i: cal_expon(i, 100, 0.01), 
     
     e_mejor, c_mejor = estado, costo
 
-    for i in xrange(maxit):
+    for i in range(maxit):
         temperatura = calendarizador(i)
         if temperatura < 1e-8:
             break
@@ -126,7 +126,7 @@ def temple_simulado(problema, calendarizador=lambda i: cal_expon(i, 100, 0.01), 
     #return estado
 
 
-def cal_expon(iteracion, K=100, delta=0.01):
+def cal_expon(iteracion, K, delta):
     """
     Calendarizador exponencial
 
@@ -139,4 +139,4 @@ def cal_expon(iteracion, K=100, delta=0.01):
     @return: Un flotante con la temperatura a esa iteración
 
     """
-    return K * exp(-delta * iteracion)
+    return exp(-delta/K*iteracion) #boltzman

@@ -25,8 +25,8 @@ import blocales
 import random
 import itertools
 import math
-import Image
-import ImageDraw
+from PIL import Image
+from PIL import ImageDraw
 import time
 
 
@@ -83,13 +83,22 @@ class problema_grafica_grafo(blocales.Problema):
 
         """
         vecino = list(estado)
-        i = random.randint(0, len(vecino) - 1)
-        vecino[i] = max(
-            10, min(self.dim - 10, vecino[i] + random.choice([-1, 1])))
+        v = random.choice(self.vertices)
+        if dispersion: i,j = round(dispersion*random.uniform(-1,1),4),round(dispersion*random.uniform(-1,1),4)
+        else: i,j = round(random.uniform(-1,1),4),round(random.uniform(-1,1),4)
+        pos = self.estado2dic(estado)
+        aristas = pos[v]
+        vecino[vecino.index(aristas[0])] = max(10, min(self.dim - 10, vecino.index(aristas[0]) + i))
+        vecino[vecino.index(aristas[1])] = max(10, min(self.dim - 10, vecino.index(aristas[1]) + j))
         return vecino
         #######################################################################
         #                          20 PUNTOS
         #######################################################################
+        #vecino = list(estado)
+        #i = random.randint(0, len(vecino) - 1)
+        #vecino[i] = max(
+        #    10, min(self.dim - 10, vecino[i] + random.choice([-1, 1])))
+        #return vecino
         # Por supuesto que esta no es la mejor manera de generar vecino para este problema.
         #
         # Modifica la funcion para generar vecinos de tal manera que el vecino aleatorio se realice de 
@@ -121,10 +130,10 @@ class problema_grafica_grafo(blocales.Problema):
 
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
-        K1 = 1.0
-        K2 = 0.0
-        K3 = 0.0
-        K4 = 0.0
+        K1 = 3.0
+        K2 = 5.0
+        K3 = 2.0
+        K4 = 8.0
 
         # Genera un diccionario con el estado y la posición para facilidad
         estado_dic = self.estado2dic(estado)
@@ -234,12 +243,34 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ¿Que valores de diste a K1, K2 y K3 respectivamente?
         #
-        #
+        #   Los mejores resultados me dieron con k1 = 3, k2 = 5 y k3 = 2
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+        total = 0
+        for (a1, a2) in itertools.combinations(self.aristas, 2):
+            # encontrar incidencias
+            incidencia = None
+            if a1[0] == a2[0] or a1[0] == a2[1]: incidencia = a1[0]
+            elif a1[1] == a1[0] or a1[1] == a2[1]: incidencia = a1[1]
 
-    def criterio_propio(self, estado_dic):
+            if incidencia:
+                for i in a1:
+                    if i != incidencia:
+                        A = (estado_dic[a1[a1.index(i)]][0]-estado_dic[incidencia][0],
+                             estado_dic[a1[a1.index(i)]][1]-estado_dic[incidencia][1])
+                for j in a2:
+                    if j != incidencia:
+                        B = (estado_dic[a2[a2.index(j)]][0]-estado_dic[incidencia][0],
+                             estado_dic[a2[a2.index(j)]][1]-estado_dic[incidencia][1])
+                # formula para encontrar el angulo entre dos vectores
+                angulo = math.acos(abs(A[0]*B[0] + A[1]*B[1])/(math.sqrt(math.pow(A[0],2) + math.pow(A[1],2)) *
+                        math.sqrt(math.pow(B[0],2) + math.pow(B[1],2))+0.1))
+                if(angulo < math.pi/6):
+                    costo = angulo / (math.pi/6)
+                    total += costo
+        return total
+
+    def criterio_propio(self, estado_dic,min_dist=50):
         """
         Implementa y comenta correctamente un criterio de costo que sea conveniente para que un grafo
         luzca bien.
@@ -257,11 +288,27 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # Desarrolla un criterio propio y ajusta su importancia en el costo total con K4 ¿Mejora el resultado? ¿En
         # que mejora el resultado final?
-        #
+        #Si mejora un poco ya que cuando aparecen la gráfica echa bola, la solución final se ve más separada.
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
-        #
-        return 0
+        # Penalizara si la distancia entre los puntos medios de dos aristas es menor a 50
+        total = 0 
+        for (A, B) in itertools.combinations(self.aristas, 2):
+
+            (x1, y1), (x2, y2) = estado_dic[A[0]], estado_dic[A[1]]
+            (x3, y3), (x4, y4) = estado_dic[B[0]], estado_dic[B[1]]
+            #encontramos el punto medio de cada arista
+            xm, ym = (x1 + x2)/2, (y1 + y2)/2
+            xn, yn = (x3 + x4)/2, (y3 + y4)/2
+            #calculamos la distancia de la misma manera que el profesor
+            dist = math.sqrt((xm - xn) ** 2 + (ym - yn) ** 2)
+            if dist <= min_dist:
+                total+=1
+            #se me ocurre penalizar tambien por el hecho de que sean paralelas
+            den = (x2 - x1) * (y2 - y1) - (x4 - x3) * (y4 - y3) + 0.0
+            if den == 0:
+                total+=1
+        return total
 
     def estado2dic(self, estado):
         """
@@ -333,22 +380,25 @@ def main():
 
     estado_aleatorio = grafo_sencillo.estado_aleatorio()
     grafo_sencillo.dibuja_grafo(estado_aleatorio)
-    print "Costo del estado aleatorio: ", grafo_sencillo.costo(estado_aleatorio)
+    print ("Costo del estado aleatorio: ", grafo_sencillo.costo(estado_aleatorio))
 
     # Ahora vamos a encontrar donde deben de estar los puntos
     tiempo_inicial = time.time()
     solucion = blocales.temple_simulado(
-        grafo_sencillo, lambda i: 1000 * math.exp(-0.0001 * i))
+        grafo_sencillo, lambda i: 10000 * math.exp(-0.01 * i))
     tiempo_final = time.time()
     grafo_sencillo.dibuja_grafo(solucion)
-    print "\nUtilizando una calendarización exponencial con K = 1000 y delta = 0.0001"
-    print "Costo de la solución encontrada: ", grafo_sencillo.costo(solucion)
-    print "Tiempo de ejecución en segundos: ", tiempo_final - tiempo_inicial
+    print ("\nUtilizando una calendarización exponencial con K = 100000 y delta = 0.01")
+    print ("Costo de la solución encontrada: ", grafo_sencillo.costo(solucion))
+    print ("Tiempo de ejecución en segundos: ", tiempo_final - tiempo_inicial)
     ##########################################################################
     #                          20 PUNTOS
     ##########################################################################
     # ¿Que valores para ajustar el temple simulado (T0 y K) son los que mejor resultado dan?
-    #
+    #   Después de muchas pruebas pude observar que es importante que la temperatura inicial sea alta,
+    #   sin embargo llega un momento el que ya no se observan cambios así se siga aumentando. De misma
+    #   manera la delta tiene que ser chica, pero si lo es demasiado, el programa tardara más. Los valores 
+    #   que me arrojaron mejores resultados fueron T0 = 1000 y delta = 0.01
     # ¿Que encuentras en los resultados?, ¿Cual es el criterio mas importante?
     #
 
@@ -364,6 +414,8 @@ def main():
     # Escribe aqui tus comentarios y prueba otro metodo de claendarización para compararlo con el
     # exponencial.
     #
+    # Implemente boltzman para reducir la temperatura y el metodo lineal para compararlo y
+    # este fue mucho mas lento que el primero
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
     #
 
