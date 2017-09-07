@@ -10,7 +10,7 @@ Ejemplo de las n_reinas con búsquedas locales
 
 __author__ = 'juliowaissman'
 
-
+from time import time
 import blocales
 from random import shuffle
 from random import sample
@@ -100,8 +100,18 @@ def prueba_temple_simulado(problema=ProblemaNreinas(8)):
 
 
 if __name__ == "__main__":
-
-    prueba_descenso_colinas(ProblemaNreinas(32), 10)
+    a = []
+    for i in range(60,1000000):
+        inicio = time()
+        prueba_descenso_colinas(ProblemaNreinas(i), 10)
+        fin = time()
+        difTemp = fin-inicio
+        print("tiempo en segundos: ",difTemp,", numero de reinas: ", i)
+        a.append(tuple([i,difTemp]))
+        if difTemp >3600:
+            break
+    from numpy import savetxt,array
+    savetxt('basura.txt',array(a),fmt='%.4f')
     prueba_temple_simulado(ProblemaNreinas(32))
 
     ##########################################################################
