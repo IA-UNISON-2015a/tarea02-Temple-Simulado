@@ -101,7 +101,8 @@ def prueba_temple_simulado(problema=ProblemaNreinas(8)):
 
 if __name__ == "__main__":
     a = []
-    for i in range(60,1000000):
+    from numpy import savetxt,array
+    for i in range(2,200):
         inicio = time()
         prueba_descenso_colinas(ProblemaNreinas(i), 10)
         fin = time()
@@ -110,8 +111,9 @@ if __name__ == "__main__":
         a.append(tuple([i,difTemp]))
         if difTemp >3600:
             break
-    from numpy import savetxt,array
-    savetxt('basura.txt',array(a),fmt='%.4f')
+        savetxt('reinas-tiempo.txt',array(a),fmt='%.4f')
+
+
     prueba_temple_simulado(ProblemaNreinas(32))
 
     ##########################################################################
