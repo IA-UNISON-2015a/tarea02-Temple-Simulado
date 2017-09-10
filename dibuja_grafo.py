@@ -95,9 +95,13 @@ class problema_grafica_grafo(blocales.Problema):
 
         """
         vecino = list(estado)
+        #se generan dos numeros aleatorios para la dirección x y y
         x,y = random.randint(-20,20),random.randint(-20,20)
+        #se genera un número aleatorio que representa un vertice
         n = random.randint(0, len(self.vertices) - 1)
-        vecino[n] = (vecino[n] + x)%360 + 20
+        #se suman los numeros aleatorios en dirección x y derección y
+        #se utiliza el modulo para no salirse de la matriz sobre la que se dibuja
+        vecino[n] = (vecino[n] + x)%360 + 20 
         vecino[n+1] = (vecino[n+1] + y)%360 + 20
         return tuple(vecino)
         """
@@ -229,11 +233,13 @@ class problema_grafica_grafo(blocales.Problema):
         @return: Un número.
 
         """
+        #se calcula la distancia minima en función del número de vertices y la dimension de la imagen.
         min_dist = int(self.dim/len(self.vertices))
         total = 0
         for (v1, v2) in itertools.combinations(self.vertices, 2):
             # Calcula la distancia entre dos vertices
             (x1, y1), (x2, y2) = estado_dic[v1], estado_dic[v2]
+            #se utiliza la distancia tanto en x como en y, para dar una mayor disperción a los puntos
             distx = math.fabs(x1 - x2)
             disty = math.fabs(y1 - y2)
             # Penaliza la distancia si es menor a min_dist
@@ -244,6 +250,8 @@ class problema_grafica_grafo(blocales.Problema):
         return total
 
     def calcula_angulo(self,p1,p2,p3):
+        #Metodo que resive tres puntos y regresa el ángulo entre ellos.
+        #el angulo que se calcula es sobre el primer punto que se resive
         (x1,y1) = (p2[0] - p1[0]),(p2[1] - p1[1])
         (x2,y2) = (p3[0] - p1[0]),(p3[1] - p1[1])
         norma1 = math.sqrt(x1**2 + y1**2)
@@ -268,8 +276,9 @@ class problema_grafica_grafo(blocales.Problema):
         @return: Un número.
 
         """
+        #angulo minimo que puede tomar un vertice
         ang_min = math.pi/6
-        ang_max =  3*math.pi/4
+
         total = 0.0
         for (a1, a2) in itertools.combinations(self.aristas, 2):
             #Se revisa si dos aristas comparten un nodo en común.
@@ -284,6 +293,7 @@ class problema_grafica_grafo(blocales.Problema):
 
             angulo = self.calcula_angulo((x1,y1),(x2,y2),(x3,y3))
 
+            #si el angulo es menor que el minimo se penaliza
             if angulo < ang_min:
                 total += 1.0 - angulo/ang_min
 
