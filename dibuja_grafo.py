@@ -12,14 +12,14 @@ gráfos por computadora pero da una idea de la utilidad de los métodos de
 optimización en un problema divertido.
 
 Para realizar este problema es necesario contar con el módulo Pillow
-instalado (en Anaconda se instala por default. Si no se encuentr instalado, 
+instalado (en Anaconda se instala por default. Si no se encuentra instalado, 
 desde la termnal se puede instalar utilizando
 
 $pip install pillow
 
 """
 
-__author__ = 'Escribe aquí tu nombre'
+__author__ = 'Erick Fernando Lopez Fimbres.'
 
 import blocales
 import random
@@ -65,7 +65,7 @@ class problema_grafica_grafo(blocales.Problema):
 
            s = [s(1), s(2),..., s(2*len(vertices))],
  
-        en donde s(i) \in {10, 11, ..., self.dim - 10} es la posición
+        en donde s(i) \dim {10, 11, ..., self.dim - 10} es la posición
         en x del nodo i/2 si i es par, o la posicion en y
         del nodo (i-1)/2 si i es non y(osease las parejas (x,y)).
 
@@ -78,7 +78,7 @@ class problema_grafica_grafo(blocales.Problema):
 
     def vecino_aleatorio(self, estado, dmax=10):
         """
-        Encuentra un vecino en forma aleatoria. En estea primera
+        Encuentra un vecino en forma aleatoria. En esta primera
         versión lo que hacemos es tomar un valor aleatorio, y
         sumarle o restarle x pixeles al azar.
 
@@ -98,6 +98,7 @@ class problema_grafica_grafo(blocales.Problema):
         vecino[i] = max(10,
                         min(self.dim - 10,
                             vecino[i] + random.randint(-dmax,  dmax)))
+        print(vecino)
         return tuple(vecino)
 
         #######################################################################
