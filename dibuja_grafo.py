@@ -12,7 +12,7 @@ gráfos por computadora pero da una idea de la utilidad de los métodos de
 optimización en un problema divertido.
 
 Para realizar este problema es necesario contar con el módulo Pillow
-instalado (en Anaconda se instala por default. Si no se encuentr instalado, 
+instalado (en Anaconda se instala por default. Si no se encuentr instalado,
 desde la termnal se puede instalar utilizando
 
 $pip install pillow
@@ -64,7 +64,7 @@ class problema_grafica_grafo(blocales.Problema):
         Un estado para este problema de define como:
 
            s = [s(1), s(2),..., s(2*len(vertices))],
- 
+
         en donde s(i) \in {10, 11, ..., self.dim - 10} es la posición
         en x del nodo i/2 si i es par, o la posicion en y
         del nodo (i-1)/2 si i es non y(osease las parejas (x,y)).
@@ -125,8 +125,8 @@ class problema_grafica_grafo(blocales.Problema):
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
         K1 = 1.0
-        K2 = 0.0
-        K3 = 0.0
+        K2 = 0.1
+        K3 = 0.01
         K4 = 0.0
 
         # Genera un diccionario con el estado y la posición
@@ -248,6 +248,7 @@ class problema_grafica_grafo(blocales.Problema):
         @return: Un número.
 
         """
+        peso = 0
         #######################################################################
         #                          20 PUNTOS
         #######################################################################
@@ -260,7 +261,25 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+        for (aristaA, aristaB) in itertools.combinations(self.aristas, 2):
+
+            # Encuentra los valores de (x0A,y0A), (xFA, yFA) para los
+            # vertices de una arista y los valores (x0B,y0B), (x0B,
+            # y0B) para los vertices de la otra arista
+            (x0A, y0A) = estado_dic[aristaA[0]]
+            (xFA, yFA) = estado_dic[aristaA[1]]
+            (x0B, y0B) = estado_dic[aristaB[0]]
+            (xFB, yFB) = estado_dic[aristaB[1]]
+            try:
+                pendienteA = (y0A - yFA)/(x0A - xFA)
+                pendienteB = (y0B - yFB)/(x0B - xFB)
+                angulo = abs(math.degrees(math.atan((pendienteB-pendienteA)/(1+(pendienteA*pendienteB)))))
+            except Exception:
+                continue
+            if angulo < 30.0 and angulo != 0:
+                peso += .5*(30-angulo)
+
+        return peso
 
     def criterio_propio(self, estado_dic):
         """
