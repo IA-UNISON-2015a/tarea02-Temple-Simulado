@@ -78,7 +78,7 @@ class problema_grafica_grafo(blocales.Problema):
 
     def vecino_aleatorio(self, estado, dmax=10):
         """
-        Encuentra un vecino en forma aleatoria. En estea primera
+        Encuentra un vecino en forma aleatoria. En esta primera
         versión lo que hacemos es tomar un valor aleatorio, y
         sumarle o restarle x pixeles al azar.
 
@@ -107,6 +107,8 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # Propon una manera alternativa de vecino_aleatorio y muestra que
         # con tu propuesta se obtienen resultados mejores o en menor tiempo
+        
+       
 
     def costo(self, estado):
         """
@@ -125,8 +127,8 @@ class problema_grafica_grafo(blocales.Problema):
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
         K1 = 1.0
-        K2 = 0.0
-        K3 = 0.0
+        K2 = 2.0
+        K3 = 3.0
         K4 = 0.0
 
         # Genera un diccionario con el estado y la posición
@@ -260,8 +262,36 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
-
+        
+        suma = 0
+        lower = math.pi/4
+        upper = math.pi/2
+        #calcular el ángulo en cada vértice (recorrer todos los vértices)
+        for vert in self.vertices:
+            #encontramos los vértices con los que se forman las aristas con vert.
+            vert_op = [item[1] for item in self.aristas if item[0] == vert]
+            (x1,y1) = estado_dic[vert]
+            
+            for (v1, v2) in itertools.combinations(vert_op, 2):
+                
+                (x2, y2), (x3, y3) = estado_dic[v1], estado_dic[v2]
+                
+                a = distancia(x2,y2,x3,y3)        
+                b = distancia(x1,y1,x2,y2)
+                c = distancia(x1,y1,x3,y3)
+                
+                
+                if b is not 0 and c is not 0:
+                    angle = math.acos((a*a - b*b - c*c)/(-2*b*c)) #en radianes
+                    #los que son menores a pi/6 se penalizan, sumando a la
+                    # penalización la diferencia entre el ángulo y pi/6
+                    suma+= min(abs(lower-angle), abs(angle-upper))
+                else: #de haber puntos encimados
+                    suma+=math.pi
+            
+        return suma
+            
+        
     def criterio_propio(self, estado_dic):
         """
         Implementa y comenta correctamente un criterio de costo que sea
@@ -287,6 +317,8 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
+        
+        
         return 0
 
     def estado2dic(self, estado):
@@ -331,7 +363,11 @@ class problema_grafica_grafo(blocales.Problema):
 
         imagen.save(filename)
 
-
+        
+def distancia (x1,y1,x2,y2):
+        
+        return math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
+    
 def main():
     """
     La función principal
