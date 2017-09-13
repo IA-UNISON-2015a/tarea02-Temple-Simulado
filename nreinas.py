@@ -73,8 +73,26 @@ class ProblemaNreinas(blocales.Problema):
         @return: Un valor numérico, mientras más pequeño, mejor es el estado.
 
         """
-        return sum([1 for (i, j) in combinations(range(self.n), 2)
-                    if abs(estado[i] - estado[j]) == abs(i - j)])
+
+        rows = [0] * self.n
+        cols = [0] * self.n
+        fdiags = [0] * (self.n * 2 - 1)
+        bdiags = [0] * (self.n * 2 - 1)
+
+        for x, y in enumerate(estado):
+            rows[y] += 1
+            cols[x] += 1
+
+            fdiag = self.n - 1 + y - x
+            bdiag = x + y
+
+            fdiags[fdiag] += 1
+            bdiags[bdiag] += 1
+
+        return (sum(i for i in rows if i > 1) +
+                sum(i for i in cols if i > 1) +
+                sum(i for i in fdiags if i > 1) +
+                sum(i for i in bdiags if i > 1))
 
 
 def prueba_descenso_colinas(problema=ProblemaNreinas(8), repeticiones=10):
