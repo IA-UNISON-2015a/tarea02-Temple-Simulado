@@ -96,7 +96,7 @@ class problema_grafica_grafo(blocales.Problema):
         """
         vecino = list(estado)
         #se generan dos numeros aleatorios para la dirección x y y
-        x,y = random.randint(-20,20),random.randint(-20,20)
+        x,y = random.randint(-30,30),random.randint(-30,30)
         #se genera un número aleatorio que representa un vertice
         n = random.randint(0, len(self.vertices) - 1)
         #se suman los numeros aleatorios en dirección x y derección y
@@ -316,8 +316,8 @@ class problema_grafica_grafo(blocales.Problema):
 
     def criterio_propio(self, estado_dic):
         """
-        Implementa y comenta correctamente un criterio de costo que sea
-        conveniente para que un grafo luzca bien.
+        Mide que tan centrado está el grafo en la imagen sobre la que se dibuja
+        en función de el punto medio de todos los puntos.
 
         @param estado_dic: Diccionario cuyas llaves son los vértices
                            del grafo y cuyos valores es una tupla con
