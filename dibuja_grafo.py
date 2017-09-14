@@ -108,6 +108,34 @@ class problema_grafica_grafo(blocales.Problema):
         # Propon una manera alternativa de vecino_aleatorio y muestra que
         # con tu propuesta se obtienen resultados mejores o en menor tiempo
         
+        #el vecino más próximo sera alejar o acercar uno de los vértices del centro 
+        # de la pantalla, de tal forma que los puntos vayan quedando en un círculo de
+        #radio r.
+        centx, centy = (self.dim-20)/2
+        r = 150
+        
+        vecino = list(estado)
+        #escogemos una cordenada que corresponderá a un vértice y se mueve en x o en y
+        i = random.randint(0, len(vecino) - 1)
+        vecino[i] = max(10,
+                        min(self.dim - 10,
+                            vecino[i] + random.randint(-dmax,  dmax)))
+        
+        #ahora se coloca dentro del círculo
+        dx = abs(centx - vecino[i]) if i%2 is 0  else abs(centx - vecino[i-1])
+        dy = abs(centy - vecino[i]) if i%2 is 1  else abs(centy - vecino[i+1])
+        
+        dh = sqrt(dx**2 + dy**2)
+        
+        #casos especiales en que los ángulos del vertice sean multiplos de 90°
+        
+        #otro caso
+        dhp = abs(r-dh)
+        dxp, dyp = dhp*dx/dh, dhp* dy/dh
+        
+        
+        
+        return tuple(vecino)
        
 
     def costo(self, estado):
