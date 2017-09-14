@@ -124,10 +124,10 @@ class problema_grafica_grafo(blocales.Problema):
 
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
-        K1 = 1.0
-        K2 = 0.1
-        K3 = 0.01
-        K4 = 0.0
+        K1 = 0.1
+        K2 = 0.4
+        K3 = 0.2
+        K4 = 0.3
 
         # Genera un diccionario con el estado y la posición
         estado_dic = self.estado2dic(estado)
@@ -250,15 +250,19 @@ class problema_grafica_grafo(blocales.Problema):
         """
         peso = 0
         #######################################################################
-        #                          20 PUNTOS
+        #                          20 1 PUNTOS
         #######################################################################
         # Agrega el método que considere el angulo entre aristas de
         # cada vertice. Dale diferente peso a cada criterio hasta
         # lograr que el sistema realice gráficas "bonitas"
         #
         # ¿Que valores de diste a K1, K2 y K3 respectivamente?
-        #
-        #
+        # En mi opinion una de las cosas mas importantes es que no haya
+        # demasiado cruzamiento de lineas en un grafo para que sea mas entendible
+        # y al mismo tiempo diria que tienen que tener una buena separacion
+        # para que estos sean mas faciles de apreciar, tambien con el criterio
+        # que yo formule los nodos se distribuyen mejor en todo el grafo
+        # ya que este es un criterio de simetria
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
         for (aristaA, aristaB) in itertools.combinations(self.aristas, 2):
@@ -283,9 +287,9 @@ class problema_grafica_grafo(blocales.Problema):
 
     def criterio_propio(self, estado_dic):
         """
-        Implementa y comenta correctamente un criterio de costo que sea
-        conveniente para que un grafo luzca bien.
-
+        A partir de una posicion "estado", devuelve una penalizacion
+        por la diferencia entre puntos en los ejes de simetria que atraviesan
+        justo a la mitad al grafo
         @param estado_dic: Diccionario cuyas llaves son los vértices
                            del grafo y cuyos valores es una tupla con
                            la posición (x, y) de ese vértice en el
@@ -306,7 +310,23 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+        #
+        #
+        #
+        #
+        #
+        #
+        #
+        #
+        #
+        #
+        simetria = self.dim/2
+        horizontal,vertical = 0,0
+        for vertice in self.vertices:
+            x,y = estado_dic[vertice]
+            horizontal += 1 if x>simetria else -1
+            vertical += 1 if y>simetria else -1
+        return (abs(horizontal)+abs(vertical))
 
     def estado2dic(self, estado):
         """
@@ -358,18 +378,22 @@ def main():
     """
 
     # Vamos a definir un grafo sencillo
-    vertices_sencillo = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
-    aristas_sencillo = [('B', 'G'),
-                        ('E', 'F'),
-                        ('H', 'E'),
-                        ('D', 'B'),
-                        ('H', 'G'),
+    vertices_sencillo = ['A', 'B', 'C', 'D', 'E', 'F']
+    aristas_sencillo = [('A', 'B'),
+                        ('A', 'C'),
+                        ('A', 'D'),
                         ('A', 'E'),
+                        ('A', 'F'),
+                        ('B', 'C'),
+                        ('B', 'D'),
+                        ('B', 'E'),
+                        ('B', 'F'),
+                        ('C', 'D'),
+                        ('C', 'E'),
                         ('C', 'F'),
-                        ('H', 'B'),
-                        ('F', 'A'),
-                        ('C', 'B'),
-                        ('H', 'F')]
+                        ('D', 'E'),
+                        ('D', 'F'),
+                        ('E', 'F'),]
     dimension = 400
 
     # Y vamos a hacer un dibujo del grafo sin decirle como hacer para
