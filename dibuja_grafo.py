@@ -26,7 +26,6 @@ import random
 import itertools
 import math
 import time
-from heapq import heappush, heappop
 from PIL import Image, ImageDraw
 
 
@@ -57,6 +56,7 @@ class problema_grafica_grafo(blocales.Problema):
         self.vertices = vertices
         self.aristas = aristas
         self.dim = dimension_imagen
+        estado = self.estado_aleatorio()
 
     def estado_aleatorio(self):
         """
@@ -137,9 +137,9 @@ class problema_grafica_grafo(blocales.Problema):
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
         K1 = 0.05
-        K2 = 0.7
-        K3 = 0.7
-        K4 = 0.0
+        K2 = 2.5
+        K3 = 0.5
+        K4 = 3.0
 
         # Genera un diccionario con el estado y la posición
         estado_dic = self.estado2dic(estado)
@@ -234,19 +234,15 @@ class problema_grafica_grafo(blocales.Problema):
 
         """
         #se calcula la distancia minima en función del número de vertices y la dimension de la imagen.
-        min_dist = int(self.dim/len(self.vertices))
+        min_dist = int(self.dim/len(self.vertices))*2
         total = 0
         for (v1, v2) in itertools.combinations(self.vertices, 2):
             # Calcula la distancia entre dos vertices
             (x1, y1), (x2, y2) = estado_dic[v1], estado_dic[v2]
-            #se utiliza la distancia tanto en x como en y, para dar una mayor disperción a los puntos
-            distx = math.fabs(x1 - x2)
-            disty = math.fabs(y1 - y2)
+            dist = math.sqrt((x1 - x2)**2 + (y1 - y2)**2)
             # Penaliza la distancia si es menor a min_dist
-            if distx < min_dist:
-                total += (1.0 - (distx / min_dist))
-            if disty < min_dist:
-                total += (1.0 - (disty / min_dist))
+            if dist < min_dist:
+                total += (1.0 - (dist / min_dist))
         return total
 
     def calcula_angulo(self,p1,p2,p3):
@@ -254,10 +250,13 @@ class problema_grafica_grafo(blocales.Problema):
         #el angulo que se calcula es sobre el primer punto que se resive
         (x1,y1) = (p2[0] - p1[0]),(p2[1] - p1[1])
         (x2,y2) = (p3[0] - p1[0]),(p3[1] - p1[1])
-        norma1 = math.sqrt(x1**2 + y1**2)
-        norma2 = math.sqrt(x2**2 + y2**2)
+        norma1 = math.sqrt(x1*x1 + y1*y1)
+        norma2 = math.sqrt(x2*x2 + y2*y2)
         ppunto = x1*x2 + y1*y2
-        angulo = math.acos(ppunto/(norma1*norma2))
+        elem = round(ppunto/(norma1*norma2),4)
+        #print(elem)
+        #print(x1,y1,x2,y2)
+        angulo = math.acos(elem)
         return angulo
 
     def angulo_aristas(self, estado_dic):
@@ -283,19 +282,19 @@ class problema_grafica_grafo(blocales.Problema):
         for (a1, a2) in itertools.combinations(self.aristas, 2):
             #Se revisa si dos aristas comparten un nodo en común.
             #Si no comparten se hace un continue.
-            if not a1[0] in a2 or not a1[1] in a2:
+            if not a1[0] in a2 and not a1[1] in a2:
                 continue
 
             #Se sacan las coordenadas de los tres vertices en orden para calcular el angulo entre ellos
             #(x1,y1) es el vertice sobre el cual se calcula el águlo.
-            (x1, y1),(x2,y2) = estado_dic[a1[0]],estado_dic[a1[1]] if a1[0] in a2 else estado_dic[a1[1]],estado_dic[a1[0]]
-            (x3, y3) = estado_dic[a2[0]] if not a2[0] in a1 else estado_dic[a2[1]]
+            (p1,p2) = (estado_dic[a1[0]],estado_dic[a1[1]]) if a1[0] in a2 else (estado_dic[a1[1]],estado_dic[a1[0]])
+            p3 = estado_dic[a2[0]] if not a2[0] in a1 else estado_dic[a2[1]]
 
-            angulo = self.calcula_angulo((x1,y1),(x2,y2),(x3,y3))
-
-            #si el angulo es menor que el minimo se penaliza
-            if angulo < ang_min:
-                total += 1.0 - angulo/ang_min
+            if p1 != p2 and p1 != p3 and p2!=p3:
+                angulo = self.calcula_angulo(p1,p2,p3)
+                #si el angulo es menor que el minimo se penaliza
+                if angulo < ang_min:
+                    total += 1.0 - angulo/ang_min
 
         return total
 
@@ -338,7 +337,13 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+        pmed_pantallax,pmed_pantallay = self.dim/2,self.dim/2
+        minx,miny = min(estado_dic[x][0] for x in self.vertices),min(estado_dic[x][1] for x in self.vertices)
+        maxx,maxy = max(estado_dic[x][0] for x in self.vertices),max(estado_dic[x][1] for x in self.vertices)
+        xmed,ymed = (maxx+minx)/2, (maxy+miny)/2
+
+        dist = math.sqrt((xmed - pmed_pantallax) ** 2 + (ymed - pmed_pantallay) ** 2)
+        return (1.0 - 1/dist) if dist > 0 else 0
 
     def estado2dic(self, estado):
         """
@@ -411,7 +416,7 @@ def main():
     grafo_sencillo = problema_grafica_grafo(vertices_sencillo,
                                             aristas_sencillo,
                                             dimension)
-
+    
     estado_aleatorio = grafo_sencillo.estado_aleatorio()
     costo_inicial = grafo_sencillo.costo(estado_aleatorio)
     grafo_sencillo.dibuja_grafo(estado_aleatorio, "prueba_inicial.gif")
@@ -419,7 +424,7 @@ def main():
 
     # Ahora vamos a encontrar donde deben de estar los puntos
     t_inicial = time.time()
-    solucion = blocales.temple_simulado(grafo_sencillo,calendarizadorNewton(2000,.001),.01)
+    solucion = blocales.temple_simulado(grafo_sencillo,calendarizador(150))
     t_final = time.time()
     costo_final = grafo_sencillo.costo(solucion)
 
