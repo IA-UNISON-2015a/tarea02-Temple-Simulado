@@ -73,6 +73,7 @@ class problema_grafica_grafo(blocales.Problema):
                  cada vertice en la imagen.
 
         """
+        #genera 
         return tuple(random.randint(10, self.dim - 10) for _ in
                      range(2 * len(self.vertices)))
 
@@ -95,10 +96,9 @@ class problema_grafica_grafo(blocales.Problema):
         """
         vecino = list(estado)
         i = random.randint(0, len(vecino) - 1)
-        vecino[i] = max(10,
-                        min(self.dim - 10,
+        
+        vecino[i] = max(10,min(self.dim - 10,
                             vecino[i] + random.randint(-dmax,  dmax)))
-        print(vecino)
         return tuple(vecino)
 
         #######################################################################
@@ -108,7 +108,9 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # Propon una manera alternativa de vecino_aleatorio y muestra que
         # con tu propuesta se obtienen resultados mejores o en menor tiempo
-
+    def vecino_aleatorio_propio(self, estado, dmax=10):
+        return None
+    
     def costo(self, estado):
         """
         Encuentra el costo de un estado. En principio el costo de un estado
@@ -126,9 +128,9 @@ class problema_grafica_grafo(blocales.Problema):
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
         K1 = 1.0
-        K2 = 0.0
-        K3 = 0.0
-        K4 = 0.0
+        K2 = 2.0
+        K3 = 1.0
+        K4 = 1.0
 
         # Genera un diccionario con el estado y la posición
         estado_dic = self.estado2dic(estado)
@@ -198,8 +200,10 @@ class problema_grafica_grafo(blocales.Problema):
             # significa que se cruzan
             puntoA = ((xFB - x0B) * (y0A - y0B) -
                       (yFB - y0B) * (x0A - x0B)) / den
+            
             puntoB = ((xFA - x0A) * (y0A - y0B) -
                       (yFA - y0A) * (x0A - x0B)) / den
+            
             if 0 < puntoA < 1 and 0 < puntoB < 1:
                 total += 1
         return total
@@ -249,19 +253,39 @@ class problema_grafica_grafo(blocales.Problema):
         @return: Un número.
 
         """
+        
         #######################################################################
         #                          20 PUNTOS
         #######################################################################
+        total = 0
+        #recorremos los vertices
+        for v in self.vertices:
+            #juntamos las aristas si hay una incidencia del vertice en el que estamos
+            aris = [ar for ar in self.aristas if v in ar]
+            #generamos combinaciones de aristas de un vertice[v] 
+            for (aristaA, aristaB) in itertools.combinations(aris, 2):
+                (x0A, y0A) = estado_dic[aristaA[0]]
+                (xFA, yFA) = estado_dic[aristaA[1]]
+                (x0B, y0B) = estado_dic[aristaB[0]]
+                (xFB, yFB) = estado_dic[aristaB[1]]
+                try:
+                    #print(estado_dic)
+                    m1=(yFA-y0A)/(xFA-x0A)
+                    m2=(yFB-y0B)/(xFB-x0B)
+                    angulo=(math.degrees(abs(math.atan(((m2-m1)/(1+(m1*m2)))))))
+                    print(angulo)
+                    if(angulo <= 30):
+                        total += 1-((angulo)/31)
+                except ZeroDivisionError:
+                    print("Division sobre 0")
+            
         # Agrega el método que considere el angulo entre aristas de
         # cada vertice. Dale diferente peso a cada criterio hasta
         # lograr que el sistema realice gráficas "bonitas"
         #
         # ¿Que valores de diste a K1, K2 y K3 respectivamente?
         #
-        #
-        # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
-        #
-        return 0
+        return total
 
     def criterio_propio(self, estado_dic):
         """
@@ -300,6 +324,7 @@ class problema_grafica_grafo(blocales.Problema):
                  arista y su valor es una tupla (x, y)
 
         """
+        #crea el diccionario (las listas los convierte a un diccionario)
         return {self.vertices[i]: (estado[2 * i], estado[2 * i + 1])
                 for i in range(len(self.vertices))}
 
@@ -340,7 +365,7 @@ def main():
     """
 
     # Vamos a definir un grafo sencillo
-    vertices_sencillo = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+    """vertices_sencillo = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     aristas_sencillo = [('B', 'G'),
                         ('E', 'F'),
                         ('H', 'E'),
@@ -352,6 +377,10 @@ def main():
                         ('F', 'A'),
                         ('C', 'B'),
                         ('H', 'F')]
+    """
+    vertices_sencillo = ['A', 'B', 'C']
+    aristas_sencillo = [('A', 'B'),
+                        ('C', 'A')]
     dimension = 400
 
     # Y vamos a hacer un dibujo del grafo sin decirle como hacer para
