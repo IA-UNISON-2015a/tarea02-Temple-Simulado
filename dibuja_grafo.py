@@ -135,7 +135,7 @@ class problema_grafica_grafo(blocales.Problema):
         """
 
         # Inicializa fáctores lineales para los criterios más importantes
-        # (default solo cuanta el criterio 1)
+        # Pesos para los elementos de la función de costo
         K1 = 0.05
         K2 = 2.5
         K3 = 0.5
@@ -234,7 +234,7 @@ class problema_grafica_grafo(blocales.Problema):
 
         """
         #se calcula la distancia minima en función del número de vertices y la dimension de la imagen.
-        min_dist = int(self.dim/len(self.vertices))*2
+        min_dist = self.dim/len(self.vertices)
         total = 0
         for (v1, v2) in itertools.combinations(self.vertices, 2):
             # Calcula la distancia entre dos vertices
@@ -248,14 +248,18 @@ class problema_grafica_grafo(blocales.Problema):
     def calcula_angulo(self,p1,p2,p3):
         #Metodo que resive tres puntos y regresa el ángulo entre ellos.
         #el angulo que se calcula es sobre el primer punto que se resive
+
+        #se trasladan los puntos p2 y p3 con respecto a p1 para formar dos vectores
         (x1,y1) = (p2[0] - p1[0]),(p2[1] - p1[1])
         (x2,y2) = (p3[0] - p1[0]),(p3[1] - p1[1])
+
+        #se calcula la norma y el producto punto de los dos vectores.
         norma1 = math.sqrt(x1*x1 + y1*y1)
         norma2 = math.sqrt(x2*x2 + y2*y2)
         ppunto = x1*x2 + y1*y2
+
+        #se calcula el angulo entre los dos vectores.
         elem = round(ppunto/(norma1*norma2),4)
-        #print(elem)
-        #print(x1,y1,x2,y2)
         angulo = math.acos(elem)
         return angulo
 
@@ -275,29 +279,6 @@ class problema_grafica_grafo(blocales.Problema):
         @return: Un número.
 
         """
-        #angulo minimo que puede tomar un vertice
-        ang_min = math.pi/6
-
-        total = 0.0
-        for (a1, a2) in itertools.combinations(self.aristas, 2):
-            #Se revisa si dos aristas comparten un nodo en común.
-            #Si no comparten se hace un continue.
-            if not a1[0] in a2 and not a1[1] in a2:
-                continue
-
-            #Se sacan las coordenadas de los tres vertices en orden para calcular el angulo entre ellos
-            #(x1,y1) es el vertice sobre el cual se calcula el águlo.
-            (p1,p2) = (estado_dic[a1[0]],estado_dic[a1[1]]) if a1[0] in a2 else (estado_dic[a1[1]],estado_dic[a1[0]])
-            p3 = estado_dic[a2[0]] if not a2[0] in a1 else estado_dic[a2[1]]
-
-            if p1 != p2 and p1 != p3 and p2!=p3:
-                angulo = self.calcula_angulo(p1,p2,p3)
-                #si el angulo es menor que el minimo se penaliza
-                if angulo < ang_min:
-                    total += 1.0 - angulo/ang_min
-
-        return total
-
         #######################################################################
         #                          20 PUNTOS
         #######################################################################
@@ -309,8 +290,29 @@ class problema_grafica_grafo(blocales.Problema):
         #
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
-        #
-        return 0
+        #angulo minimo que puede tomar un vertice
+        ang_min = math.pi/6
+
+        total = 0.0
+        for (a1, a2) in itertools.combinations(self.aristas, 2):
+            #Se revisa si dos aristas comparten un nodo en común.
+            #Si no comparten se hace un continue.
+            if not a1[0] in a2 and not a1[1] in a2:
+                continue
+
+            #Se sacan las coordenadas de los tres vertices en orden para calcular el angulo entre ellos
+            #p1 es el vertice sobre el cual se calcula el águlo.
+            (p1,p2) = (estado_dic[a1[0]],estado_dic[a1[1]]) if a1[0] in a2 else (estado_dic[a1[1]],estado_dic[a1[0]])
+            p3 = estado_dic[a2[0]] if not a2[0] in a1 else estado_dic[a2[1]]
+
+            #Se revisa que los puntos no estén encimados para evitar divisiones entre 0.
+            if p1 != p2 and p1 != p3 and p2!=p3:
+                angulo = self.calcula_angulo(p1,p2,p3)
+                #si el angulo es menor que el minimo se penaliza.
+                if angulo < ang_min:
+                    total += 1.0 - angulo/ang_min
+
+        return total
 
     def criterio_propio(self, estado_dic):
         """
@@ -337,12 +339,19 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
+
+        #Se calcula el punto medio de la imagen donde se dibuja el grafo
         pmed_pantallax,pmed_pantallay = self.dim/2,self.dim/2
+
+        #Se obtienen los minimos y maximos del grafo en x y en y y se calcula el punto medio del grafo.
         minx,miny = min(estado_dic[x][0] for x in self.vertices),min(estado_dic[x][1] for x in self.vertices)
         maxx,maxy = max(estado_dic[x][0] for x in self.vertices),max(estado_dic[x][1] for x in self.vertices)
         xmed,ymed = (maxx+minx)/2, (maxy+miny)/2
 
+        #se calcula la distancia de el punto medio a la mitad de la imagen
         dist = math.sqrt((xmed - pmed_pantallax) ** 2 + (ymed - pmed_pantallay) ** 2)
+
+        #se penaliza tomando en cuanta la distancia al centro
         return (1.0 - 1/dist) if dist > 0 else 0
 
     def estado2dic(self, estado):
