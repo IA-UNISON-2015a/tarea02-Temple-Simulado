@@ -12,8 +12,8 @@ __author__ = 'juliowaissman'
 
 from itertools import takewhile
 from math import exp
-from math import log2
 from random import random
+from functools import wraps
 
 
 class Problema(object):
@@ -70,6 +70,25 @@ class Problema(object):
         raise NotImplementedError("Este metodo debe ser implementado")
 
 
+def reinicios_aleatorios(algoritmo, repeticiones=10):
+    """ Decorador para reinicios aleatorios """
+    @wraps(algoritmo)
+    def wrapped(problema):
+        estado_min = problema.estado_aleatorio()
+        costo_min = problema.costo(estado_min)
+        for _ in range(repeticiones):
+            solucion = algoritmo(problema)
+            costo = problema.costo(solucion)
+
+            if costo < costo_min:
+                estado_min = solucion
+                costo_min = costo
+
+        return estado_min
+
+    return wrapped
+
+
 def descenso_colinas(problema, maxit=1e6):
     """
     Busqueda local por descenso de colinas.
@@ -106,9 +125,9 @@ def temple_simulado(problema, calendarizador=None, tol=0.001):
     if calendarizador is None:
         costos = [problema.costo(problema.estado_aleatorio())
                   for _ in range(10 * len(problema.estado_aleatorio()))]
-        minimo,  maximo = min(costos), max(costos)
+        minimo, maximo = min(costos), max(costos)
         T_ini = 2 * (maximo - minimo)
-        calendarizador = (T_ini/(1 + i) for i in range(int(1e10)))
+        calendarizador = (T_ini / (1 + i) for i in range(int(1e10)))
 
     estado = problema.estado_aleatorio()
     costo = problema.costo(estado)
