@@ -94,10 +94,9 @@ class problema_grafica_grafo(blocales.Problema):
 
         """
         vecino = list(estado)
-        i = random.randint(0, len(vecino) - 1)
-        vecino[i] = max(10,
-                        min(self.dim - 10,
-                            vecino[i] + random.randint(-dmax,  dmax)))
+        i = random.randint(0, (len(vecino)/2)-1)
+        vecino[i*2] = max(10,min(self.dim - 10,vecino[i*2] + random.randint(-dmax,  dmax)))
+        vecino[(i*2)+1] = max(10,min(self.dim - 10,vecino[(i*2)+1] + random.randint(-dmax,  dmax)))
         return tuple(vecino)
 
         #######################################################################
@@ -107,6 +106,11 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # Propon una manera alternativa de vecino_aleatorio y muestra que
         # con tu propuesta se obtienen resultados mejores o en menor tiempo
+        #
+        # Este vecino es bastante mejor que el anterior, aunque solamente tuvo
+        # un pequeno cambio el cual fue que hiciera cambio no solo en una direccion
+        # al azar si no que moviera por completo un vertice a otro punto en
+        # espacio
 
     def costo(self, estado):
         """
@@ -398,6 +402,15 @@ def main():
 
     # Y vamos a hacer un dibujo del grafo sin decirle como hacer para
     # ajustarlo.
+    def calendarizador_logaritmico(Temp,k=.05):
+        while True:
+            Temp=Temp/math.log(k+1);
+            yield Temp;
+    def calendarizador_kirkpatrick(temp,alpha=0.9999):
+        T=temp
+        while True:
+            yield T
+            T=alpha*T
     grafo_sencillo = problema_grafica_grafo(vertices_sencillo,
                                             aristas_sencillo,
                                             dimension)
@@ -409,7 +422,7 @@ def main():
 
     # Ahora vamos a encontrar donde deben de estar los puntos
     t_inicial = time.time()
-    solucion = blocales.temple_simulado(grafo_sencillo)
+    solucion = blocales.temple_simulado(grafo_sencillo,calendarizador_kirkpatrick(10),.001)
     t_final = time.time()
     costo_final = grafo_sencillo.costo(solucion)
 
@@ -438,7 +451,15 @@ def main():
     # Escribe aqui tus conclusiones
     #
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
-    #
+    # utilizando
+    # utilizando el calendarizador de kirkpatrick es mucho mas rapido que el
+    # estar utilizando el calendarizador por default, tambien se tomo en cuenta
+    # el calendarizador logaritmico pero no es tan eficiente como kirkpatrick
+    # que rapidamente baja su temperatura y luego lentamente sigue enfriando
+    # hasta llegar a 0, tambien el bajar la tolerancia ayudo ya que nuca se consiguen
+    # grafos perfectos
+
+
 
 
 if __name__ == '__main__':
