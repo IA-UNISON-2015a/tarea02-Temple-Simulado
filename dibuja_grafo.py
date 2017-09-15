@@ -93,13 +93,14 @@ class problema_grafica_grafo(blocales.Problema):
         @return: Una tupla con un estado vecino al estado de entrada.
 
         """
+        """   
         vecino = list(estado)
         i = random.randint(0, len(vecino) - 1)
         vecino[i] = max(10,
                         min(self.dim - 10,
                             vecino[i] + random.randint(-dmax,  dmax)))
         return tuple(vecino)
-
+        """
         #######################################################################
         #                          20 PUNTOS
         #######################################################################
@@ -108,10 +109,12 @@ class problema_grafica_grafo(blocales.Problema):
         # Propon una manera alternativa de vecino_aleatorio y muestra que
         # con tu propuesta se obtienen resultados mejores o en menor tiempo
         
-        #el vecino más próximo sera alejar o acercar uno de los vértices del centro 
-        # de la pantalla, de tal forma que los puntos vayan quedando en un círculo de
-        #radio r.
-        centx, centy = (self.dim-20)/2
+        # calculé el vecino, primero modificando aleatoriamente una de las
+        # coordenadas de un vértice como en el ejemplo, después acercando/alejando
+        # a este vértice de tal forma que quede en la circunferencia con centro de la
+        # pantalla y radio= r
+        
+        centx = centy = int(self.dim-20)/2
         r = 150
         
         vecino = list(estado)
@@ -122,19 +125,34 @@ class problema_grafica_grafo(blocales.Problema):
                             vecino[i] + random.randint(-dmax,  dmax)))
         
         #ahora se coloca dentro del círculo
-        dx = abs(centx - vecino[i]) if i%2 is 0  else abs(centx - vecino[i-1])
-        dy = abs(centy - vecino[i]) if i%2 is 1  else abs(centy - vecino[i+1])
+        x = i  if i%2 is 0  else i-1
+        y = i if i%2 is 1  else i+1
         
-        dh = sqrt(dx**2 + dy**2)
+        dx = centx - vecino[x]
+        dy = centy - vecino[y]
+
+        dh = math.sqrt(dx**2 + dy**2)
         
         #casos especiales en que los ángulos del vertice sean multiplos de 90°
         
         #otro caso
         dhp = abs(r-dh)
-        dxp, dyp = dhp*dx/dh, dhp* dy/dh
+        dxp, dyp = int(dhp*abs(dx)/dh), int(dhp*abs(dy)/dh)
         
+        #cuatro casos dependiendo del cuadrante del círculo en el que se
+        # encuentra el vértice
+        if (dx<0 and r-dh>0) or (dx>0 and r-dh<0):
+            vecino[x]= vecino[x] + dxp
+        else:
+            vecino[x]= vecino[x] - dxp
+
         
-        
+        if (dy>0 and r-dh<0) or (dy<0 and r-dh>0):
+            vecino[y]= vecino[y] + dyp
+        else:
+            vecino[y]= vecino[y] - dyp
+            
+         
         return tuple(vecino)
        
 
@@ -391,7 +409,7 @@ class problema_grafica_grafo(blocales.Problema):
 
         imagen.save(filename)
 
-        
+        #pintar círculo para ver las proximidad
 def distancia (x1,y1,x2,y2):
         
         return math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
