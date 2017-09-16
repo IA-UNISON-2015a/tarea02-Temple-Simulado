@@ -294,7 +294,7 @@ class problema_grafica_grafo(blocales.Problema):
         #######################################################################
         total = 0
         #recorremos los vertices
-        angulo=0
+        angulo=30
         for v in self.vertices:
             #juntamos las aristas si hay una incidencia del vertice en el que estamos
             aris = [ar for ar in self.aristas if v in ar]
@@ -310,8 +310,8 @@ class problema_grafica_grafo(blocales.Problema):
                     m2=(yFB-y0B)/(xFB-x0B)
                     angulo=(math.degrees(abs(math.atan(((m2-m1)/(1+(m1*m2)))))))
                     #print(angulo)
-                    if(angulo <= 30):
-                        total += 1-((angulo)/31)
+                    if(angulo < 30):
+                        total += 1-((angulo)/30)
                 except ZeroDivisionError:
                     pass
                     """para que no salga el mensaje de division muchas veces en pantalla
@@ -487,7 +487,7 @@ def main():
     encontrar la solucion del grafo.
     Ahora con la calendarizacion exponencial no pasa de los 2 -3 minutos
     en promedio.
-    
+    Y al cambiar la funcion de vecino aleatorio se redujo a segundos!!.
     """
     # ¿Que encuentras en los resultados?, ¿Cual es el criterio mas importante?
     """
