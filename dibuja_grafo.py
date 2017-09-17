@@ -109,7 +109,7 @@ class problema_grafica_grafo(blocales.Problema):
         # (default solo cuanta el criterio 1)
         K1 = 1.0
         K2 = 1.0
-        K3 = 0.0
+        K3 = 1.0
         K4 = 0.0
 
         # Genera un diccionario con el estado y la posición
@@ -209,7 +209,7 @@ class problema_grafica_grafo(blocales.Problema):
                 total += (1.0 - (dist / min_dist))
         return total
 
-    def angulo_aristas(self, estado_dic):
+    def angulo_aristas(self, estado_dic,angulomenor=30):
         """
         A partir de una posicion "estado", devuelve una penalizacion
         proporcional a cada angulo entre aristas menor a pi/6 rad (30
@@ -234,7 +234,20 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+
+        total = 0
+        for vertice in self.vertices:
+            aristas = [a for a in self.aristas if vertice in a]
+            for (a,b) in itertools.combinations(aristas, 2):
+                (ax1, ay1), (ax2, ay2), (bx1, by1), (bx2, by2) = estado_dic[a[0]], estado_dic[a[1]], estado_dic[b[0]], estado_dic[b[1]]
+                m1 = (ay2 - ay1)/((ax2 - ax1) if ax2-ax1 != 0 else 0.0000000001)
+                m2 = (by2 - by1)/((bx2 - bx1) if bx2-bx1 != 0 else 0.0000000001)
+                angulo = math.degrees(abs(math.atan((m2-m1)/((1+m2*m1) if m2*m1!=-1 else 0.00000001))))
+                if angulo < angulomenor:
+                    total += 1-(angulo/angulomenor)
+        return total
+
+
 
     def criterio_propio(self, estado_dic):
         """
