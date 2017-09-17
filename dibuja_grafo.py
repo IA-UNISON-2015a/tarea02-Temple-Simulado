@@ -114,7 +114,7 @@ class problema_grafica_grafo(blocales.Problema):
         # a este vértice de tal forma que quede en la circunferencia con centro de la
         # pantalla y radio= r
         
-        centx = centy = int(self.dim-20)/2
+        centx = centy = int(self.dim)/2
         r = 150
         
         vecino = list(estado)
@@ -327,8 +327,10 @@ class problema_grafica_grafo(blocales.Problema):
                 c = distancia(x1,y1,x3,y3)
                 
                 
-                if b is not 0 and c is not 0:
+                if b!=0 and c!=0:
+                    print("(",a,"^2-",b,"^2-",c,"^2)/","-2*",b,"*",c,"=",end="")
                     angle = math.acos((a*a - b*b - c*c)/(-2*b*c)) #en radianes
+                    print(angle)
                     #los que son menores a pi/6 se penalizan, sumando a la
                     # penalización la diferencia entre el ángulo y pi/6
                     suma+= min(abs(lower-angle), abs(angle-upper))
@@ -409,7 +411,7 @@ class problema_grafica_grafo(blocales.Problema):
 
         imagen.save(filename)
 
-        #pintar círculo para ver las proximidad
+        #pintar círculo para ver la proximidad
 def distancia (x1,y1,x2,y2):
         
         return math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
@@ -421,7 +423,7 @@ def main():
     """
 
     # Vamos a definir un grafo sencillo
-    vertices_sencillo = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+    vertices_sencillo = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H','I', 'J', 'K', 'L', 'M']
     aristas_sencillo = [('B', 'G'),
                         ('E', 'F'),
                         ('H', 'E'),
@@ -432,7 +434,13 @@ def main():
                         ('H', 'B'),
                         ('F', 'A'),
                         ('C', 'B'),
-                        ('H', 'F')]
+                        ('H', 'F'),
+                        ('I', 'B'),
+                        ('K', 'C'),
+                        ('K', 'E'),
+                        ('M', 'F'),
+                        ('L', 'A'),
+                        ('J', 'B')]
     dimension = 400
 
     # Y vamos a hacer un dibujo del grafo sin decirle como hacer para
