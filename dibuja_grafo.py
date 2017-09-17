@@ -56,6 +56,7 @@ class problema_grafica_grafo(blocales.Problema):
         self.vertices = vertices
         self.aristas = aristas
         self.dim = dimension_imagen
+        self.r=150
 
     def estado_aleatorio(self):
         """
@@ -114,8 +115,8 @@ class problema_grafica_grafo(blocales.Problema):
         # a este vértice de tal forma que quede en la circunferencia con centro de la
         # pantalla y radio= r
         
-        centx = centy = int(self.dim)/2
-        r = 150
+        centx = centy = round(self.dim)/2
+       
         
         vecino = list(estado)
         #escogemos una cordenada que corresponderá a un vértice y se mueve en x o en y
@@ -136,18 +137,18 @@ class problema_grafica_grafo(blocales.Problema):
         #casos especiales en que los ángulos del vertice sean multiplos de 90°
         
         #otro caso
-        dhp = abs(r-dh)
-        dxp, dyp = int(dhp*abs(dx)/dh), int(dhp*abs(dy)/dh)
+        dhp = abs(self.r-dh)
+        dxp, dyp = round(dhp*abs(dx)/dh), round(dhp*abs(dy)/dh)
         
         #cuatro casos dependiendo del cuadrante del círculo en el que se
         # encuentra el vértice
-        if (dx<0 and r-dh>0) or (dx>0 and r-dh<0):
+        if (dx<0 and self.r-dh>0) or (dx>0 and self.r-dh<0):
             vecino[x]= vecino[x] + dxp
         else:
             vecino[x]= vecino[x] - dxp
 
         
-        if (dy>0 and r-dh<0) or (dy<0 and r-dh>0):
+        if (dy>0 and self.r-dh<0) or (dy<0 and self.r-dh>0):
             vecino[y]= vecino[y] + dyp
         else:
             vecino[y]= vecino[y] - dyp
@@ -173,9 +174,9 @@ class problema_grafica_grafo(blocales.Problema):
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
         K1 = 1.0
-        K2 = 2.0
-        K3 = 3.0
-        K4 = 0.0
+        K2 = 4.0
+        K3 = 2.0
+        K4 = 3.0
 
         # Genera un diccionario con el estado y la posición
         estado_dic = self.estado2dic(estado)
@@ -311,7 +312,7 @@ class problema_grafica_grafo(blocales.Problema):
         
         suma = 0
         lower = math.pi/4
-        upper = math.pi/2
+        upper = math.pi/3
         #calcular el ángulo en cada vértice (recorrer todos los vértices)
         for vert in self.vertices:
             #encontramos los vértices con los que se forman las aristas con vert.
@@ -327,12 +328,12 @@ class problema_grafica_grafo(blocales.Problema):
                 c = distancia(x1,y1,x3,y3)
                 
                 
-                if b!=0 and c!=0:
-                    print("(",a,"^2-",b,"^2-",c,"^2)/","-2*",b,"*",c,"=",end="")
-                    angle = math.acos((a*a - b*b - c*c)/(-2*b*c)) #en radianes
-                    print(angle)
-                    #los que son menores a pi/6 se penalizan, sumando a la
-                    # penalización la diferencia entre el ángulo y pi/6
+                if b*c > 0:
+                    arg = (a**2 - b**2 - c**2)/(-2*b*c)
+    
+                    angle = math.acos(arg) if arg<=1 and arg>-1 else math.pi/2 #en radianes
+                    #se penalizan con la diferencia menor entre el ángulo y
+                    #pi/4 y pi/3
                     suma+= min(abs(lower-angle), abs(angle-upper))
                 else: #de haber puntos encimados
                     suma+=math.pi
@@ -366,8 +367,20 @@ class problema_grafica_grafo(blocales.Problema):
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
         
+        # mi criterio extra consistirá en penalizar al grafo por la cantidad de
+        # vértices que tenga dentro del círculo de radio r
         
-        return 0
+        v_fuera = 0
+        centx = round(self.dim/2)
+        
+        for v in self.vertices:
+            (x,y) = estado_dic[v]
+            d = distancia(x,y,centx,centx)
+            if d< self.r:
+                v_fuera+=1 
+            
+        
+        return 5*v_fuera
 
     def estado2dic(self, estado):
         """
@@ -405,13 +418,20 @@ class problema_grafica_grafo(blocales.Problema):
         dibujar = ImageDraw.ImageDraw(imagen)
 
         for (v1, v2) in self.aristas:
-            dibujar.line((lugar[v1], lugar[v2]), fill=(255, 0, 0))
+            dibujar.line((lugar[v1], lugar[v2]), fill=(203,40,33))
         for v in self.vertices:
             dibujar.text(lugar[v], v, (0, 0, 0))
 
+        #pintar círculo para ver la proximidad
+        a = round(self.dim/2)-self.r
+        b = round(self.dim/2)+self.r
+        dibujar.arc((a,a,b,b),0,360,fill=(59,131,189))
+        
         imagen.save(filename)
 
-        #pintar círculo para ver la proximidad
+        
+        
+        
 def distancia (x1,y1,x2,y2):
         
         return math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
