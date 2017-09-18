@@ -374,6 +374,8 @@ class problema_grafica_grafo(blocales.Problema):
         minx = min(estado_dic[x][0] for x in self.vertices)
         maxx = max(estado_dic[x][0] for x in self.vertices)
         xmed = (maxx+minx)/2
+
+        #Se cuentan la cantidad de vertices que hay en cada mitad de el grafo
         izq,der = 0,0
         for v in self.vertices:
             x,_ = estado_dic[v]
@@ -382,6 +384,7 @@ class problema_grafica_grafo(blocales.Problema):
             elif x < xmed:
                 der+=1
 
+        #Se penaliza con la siguiente formula
         return 1.0 - (izq/der if  izq<der else der/izq)
 
     def estado2dic(self, estado):
