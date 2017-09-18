@@ -12,7 +12,7 @@ gráfos por computadora pero da una idea de la utilidad de los métodos de
 optimización en un problema divertido.
 
 Para realizar este problema es necesario contar con el módulo Pillow
-instalado (en Anaconda se instala por default. Si no se encuentr instalado, 
+instalado (en Anaconda se instala por default. Si no se encuentr instalado,
 desde la termnal se puede instalar utilizando
 
 $pip install pillow
@@ -65,7 +65,7 @@ class problema_grafica_grafo(blocales.Problema):
         Un estado para este problema de define como:
 
            s = [s(1), s(2),..., s(2*len(vertices))],
- 
+
         en donde s(i) \in {10, 11, ..., self.dim - 10} es la posición
         en x del nodo i/2 si i es par, o la posicion en y
         del nodo (i-1)/2 si i es non y(osease las parejas (x,y)).
@@ -101,7 +101,7 @@ class problema_grafica_grafo(blocales.Problema):
         n = random.randint(0, len(self.vertices) - 1)
         #se suman los numeros aleatorios en dirección x y derección y
         #se utiliza el modulo para no salirse de la matriz sobre la que se dibuja
-        vecino[n] = (vecino[n] + x)%360 + 20 
+        vecino[n] = (vecino[n] + x)%360 + 20
         vecino[n+1] = (vecino[n+1] + y)%360 + 20
         return tuple(vecino)
         """
@@ -140,6 +140,7 @@ class problema_grafica_grafo(blocales.Problema):
         K2 = 2.5
         K3 = 0.5
         K4 = 3.0
+        k5 = 5.0
 
         # Genera un diccionario con el estado y la posición
         estado_dic = self.estado2dic(estado)
@@ -147,7 +148,8 @@ class problema_grafica_grafo(blocales.Problema):
         return (K1 * self.numero_de_cruces(estado_dic) +
                 K2 * self.separacion_vertices(estado_dic) +
                 K3 * self.angulo_aristas(estado_dic) +
-                K4 * self.criterio_propio(estado_dic))
+                K4 * self.criterio_propio(estado_dic) +
+                k5 * self.criterio_propio2(estado_dic))
 
         # Como podras ver en los resultados, el costo inicial
         # propuesto no hace figuras particularmente bonitas, y esto es
@@ -354,6 +356,34 @@ class problema_grafica_grafo(blocales.Problema):
         #se penaliza tomando en cuanta la distancia al centro
         return (1.0 - 1/dist) if dist > 0 else 0
 
+    def criterio_propio2(self, estado_dic):
+        """
+        Cuenta la cantidad de puntos que hay en una mitad del grafo y en la otra
+        para medir la simetría de el grafo
+
+        @param estado_dic: Diccionario cuyas llaves son los vértices
+                           del grafo y cuyos valores es una tupla con
+                           la posición (x, y) de ese vértice en el
+                           dibujo.
+
+        @return: Un número.
+
+        """
+
+        #Se obtienen los minimos y maximos del grafo en x y se calcula el punto medio del grafo.
+        minx = min(estado_dic[x][0] for x in self.vertices)
+        maxx = max(estado_dic[x][0] for x in self.vertices)
+        xmed = (maxx+minx)/2
+        izq,der = 0,0
+        for v in self.vertices:
+            x,_ = estado_dic[v]
+            if x > xmed:
+                izq+=1
+            elif x < xmed:
+                der+=1
+
+        return 1.0 - (izq/der if  izq<der else der/izq)
+
     def estado2dic(self, estado):
         """
         Convierte el estado en forma de tupla a un estado en forma de diccionario
@@ -414,7 +444,6 @@ def main():
     La función principal
 
     """
-
     # Vamos a definir un grafo sencillo
     vertices_sencillo = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     aristas_sencillo = list(itertools.combinations(vertices_sencillo,2))
@@ -425,7 +454,7 @@ def main():
     grafo_sencillo = problema_grafica_grafo(vertices_sencillo,
                                             aristas_sencillo,
                                             dimension)
-    
+
     estado_aleatorio = grafo_sencillo.estado_aleatorio()
     costo_inicial = grafo_sencillo.costo(estado_aleatorio)
     grafo_sencillo.dibuja_grafo(estado_aleatorio, "prueba_inicial.gif")

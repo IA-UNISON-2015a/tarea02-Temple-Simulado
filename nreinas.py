@@ -144,7 +144,7 @@ if __name__ == "__main__":
     # tiempo aceptable con el método de 10 reinicios aleatorios?
     #
     # Pues con 140 reinas aún lo resuelve, pero tarda bastante en hacerlo.
-    # 
+    #
     # ¿Que valores para ajustar el temple simulado son los que mejor
     # resultado dan? ¿Cual es el mejor ajuste para el temple simulado
     # y hasta cuantas reinas puede resolver en un tiempo aceptable?
@@ -153,15 +153,15 @@ if __name__ == "__main__":
     # la funcipon de calendarizació que mejor soluciones me dio fue la ecuación
     # de la ley de enfriamiento de newton, con temperatura inicial 30000, k = 0.0001
     # y tolerancia de 0.001
-    # 
+    #
     # En general para obtener mejores resultados del temple simulado,
     # es necesario utilizarprobar diferentes metdos de
     # calendarización, prueba al menos otros dos métodos sencillos de
     # calendarización y ajusta los parámetros para que funcionen de la
     # mejor manera
-    # 
-    # La mejor función de calendarización que mejor se ajustó fue la de la 
-    # ley de enfriamiento de newton, la explicación a esto supongo que es 
+    #
+    # La mejor función de calendarización que mejor se ajustó fue la de la
+    # ley de enfriamiento de newton, la explicación a esto supongo que es
     # porque se acerca un poco mas a la realidad.
     # La otra función de calendarizacion que probé fue multiplicar la temperatura actual
     # por un alfa entre 0 y 1, este método es el mas rápido de los que probé, pero
