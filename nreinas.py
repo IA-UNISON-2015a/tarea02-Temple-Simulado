@@ -1,17 +1,15 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-nreinas.py
-------------
+Created on Mon Sep 11 08:45:29 2017
 
-Ejemplo de las n_reinas con búsquedas locales
-
+@author: Yocu
 """
 
-__author__ = 'juliowaissman'
+__author__ = 'Yocu'
 
 
 import blocales
+import time
 from random import shuffle
 from random import sample
 from itertools import combinations
@@ -20,11 +18,8 @@ from itertools import combinations
 class ProblemaNreinas(blocales.Problema):
     """
     Las N reinas en forma de búsqueda local se inicializa como
-
     entorno = ProblemaNreinas(n) donde n es el número de reinas a colocar
-
     Por default son las clásicas 8 reinas.
-
     """
     def __init__(self, n=8):
         self.n = n
@@ -37,11 +32,8 @@ class ProblemaNreinas(blocales.Problema):
     def vecinos(self, estado):
         """
         Generador vecinos de un estado, todas las 2 permutaciones
-
         @param estado: una tupla que describe un estado.
-
         @return: un generador de estados vecinos.
-
         """
         edo_lista = list(estado)
         for i, j in combinations(range(self.n), 2):
@@ -53,11 +45,8 @@ class ProblemaNreinas(blocales.Problema):
         """
         Genera un vecino de un estado intercambiando dos posiciones
         en forma aleatoria.
-
         @param estado: Una tupla que describe un estado
-
         @return: Una tupla con un estado vecino.
-
         """
         vecino = list(estado)
         i, j = sample(range(self.n), 2)
@@ -67,11 +56,8 @@ class ProblemaNreinas(blocales.Problema):
     def costo(self, estado):
         """
         Calcula el costo de un estado por el número de conflictos entre reinas
-
         @param estado: Una tupla que describe un estado
-
         @return: Un valor numérico, mientras más pequeño, mejor es el estado.
-
         """
         return sum([1 for (i, j) in combinations(range(self.n), 2)
                     if abs(estado[i] - estado[j]) == abs(i - j)])
@@ -101,26 +87,48 @@ def prueba_temple_simulado(problema=ProblemaNreinas(8)):
 
 if __name__ == "__main__":
 
-    prueba_descenso_colinas(ProblemaNreinas(32), 10)
-    prueba_temple_simulado(ProblemaNreinas(32))
-
+    t_inicial = time.time()
+    prueba_descenso_colinas(ProblemaNreinas(16), 10)
+    t_final = time.time()
+    print("Tiempo de ejecución en segundos: {}".format(t_final - t_inicial))
+    
+    t_inicial = time.time()
+    prueba_temple_simulado(ProblemaNreinas(16))
+    t_final = time.time()
+    print("Tiempo de ejecución en segundos: {}".format(t_final - t_inicial))
     ##########################################################################
     #                          20 PUNTOS
     ##########################################################################
     #
     # ¿Cual es el máximo número de reinas que se puede resolver en
     # tiempo aceptable con el método de 10 reinicios aleatorios?
+    # 16 reinas = .003 segs
+    # 32 reinas = 13 segs
+    # 64 reinas = 3 min 6 seg
+    # 128 reinas = 2 hr 16 min
     #
     # ¿Que valores para ajustar el temple simulado son los que mejor
     # resultado dan? ¿Cual es el mejor ajuste para el temple simulado
     # y hasta cuantas reinas puede resolver en un tiempo aceptable?
+    # tolerancia = 0.005
+    # 32 reinas = 0.04 segs 
+    # 64 reinas = 0.17 segs
+    # 128 reinas = 1 min 2 segs
+    # 256 reinas = 7 min 7 segs
+    # 512 reinas = 44min
     #
     # En general para obtener mejores resultados del temple simulado,
     # es necesario utilizarprobar diferentes metdos de
-    # calendarización, prueba al menos otros dis métodos sencillos de
+    # calendarización, prueba al menos otros dos métodos sencillos de
     # calendarización y ajusta los parámetros para que funcionen de la
     # mejor manera
-    #
+    # cal_exponencial tol
+    # 16 reinas = 0.02 segs
+    # 32 reinas = 0.07 segs
+    # 64 reinas = 32 segs
+    # 128 reinas = 1 min 37 segs
+    # 256 reinas = 5 min 30 segs
+    # cal_log
     # Escribe aqui tus conclusiones
     #
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
