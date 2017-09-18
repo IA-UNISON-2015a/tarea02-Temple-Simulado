@@ -474,9 +474,12 @@ def main():
     grafo_sencillo.dibuja_grafo(estado_aleatorio, "prueba_inicial.gif")
     print("Costo del estado aleatorio: {}".format(costo_inicial))
 
+    
+    
+    
     # Ahora vamos a encontrar donde deben de estar los puntos
     t_inicial = time.time()
-    solucion = blocales.temple_simulado(grafo_sencillo)
+    solucion = blocales.temple_simulado(grafo_sencillo,calend_geom(grafo_sencillo))
     t_final = time.time()
     costo_final = grafo_sencillo.costo(solucion)
 
@@ -503,10 +506,26 @@ def main():
     # menor tiempo posible.
     #
     # Escribe aqui tus conclusiones
+    #Con el calendarizador por Default, tardó alrededor de 3 minutos, con un costo
+    # promedio de aproximadamente 100 mientras que con el calendarizador geométrico
+    # los tiempos fueron se redujeron a una centésima parte con un costo promedio
+    # de 90
     #
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
     #
-
+    
+    
+def calend_geom(problema, alpha=0.99):
+    costos = [problema.costo(problema.estado_aleatorio())
+              for _ in range(10 * len(problema.estado_aleatorio()))]
+    minimo,  maximo = min(costos), max(costos)
+    To = 2 * (maximo - minimo)
+    k=0
+    
+    for k in range(int(1e10)):
+        k+=1
+        T = math.pow(alpha,k)*To
+        yield T
 
 if __name__ == '__main__':
     main()
