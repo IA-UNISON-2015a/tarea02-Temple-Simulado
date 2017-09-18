@@ -19,7 +19,7 @@ $pip install pillow
 
 """
 
-__author__ = 'Escribe aquí tu nombre'
+__author__ = 'Belen Chavarría'
 
 import blocales
 import random
@@ -115,7 +115,7 @@ class problema_grafica_grafo(blocales.Problema):
         # a este vértice de tal forma que quede en la circunferencia con centro de la
         # pantalla y radio= r
         
-        centx = centy = round(self.dim)/2
+        centx = round(self.dim)/2
        
         
         vecino = list(estado)
@@ -130,7 +130,7 @@ class problema_grafica_grafo(blocales.Problema):
         y = i if i%2 is 1  else i+1
         
         dx = centx - vecino[x]
-        dy = centy - vecino[y]
+        dy = centx - vecino[y]
 
         dh = math.sqrt(dx**2 + dy**2)
         
@@ -175,8 +175,8 @@ class problema_grafica_grafo(blocales.Problema):
         # (default solo cuanta el criterio 1)
         K1 = 1.0
         K2 = 4.0
-        K3 = 2.0
-        K4 = 3.0
+        K3 = 1.0
+        K4 = 2.0
 
         # Genera un diccionario con el estado y la posición
         estado_dic = self.estado2dic(estado)
@@ -304,7 +304,7 @@ class problema_grafica_grafo(blocales.Problema):
         # cada vertice. Dale diferente peso a cada criterio hasta
         # lograr que el sistema realice gráficas "bonitas"
         #
-        # ¿Que valores de diste a K1, K2 y K3 respectivamente?
+        # ¿Que valores le diste a K1, K2 y K3 respectivamente?
         #
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
