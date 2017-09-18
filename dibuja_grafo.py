@@ -107,10 +107,10 @@ class problema_grafica_grafo(blocales.Problema):
 
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
-        K1 = 1.0
+        K1 = 2.0
         K2 = 1.0
         K3 = 1.0
-        K4 = 5.0
+        K4 = 2.0
 
         # Genera un diccionario con el estado y la posición
         estado_dic = self.estado2dic(estado)
@@ -230,7 +230,7 @@ class problema_grafica_grafo(blocales.Problema):
         # lograr que el sistema realice gráficas "bonitas"
         #
         # ¿Que valores de diste a K1, K2 y K3 respectivamente?
-        #
+        #2, 1 y 1 respectivamente
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
@@ -247,8 +247,6 @@ class problema_grafica_grafo(blocales.Problema):
                     total += 1-(angulo/angulomenor)
         return total
 
-
-
     def criterio_propio(self, estado_dic):
         """
         Implementa y comenta correctamente un criterio de costo que sea
@@ -263,25 +261,28 @@ class problema_grafica_grafo(blocales.Problema):
         #                          20 PUNTOS
         #######################################################################
         # ¿Crees que hubiera sido bueno incluir otro criterio? ¿Cual?
+        # No se me ocurre ningun otro criterio por el momento, pero este criterio que implemente se me hace muy recomendado
         #
         # Desarrolla un criterio propio y ajusta su importancia en el
         # costo total con K4 ¿Mejora el resultado? ¿En que mejora el
         # resultado final?
-        #
+        #si, el grafo se ve mas elegante
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
-        #
-        total = 0
+        #Criterio propio se asegura de que el vertice con mas aristas se encuentre en el centro.
 
-        minx, miny =  (self.dim/2)-100, (self.dim/2)-100
+        total = 0
+        #se le da una tolerancia de 100 alrededor del centro
+        minx, miny =  (self.dim/2)-100, (self.dim/2)-100 
         maxx, maxy =  (self.dim/2)+100, (self.dim/2)+100
+        #busca el vertice mas repetido
         maxv = most_common(self.aristas)
+        #guarda coordenadas del vertice
         x, y = estado_dic[maxv][0], estado_dic[maxv][1]
         if x < minx or x > maxx:
             total += 1
         if y < miny or y > maxy:
             total += 1
-
         return total
 
     def estado2dic(self, estado):
@@ -328,6 +329,13 @@ def most_common(lst):
         lista.append(x[1])
     return max(set(lista), key=lista.count)
 
+def calendarizador_lineal(K, delta, i):
+    return K - delta*i
+
+def calendarizador_exponencial(K, delta, i):
+    return exp(-delta/K*i) 
+
+
 def main():
     """
     La función principal
@@ -345,7 +353,8 @@ def main():
                         ('H', 'B'),
                         ('F', 'A'),
                         ('C', 'B'),
-                        ('H', 'F')]
+                        ('H', 'F'),
+                        ('F', 'G')]
     dimension = 400
 
     # Y vamos a hacer un dibujo del grafo sin decirle como hacer para
@@ -377,6 +386,8 @@ def main():
     # resultado dan?
     #
     # ¿Que encuentras en los resultados?, ¿Cual es el criterio mas importante?
+    #EL criterio mas importante pienso que es el que no se encimen las aristas,
+    #se ve mas limpio el resultado
     #
     # En general para obtener mejores resultados del temple simulado,
     # es necesario utilizar una función de calendarización acorde con
