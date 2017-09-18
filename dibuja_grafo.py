@@ -57,7 +57,6 @@ class problema_grafica_grafo(blocales.Problema):
         self.aristas = aristas
         self.dim = dimension_imagen 
 
-
     def estado_aleatorio(self):
         """
         Devuelve un estado aleatorio.
@@ -111,6 +110,10 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # Propon una manera alternativa de vecino_aleatorio y muestra que
         # con tu propuesta se obtienen resultados mejores o en menor tiempo
+        # 
+        # Propuesta:
+        # yo decidí en vez de que un subíndice aumentara o disminuyera por 10
+        # opte por generar un numero random desde 10 hasta dimencion -10
 
     def costo(self, estado):
         """
@@ -131,7 +134,7 @@ class problema_grafica_grafo(blocales.Problema):
         K1 = 10.0
         K2 = 3.0
         K3 = 8.5
-        K4 = 0.0
+        K4 = 3.0
 
         # Genera un diccionario con el estado y la posición
         estado_dic = self.estado2dic( estado )
@@ -266,9 +269,9 @@ class problema_grafica_grafo(blocales.Problema):
         # lograr que el sistema realice gráficas "bonitas"
         #
         # ¿Que valores de diste a K1, K2 y K3 respectivamente?
-        #  K1 = 10
-        #  K2 = 3
-        #  K3 = 8
+        #  K1 = 10.0
+        #  K2 = 3.0
+        #  K3 = 8.5
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         
@@ -295,7 +298,6 @@ class problema_grafica_grafo(blocales.Problema):
                         
                         m1 =  ( y2 - y1 ) / ( x2 - x1 )
 
-
                         n1, n2 = a2
                         x1, y1 = estado_dic[n1]
                         x2, y2 = estado_dic[n2]
@@ -319,6 +321,7 @@ class problema_grafica_grafo(blocales.Problema):
         return total
 
     def criterio_propio(self, estado_dic):
+        
         """
         Implementa y comenta correctamente un criterio de costo que sea
         conveniente para que un grafo luzca bien.
@@ -335,29 +338,45 @@ class problema_grafica_grafo(blocales.Problema):
         #                          20 PUNTOS
         #######################################################################
         # ¿Crees que hubiera sido bueno incluir otro criterio? ¿Cual?
+        #   si, yo solo lo puse para un circuito de 3 hubiera sido mejor generalizarlo 
+        #   crei que se veia bien en circuitos de 3 
         #
         # Desarrolla un criterio propio y ajusta su importancia en el
         # costo total con K4 ¿Mejora el resultado? ¿En que mejora el
         # resultado final?
-        #
+        #   si mejora por que al poder ser mas legibles la conexion de nodos
+        #   con las aristas y siento que en un circuito tener la misma distancia
+        #   en las aristas suele darle mejor apariencia 
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-
-        #punto_medio = ( self.dim / 2 , self.dim / 2 )
         
+        d1 = d2 = d3 = total = 0
 
+        for ( v1, v2, v3 ) in  itertools.combinations( self.vertices, 3 ):
 
-        #for vertice in self.vertices:
-            
-        #    for ar in self.aristas:
-
+            for ( a1, a2, a3 ) in itertools.combinations( self.aristas, 3 ):
                 
+                if v1 in a1 and v1 in a2 and v2 in a3 and v2 in a1 and v3 in a2 and v3 in a3:
 
+                    x1, y1 = estado_dic[v1]
+                    x2, y2 = estado_dic[v2]
+                    x3, y3 = estado_dic[v3]
 
-        
+                    d1 = np.sqrt( ( x2 - x1 )**2 + ( y2 - y1 )**2 )
+                    d2 = np.sqrt( ( x3 - x1 )**2 + ( y3 - y1 )**2 )
+                    d3 = np.sqrt( ( x3 - x2 )**2 + ( y3 - y2 )**2 )
 
-        return 0
+                    if d1 != d2:
+                        total += ( 1 / 3 )
+                    
+                    if d2 != d3:
+                        total += ( 1 / 3 )
+                    
+                    if d3 != d1:
+                        total += ( 1 / 3 )
+
+        return total
 
     def estado2dic(self, estado):
         """

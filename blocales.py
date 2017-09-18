@@ -15,6 +15,31 @@ import numpy as np
 from random import random
 
 
+class Cale_exp:
+
+    def __init__(self, fin = 1e10 ):
+        
+        self.costos = [ problema.costo( problema.estado_aleatorio() ) for _ in range( 10 * len( problema.estado_aleatorio() ) ) ]
+        
+        self.fin = fin
+        self.current = 1
+        self.k = 0.001
+        
+        self.minimo = min(costos)
+        self.maximo = max( costos )
+        
+        self.T_ini = 2 * ( maximo - minimo )
+    
+    def __iter__(self):
+        return iter(self)
+
+    def next(self): 
+        if self.current > int( self.fin ):
+            raise StopIteration
+        else:
+            self.current += 1
+            return T_ini * np.exp(-self.k*self.current)
+            
 class Problema(object):
     """
     Definición formal de un problema de búsqueda local. Es necesario

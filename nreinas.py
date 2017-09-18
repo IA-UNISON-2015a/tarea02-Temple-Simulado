@@ -84,7 +84,6 @@ class ProblemaNreinas(blocales.Problema):
         """
         return sum( [ 1 for ( i, j ) in combinations( range( self.n ), 2 ) if abs( estado[ i ] - estado[ j ] ) == abs( i - j ) ] )
 
-
 def prueba_descenso_colinas( problema = ProblemaNreinas( 8 ), repeticiones = 10 ):
     """ Prueba el algoritmo de descenso de colinas con n repeticiones """
 
@@ -100,8 +99,8 @@ def prueba_temple_simulado( problema = ProblemaNreinas( 8 ) ):
 
     solucion = blocales.temple_simulado_exp( problema )
 
-    print("\n\nTemple simulado con calendarización To / ( log( i ) + 1 ).")
-    print("Costo de la solución: ", problema.costo( solucion ))
+    print("\n\nTemple simulado con calendarización Cale_Exp")
+    print("Costo de la solución: ", problema.costo( solucion ) )
     print("Y la solución es: ")
     print( solucion )
 
@@ -125,10 +124,17 @@ if __name__ == "__main__":
 	# ¿Cual es el máximo número de reinas que se puede resolver en
 	# tiempo aceptable con el método de 10 reinicios aleatorios?
 	#
-	# ¿Que valores para ajustar el temple simulado son los que mejor
+    # T0/i+1,  85 reinas,  42.20 minutos, 100 reinas 114.5434 minutos 
+    # T0*e^( -0.001 * i ),  90 reinas,  63.1261 minutos
+    # T0 / ( log( i ) + 1 ),  24 reinas,  mas de 60 minutos
+	#
+    # ¿Que valores para ajustar el temple simulado son los que mejor
 	# resultado dan? ¿Cual es el mejor ajuste para el temple simulado
 	# y hasta cuantas reinas puede resolver en un tiempo aceptable?
-	#
+	#  con iteraciones de 1e10 y tolerancia de 0.001
+    #  en si la tolerancia es el mejor ajuste, en una horas (en mi computadora procesador AMD E2 con 4 GB de ram) mas de 100
+    #  con el calendarizador del exponenecial   
+    #
 	# En general para obtener mejores resultados del temple simulado,
 	# es necesario utilizarprobar diferentes metdos de
 	# calendarización, prueba al menos otros dis métodos sencillos de
@@ -138,8 +144,9 @@ if __name__ == "__main__":
 	# Escribe aqui tus conclusiones
 	#
 	# ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
-	#
-	# T0/i+1,  85 reinas,  42.20 minutos, 100 reinas 114.5434 minutos 
-	# T0*e^( -0.001 * i ),  90 reinas,  63.1261 minutos
-	# T0 / ( log( i ) + 1 ),  24 reinas,  60 minutos + 
-
+	#  codigo esta en blocales.py
+    #   funcion:
+    #   def temple_simulado_exp
+    #   intento fallido de clase iterador (Cale_exp)
+	#   def temple_simulado_log
+    #
