@@ -161,28 +161,51 @@ if __name__ == "__main__":
     corridas mucho mas rapidas. Habiendo logrado esto, vamos a reducir nuestra
     noción de tiempo aceptable de una hora a dos minutos.
 
-    Probemos:
+    Probando, podemos ver que el decenso de colinas logra encontrar soluciones
+    para alrededor de 110 reinas en alrededor de 2 minutos. Los resultados estan
+    en el archivo 'decesnso_colinas.txt'. El numero es relativamente bajo
+    porque el numero de vecinos que tiene un estado crece rapidamente en el
+    problema de las N reinas.
+
+    Por otro lado, la cantidad de reinas no es tan importante para el temple
+    simulado. Para el calendarizador incluido, el temple simulado exitosamente
+    encuentra soluciones para problemas de mas de 600 reinas.
+
+    Probando un enfriamiento lineal y uno exponencial, encontramos resultados
+    similares.
     """
 
+
+
+    """ ESTAS PRUEBAS TOMAN MUCHO TIEMPO """
     descenso_con_repeticiones = reinicios_aleatorios(descenso_colinas,
                                                      repeticiones=10)
+
 
     # prueba del decenso de colinas con 10 reinicios aleatorios
     pruebas = correr_pruebas(ProblemaNReinas,
                              descenso_con_repeticiones,
-                             tiempo_razonable=0.5,
+                             tiempo_razonable=120,
                              rango_pruebas=(4, 1000))
 
-    print('Pruebas con descenso de colinas con 10 reinicios aleatorios')
-    for n, tiempo in pruebas:
-        print(n, tiempo)
+
+
+    with open('descenso_colinas.txt', 'w') as fp:
+        print('Pruebas con descenso de colinas con 10 reinicios aleatorios')
+        fp.write('Pruebas con descenso de colinas con 10 reinicios aleatorios\n')
+        for n, tiempo in pruebas:
+            fp.write('{} {}\n'.format(n, tiempo))
+            print(n, tiempo)
 
     # prueba del temple simulado
     pruebas = correr_pruebas(ProblemaNReinas,
                              temple_simulado,
-                             tiempo_razonable=0.5,
+                             tiempo_razonable=120,
                              rango_pruebas=(4, 1000))
 
-    print('Pruebas con temple simulado con calendarización To/(1 + i)."')
-    for n, tiempo in pruebas:
-        print(n, tiempo)
+    with open('temple_simulado.txt', 'w') as fp:
+        print('Pruebas con temple simulado con calendarización To/(1 + i)."')
+        fp.write('Pruebas con temple simulado con calendarización To/(1 + i)."\n')
+        for n, tiempo in pruebas:
+            fp.write('{} {}\n'.format(n, tiempo))
+            print(n, tiempo)
