@@ -110,7 +110,7 @@ class problema_grafica_grafo(blocales.Problema):
         K1 = 1.0
         K2 = 1.0
         K3 = 1.0
-        K4 = 0.0
+        K4 = 5.0
 
         # Genera un diccionario con el estado y la posición
         estado_dic = self.estado2dic(estado)
@@ -209,7 +209,7 @@ class problema_grafica_grafo(blocales.Problema):
                 total += (1.0 - (dist / min_dist))
         return total
 
-    def angulo_aristas(self, estado_dic,angulomenor=30):
+    def angulo_aristas(self, estado_dic):
         """
         A partir de una posicion "estado", devuelve una penalizacion
         proporcional a cada angulo entre aristas menor a pi/6 rad (30
@@ -234,7 +234,7 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-
+        angulomenor=30
         total = 0
         for vertice in self.vertices:
             aristas = [a for a in self.aristas if vertice in a]
@@ -271,7 +271,18 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+        total = 0
+
+        minx, miny =  (self.dim/2)-100, (self.dim/2)-100
+        maxx, maxy =  (self.dim/2)+100, (self.dim/2)+100
+        maxv = most_common(self.aristas)
+        x, y = estado_dic[maxv][0], estado_dic[maxv][1]
+        if x < minx or x > maxx:
+            total += 1
+        if y < miny or y > maxy:
+            total += 1
+
+        return total
 
     def estado2dic(self, estado):
         """
@@ -310,6 +321,12 @@ class problema_grafica_grafo(blocales.Problema):
 
         imagen.save(filename)
 
+def most_common(lst):
+    lista = []
+    for x in lst:
+        lista.append(x[0])
+        lista.append(x[1])
+    return max(set(lista), key=lista.count)
 
 def main():
     """
