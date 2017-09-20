@@ -42,7 +42,7 @@ class ProblemaNreinas(blocales.Problema):
         for i in range(len(s)):
             aux = i + s[i]
             d1[aux]+=1
-            aux = 7 + i - s[i]
+            aux = self.n - 1 + i - s[i]
             d2[aux] += 1
 
         return (d1,d2)
