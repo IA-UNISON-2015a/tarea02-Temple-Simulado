@@ -12,7 +12,7 @@ gráfos por computadora pero da una idea de la utilidad de los métodos de
 optimización en un problema divertido.
 
 Para realizar este problema es necesario contar con el módulo Pillow
-instalado (en Anaconda se instala por default. Si no se encuentr instalado, 
+instalado (en Anaconda se instala por default. Si no se encuentr instalado,
 desde la termnal se puede instalar utilizando
 
 $pip install pillow
@@ -26,6 +26,9 @@ import random
 import itertools
 import math
 import time
+import heapq
+from collections import defaultdict
+from operator import itemgetter
 from PIL import Image, ImageDraw
 
 
@@ -64,7 +67,7 @@ class problema_grafica_grafo(blocales.Problema):
         Un estado para este problema de define como:
 
            s = [s(1), s(2),..., s(2*len(vertices))],
- 
+
         en donde s(i) \in {10, 11, ..., self.dim - 10} es la posición
         en x del nodo i/2 si i es par, o la posicion en y
         del nodo (i-1)/2 si i es non y(osease las parejas (x,y)).
@@ -93,11 +96,23 @@ class problema_grafica_grafo(blocales.Problema):
         @return: Una tupla con un estado vecino al estado de entrada.
 
         """
+
+        """
+        Escoge un vertice aleatorio y mueve es evertice por un vector
+        con direccion y magnitud aleatoria y con magnitud limitada por
+        la dispersion
+        """
+        angle = 2 * math.pi * random.random()
+        magnitude = dmax * random.random()
+
+        dx = round(math.cos(angle) * magnitude)
+        dy = round(math.sin(angle) * magnitude)
+
         vecino = list(estado)
-        i = random.randint(0, len(vecino) - 1)
-        vecino[i] = max(10,
-                        min(self.dim - 10,
-                            vecino[i] + random.randint(-dmax,  dmax)))
+        i = random.randint(0, len(vecino) / 2 - 1)
+        vecino[2 * i] = max(10, min(self.dim - 10, vecino[2 * i] + dx))
+        vecino[2 * i + 1] = max(10, min(self.dim - 10, vecino[2 * i + 1] + dy))
+
         return tuple(vecino)
 
         #######################################################################
@@ -260,9 +275,38 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+        vert_angles = defaultdict(list)
+        for a, b in self.aristas:
+            u = tuple(j - i for i, j in zip(estado_dic[a], estado_dic[b]))
+            len_u = math.sqrt(sum(i * i for i in u))
 
-    def criterio_propio(self, estado_dic):
+            if not len_u:
+                continue
+
+            normalized_u = tuple(i / len_u for i in u)
+            opposite_u = tuple(-i for i in normalized_u)
+
+            heapq.heappush(vert_angles[a], math.atan2(*normalized_u))
+            heapq.heappush(vert_angles[b], math.atan2(*opposite_u))
+
+        n_angulos = sum(len(v) for _, v in vert_angles.items())
+
+        costo = 0
+
+        for vertex, angles in vert_angles.items():
+
+            while len(angles) > 1:
+                current = heapq.heappop(angles)
+                next = angles[0]
+                angle = next - current
+
+                if angle < math.pi / 6:
+
+                    costo += math.e ** -angle
+
+        return costo / n_angulos
+
+    def varianza_aristas(self, estado_dic):
         """
         Implementa y comenta correctamente un criterio de costo que sea
         conveniente para que un grafo luzca bien.
@@ -287,7 +331,42 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+        distances = []
+        for a, b in self.aristas:
+            x1, y1 = tuple(i / self.dim for i in estado_dic[a])
+            x2, y2 = tuple(i / self.dim for i in estado_dic[b])
+
+            dist = math.sqrt((y2 - y1) ** 2 + (x2 - x1) ** 2)
+            distances.append(dist)
+
+        mean = sum(distances) / len(distances)
+        variance = sum((i - mean) ** 2 for i in distances) / (len(distances) - 1)
+        return variance
+
+    def area_cubierta(self, estado_dic):
+        min_x = self.dim
+        max_x = 0
+        min_y = self.dim
+        max_y = 0
+
+        # probablemente haya una mejor forma de hacer esto
+        for u in self.vertices:
+            x, y = estado_dic[u]
+
+            if x < min_x:
+                min_x = x
+            elif x > max_x:
+                max_x = x
+
+            if y < min_y:
+                min_y = y
+            elif y > max_y:
+                max_y = y
+
+        area = (max_x - min_x) * (max_y - min_y)
+        area_covered = 1 - area / (self.dim ** 2)
+
+        return area_covered
 
     def estado2dic(self, estado):
         """
@@ -396,6 +475,12 @@ def main():
     #
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
     #
+
+    """
+    Hice que esta cosa fuera extremadamente lento, pero hace grafos bonitos al
+    menos. Al final del dia, no tiene usos practicos reales, pero esta
+    interesante.
+    """
 
 
 if __name__ == '__main__':

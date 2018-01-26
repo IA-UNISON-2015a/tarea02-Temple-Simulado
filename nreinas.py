@@ -11,13 +11,16 @@ Ejemplo de las n_reinas con búsquedas locales
 __author__ = 'juliowaissman'
 
 
-import blocales
+from blocales import descenso_colinas, temple_simulado, reinicios_aleatorios, \
+    Problema
 from random import shuffle
 from random import sample
-from itertools import combinations
+from itertools import combinations, takewhile
+from operator import itemgetter
+import time
 
 
-class ProblemaNreinas(blocales.Problema):
+class ProblemaNReinas(Problema):
     """
     Las N reinas en forma de búsqueda local se inicializa como
 
@@ -73,36 +76,59 @@ class ProblemaNreinas(blocales.Problema):
         @return: Un valor numérico, mientras más pequeño, mejor es el estado.
 
         """
-        return sum([1 for (i, j) in combinations(range(self.n), 2)
-                    if abs(estado[i] - estado[j]) == abs(i - j)])
+
+        rows = [0] * self.n
+        cols = [0] * self.n
+        fdiags = [0] * (self.n * 2 - 1)
+        bdiags = [0] * (self.n * 2 - 1)
+
+        for x, y in enumerate(estado):
+            rows[y] += 1
+            cols[x] += 1
+
+            fdiag = self.n - 1 + y - x
+            bdiag = x + y
+
+            fdiags[fdiag] += 1
+            bdiags[bdiag] += 1
+
+        return (sum(i for i in rows if i > 1) +
+                sum(i for i in cols if i > 1) +
+                sum(i for i in fdiags if i > 1) +
+                sum(i for i in bdiags if i > 1))
 
 
-def prueba_descenso_colinas(problema=ProblemaNreinas(8), repeticiones=10):
-    """ Prueba el algoritmo de descenso de colinas con n repeticiones """
+def prueba_algoritmo(problema, algoritmo, repeticiones=1):
+    """
+    Prueba un algoritmo
+    """
+    for _ in range(repeticiones):
+        start = time.time()
+        solucion = algoritmo(problema)
+        end = time.time()
+        elapsed = end - start
+        yield solucion, problema.costo(solucion), elapsed
 
-    print("\n\n" + "intento".center(10) +
-          "estado".center(60) + "costo".center(10))
-    for intento in range(repeticiones):
-        solucion = blocales.descenso_colinas(problema)
-        print(str(intento).center(10) +
-              str(solucion).center(60) +
-              str(problema.costo(solucion)).center(10))
 
+def correr_pruebas(Problema, algoritmo, tiempo_razonable=3600,
+                   rango_pruebas=(4, 1000), repeticiones=5):
+    pruebas = (prueba_algoritmo(Problema(n),
+                                algoritmo,
+                                repeticiones)
+               for n in range(*rango_pruebas))
 
-def prueba_temple_simulado(problema=ProblemaNreinas(8)):
-    """ Prueba el algoritmo de temple simulado """
-
-    solucion = blocales.temple_simulado(problema)
-    print("\n\nTemple simulado con calendarización To/(1 + i).")
-    print("Costo de la solución: ", problema.costo(solucion))
-    print("Y la solución es: ")
-    print(solucion)
+    for n, corridas in zip(range(*rango_pruebas), pruebas):
+        corridas = list(corridas)
+        tiempo_promedio = sum(c[2] for c in corridas) / len(corridas)
+        yield n, tiempo_promedio
+        if tiempo_promedio > tiempo_razonable:
+            break
 
 
 if __name__ == "__main__":
 
-    prueba_descenso_colinas(ProblemaNreinas(32), 10)
-    prueba_temple_simulado(ProblemaNreinas(32))
+    # prueba_descenso_colinas(ProblemaNreinas(32), 10)
+    # prueba_temple_simulado(ProblemaNreinas(32))
 
     ##########################################################################
     #                          20 PUNTOS
@@ -125,3 +151,61 @@ if __name__ == "__main__":
     #
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
     #
+
+    """
+    La función de costo original usaba las combinaciones, lo que le daba una
+    complejidad factorial. Al reemplazarla por una funcion lineal mas
+    razonable, vemos una mejora de 5x para la solucion de 32 reinas (18
+    segundos contra 3 segundos en mi laptop para hacer 10 corridas del decenso
+    de colinas y una del temple simulado). Esto nos da el poder de realizar
+    corridas mucho mas rapidas. Habiendo logrado esto, vamos a reducir nuestra
+    noción de tiempo aceptable de una hora a dos minutos.
+
+    Probando, podemos ver que el decenso de colinas logra encontrar soluciones
+    para alrededor de 110 reinas en alrededor de 2 minutos. Los resultados estan
+    en el archivo 'decesnso_colinas.txt'. El numero es relativamente bajo
+    porque el numero de vecinos que tiene un estado crece rapidamente en el
+    problema de las N reinas.
+
+    Por otro lado, la cantidad de reinas no es tan importante para el temple
+    simulado. Para el calendarizador incluido, el temple simulado exitosamente
+    encuentra soluciones para problemas de mas de 600 reinas.
+
+    Probando un enfriamiento lineal y uno exponencial, encontramos resultados
+    similares.
+    """
+
+
+
+    """ ESTAS PRUEBAS TOMAN MUCHO TIEMPO """
+    descenso_con_repeticiones = reinicios_aleatorios(descenso_colinas,
+                                                     repeticiones=10)
+
+
+    # prueba del decenso de colinas con 10 reinicios aleatorios
+    pruebas = correr_pruebas(ProblemaNReinas,
+                             descenso_con_repeticiones,
+                             tiempo_razonable=120,
+                             rango_pruebas=(4, 1000))
+
+
+
+    with open('descenso_colinas.txt', 'w') as fp:
+        print('Pruebas con descenso de colinas con 10 reinicios aleatorios')
+        fp.write('Pruebas con descenso de colinas con 10 reinicios aleatorios\n')
+        for n, tiempo in pruebas:
+            fp.write('{} {}\n'.format(n, tiempo))
+            print(n, tiempo)
+
+    # prueba del temple simulado
+    pruebas = correr_pruebas(ProblemaNReinas,
+                             temple_simulado,
+                             tiempo_razonable=120,
+                             rango_pruebas=(4, 1000))
+
+    with open('temple_simulado.txt', 'w') as fp:
+        print('Pruebas con temple simulado con calendarización To/(1 + i)."')
+        fp.write('Pruebas con temple simulado con calendarización To/(1 + i)."\n')
+        for n, tiempo in pruebas:
+            fp.write('{} {}\n'.format(n, tiempo))
+            print(n, tiempo)
