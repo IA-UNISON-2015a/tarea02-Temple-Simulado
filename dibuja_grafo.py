@@ -4,19 +4,14 @@
 """
 dibuja_grafo.py
 ------------
-
 Dibujar un grafo utilizando métodos de optimización
-
 Estos métodos no son los que se utilizan en el dibujo de
 gráfos por computadora pero da una idea de la utilidad de los métodos de
 optimización en un problema divertido.
-
 Para realizar este problema es necesario contar con el módulo Pillow
 instalado (en Anaconda se instala por default. Si no se encuentr instalado, 
 desde la termnal se puede instalar utilizando
-
 $pip install pillow
-
 """
 
 __author__ = 'Escribe aquí tu nombre'
@@ -33,7 +28,6 @@ class problema_grafica_grafo(blocales.Problema):
 
     """
     Clase para el dibujo de un grafo simple no dirigido
-
     """
 
     def __init__(self, vertices, aristas, dimension_imagen=400):
@@ -42,16 +36,13 @@ class problema_grafica_grafo(blocales.Problema):
         lista (no conjunto, el orden es importante a la hora de
         graficar), y un conjunto (tambien en forma de lista) de pares
         ordenados de vertices, lo que forman las aristas.
-
         Igualmente es importante indicar la resolución de la imagen a
         mostrar (por default de 400x400 pixeles).
-
         @param vertices: Lista con el nombre de los vertices.
         @param aristas: Lista con pares de vertices, los cuales
                         definen las aristas.
         @param dimension_imagen: Entero con la dimension de la imagen
                                  en pixeles (cuadrada por facilidad).
-
         """
         self.vertices = vertices
         self.aristas = aristas
@@ -60,18 +51,14 @@ class problema_grafica_grafo(blocales.Problema):
     def estado_aleatorio(self):
         """
         Devuelve un estado aleatorio.
-
         Un estado para este problema de define como:
-
            s = [s(1), s(2),..., s(2*len(vertices))],
  
         en donde s(i) \in {10, 11, ..., self.dim - 10} es la posición
         en x del nodo i/2 si i es par, o la posicion en y
         del nodo (i-1)/2 si i es non y(osease las parejas (x,y)).
-
         @return: Una tupla con las posiciones (x1, y1, x2, y2, ...) de
                  cada vertice en la imagen.
-
         """
         return tuple(random.randint(10, self.dim - 10) for _ in
                      range(2 * len(self.vertices)))
@@ -81,23 +68,23 @@ class problema_grafica_grafo(blocales.Problema):
         Encuentra un vecino en forma aleatoria. En estea primera
         versión lo que hacemos es tomar un valor aleatorio, y
         sumarle o restarle x pixeles al azar.
-
         Este es un vecino aleatorio muy malo. Por lo que deberás buscar
         como hacer un mejor vecino aleatorio y comparar las ventajas de
         hacer un mejor vecino en el algoritmo de temple simulado.
-
         @param estado: Una tupla con el estado.
         @param dispersion: Un flotante con el valor de dispersión para el
                            vertice seleccionado
-
         @return: Una tupla con un estado vecino al estado de entrada.
-
         """
         vecino = list(estado)
         i = random.randint(0, len(vecino) - 1)
-        vecino[i] = max(10,
-                        min(self.dim - 10,
-                            vecino[i] + random.randint(-dmax,  dmax)))
+
+        vecino[i] = max(10, min(self.dim - 10, vecino[i] + int(random.randint(-1, 1)*dmax) if dmax else int(random.randint(-1, 1))))
+        if i%2 == 0:
+            vecino[i+1] = max(10, min(self.dim - 10, vecino[i+1] + int(random.randint(-1, 1)*dmax) if dmax else int(random.randint(-1, 1))))
+        else:
+            vecino[i-1] = max(10, min(self.dim - 10, vecino[i-1] + int(random.randint(-1, 1)*dmax) if dmax else int(random.randint(-1, 1))))
+
         return tuple(vecino)
 
         #######################################################################
@@ -112,22 +99,18 @@ class problema_grafica_grafo(blocales.Problema):
         """
         Encuentra el costo de un estado. En principio el costo de un estado
         es la cantidad de veces que dos aristas se cruzan cuando se dibujan.
-
         Esto hace que el dibujo se organice para tener el menor numero
         posible de cruces entre aristas.
-
         @param: Una tupla con un estado
-
         @return: Un número flotante con el costo del estado.
-
         """
 
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
-        K1 = 1.0
-        K2 = 0.0
-        K3 = 0.0
-        K4 = 0.0
+        K1 = 2.0
+        K2 = 1.0
+        K3 = 1.0
+        K4 = 2.0
 
         # Genera un diccionario con el estado y la posición
         estado_dic = self.estado2dic(estado)
@@ -159,14 +142,11 @@ class problema_grafica_grafo(blocales.Problema):
         """
         Devuelve el numero de veces que dos aristas se cruzan en el grafo
         si se grafica como dice estado_dic
-
         @param estado_dic: Diccionario cuyas llaves son los vértices
                            del grafo y cuyos valores es una tupla con
                            la posición (x, y) de ese vértice en el
                            dibujo.
-
         @return: Un número.
-
         """
         total = 0
 
@@ -210,16 +190,13 @@ class problema_grafica_grafo(blocales.Problema):
         lejos que min_dist. Si la distancia entre vertices es menor a
         min_dist, entonces calcula una penalización proporcional a
         esta.
-
         @param estado_dic: Diccionario cuyas llaves son los vértices
                            del grafo y cuyos valores es una tupla con
                            la posición (x, y) de ese vértice en el
                            dibujo.  @param min_dist: Mínima distancia
                            aceptable en pixeles entre dos vértices en
                            el dibujo.
-
         @return: Un número.
-
         """
         total = 0
         for (v1, v2) in itertools.combinations(self.vertices, 2):
@@ -239,14 +216,11 @@ class problema_grafica_grafo(blocales.Problema):
         grados). Los angulos de pi/6 o mayores no llevan ninguna
         penalización, y la penalizacion crece conforme el angulo es
         menor.
-
         @param estado_dic: Diccionario cuyas llaves son los vértices
                            del grafo y cuyos valores es una tupla con
                            la posición (x, y) de ese vértice en el
                            dibujo.
-
         @return: Un número.
-
         """
         #######################################################################
         #                          20 PUNTOS
@@ -256,48 +230,67 @@ class problema_grafica_grafo(blocales.Problema):
         # lograr que el sistema realice gráficas "bonitas"
         #
         # ¿Que valores de diste a K1, K2 y K3 respectivamente?
-        #
+        #2, 1 y 1 respectivamente
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+        angulomenor=30
+        total = 0
+        for vertice in self.vertices:
+            aristas = [a for a in self.aristas if vertice in a]
+            for (a,b) in itertools.combinations(aristas, 2):
+                (ax1, ay1), (ax2, ay2), (bx1, by1), (bx2, by2) = estado_dic[a[0]], estado_dic[a[1]], estado_dic[b[0]], estado_dic[b[1]]
+                m1 = (ay2 - ay1)/((ax2 - ax1) if ax2-ax1 != 0 else 0.0000000001)
+                m2 = (by2 - by1)/((bx2 - bx1) if bx2-bx1 != 0 else 0.0000000001)
+                angulo = math.degrees(abs(math.atan((m2-m1)/((1+m2*m1) if m2*m1!=-1 else 0.00000001))))
+                if angulo < angulomenor:
+                    total += 1-(angulo/angulomenor)
+        return total
 
     def criterio_propio(self, estado_dic):
         """
         Implementa y comenta correctamente un criterio de costo que sea
         conveniente para que un grafo luzca bien.
-
         @param estado_dic: Diccionario cuyas llaves son los vértices
                            del grafo y cuyos valores es una tupla con
                            la posición (x, y) de ese vértice en el
                            dibujo.
-
         @return: Un número.
-
         """
         #######################################################################
         #                          20 PUNTOS
         #######################################################################
         # ¿Crees que hubiera sido bueno incluir otro criterio? ¿Cual?
+        # No se me ocurre ningun otro criterio por el momento, pero este criterio que implemente se me hace muy recomendado
         #
         # Desarrolla un criterio propio y ajusta su importancia en el
         # costo total con K4 ¿Mejora el resultado? ¿En que mejora el
         # resultado final?
-        #
+        #si, el grafo se ve mas elegante
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
-        #
-        return 0
+        #Criterio propio se asegura de que el vertice con mas aristas se encuentre en el centro.
+
+        total = 0
+        #se le da una tolerancia de 100 alrededor del centro
+        minx, miny =  (self.dim/2)-100, (self.dim/2)-100 
+        maxx, maxy =  (self.dim/2)+100, (self.dim/2)+100
+        #busca el vertice mas repetido
+        maxv = most_common(self.aristas)
+        #guarda coordenadas del vertice
+        x, y = estado_dic[maxv][0], estado_dic[maxv][1]
+        if x < minx or x > maxx:
+            total += 1
+        if y < miny or y > maxy:
+            total += 1
+        return total
 
     def estado2dic(self, estado):
         """
         Convierte el estado en forma de tupla a un estado en forma de diccionario
-
         @param: Una tupla con las posiciones (x1, y1, x2, y2, ...)
-
         @return: Un diccionario cuyas llaves son el nombre de cada
                  arista y su valor es una tupla (x, y)
-
         """
         return {self.vertices[i]: (estado[2 * i], estado[2 * i + 1])
                 for i in range(len(self.vertices))}
@@ -308,10 +301,8 @@ class problema_grafica_grafo(blocales.Problema):
         lista de dimensión 2*len(vertices), donde cada valor es la
         posición en x y y respectivamente de cada vertice. dim es la
         dimensión de la figura en pixeles.
-
         Si no existe una posición, entonces se obtiene una en forma
         aleatoria.
-
         """
         if not estado:
             estado = self.estado_aleatorio()
@@ -331,11 +322,23 @@ class problema_grafica_grafo(blocales.Problema):
 
         imagen.save(filename)
 
+def most_common(lst):
+    lista = []
+    for x in lst:
+        lista.append(x[0])
+        lista.append(x[1])
+    return max(set(lista), key=lista.count)
+
+def calendarizador_lineal(K, delta, i):
+    return K - delta*i
+
+def calendarizador_exponencial(K, delta, i):
+    return exp(-delta/K*i) 
+
 
 def main():
     """
     La función principal
-
     """
 
     # Vamos a definir un grafo sencillo
@@ -350,7 +353,8 @@ def main():
                         ('H', 'B'),
                         ('F', 'A'),
                         ('C', 'B'),
-                        ('H', 'F')]
+                        ('H', 'F'),
+                        ('F', 'G')]
     dimension = 400
 
     # Y vamos a hacer un dibujo del grafo sin decirle como hacer para
@@ -382,6 +386,8 @@ def main():
     # resultado dan?
     #
     # ¿Que encuentras en los resultados?, ¿Cual es el criterio mas importante?
+    #EL criterio mas importante pienso que es el que no se encimen las aristas,
+    #se ve mas limpio el resultado
     #
     # En general para obtener mejores resultados del temple simulado,
     # es necesario utilizar una función de calendarización acorde con

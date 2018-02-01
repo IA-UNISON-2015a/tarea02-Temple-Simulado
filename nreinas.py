@@ -110,18 +110,29 @@ if __name__ == "__main__":
     #
     # ¿Cual es el máximo número de reinas que se puede resolver en
     # tiempo aceptable con el método de 10 reinicios aleatorios?
-    #
+    
+    # 90 reinas tardaron un poco mas de 1 hora, lo que es el tiempo aceptable.
+
+
     # ¿Que valores para ajustar el temple simulado son los que mejor
     # resultado dan? ¿Cual es el mejor ajuste para el temple simulado
     # y hasta cuantas reinas puede resolver en un tiempo aceptable?
-    #
+    
+    #la tolerancia que se esta utilizando es un buen ajuste, probe con diferentes
+    #pero esta se me hizo la mas estable de todas. Calendarizacion la de exp.
+    #90 reinas tardaron un poco menos de 1 hora.
+
     # En general para obtener mejores resultados del temple simulado,
-    # es necesario utilizarprobar diferentes metdos de
+    # es necesario utilizar/probar diferentes metdos de
     # calendarización, prueba al menos otros dis métodos sencillos de
     # calendarización y ajusta los parámetros para que funcionen de la
     # mejor manera
-    #
+    
+    #agregue uno exp y uno lineal
+
     # Escribe aqui tus conclusiones
     #
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
     #
+
+
