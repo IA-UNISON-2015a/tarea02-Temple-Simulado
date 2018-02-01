@@ -12,7 +12,7 @@ gráfos por computadora pero da una idea de la utilidad de los métodos de
 optimización en un problema divertido.
 
 Para realizar este problema es necesario contar con el módulo Pillow
-instalado (en Anaconda se instala por default. Si no se encuentr instalado, 
+instalado (en Anaconda se instala por default. Si no se encuentr instalado,
 desde la termnal se puede instalar utilizando
 
 $pip install pillow
@@ -56,6 +56,7 @@ class problema_grafica_grafo(blocales.Problema):
         self.vertices = vertices
         self.aristas = aristas
         self.dim = dimension_imagen
+        estado = self.estado_aleatorio()
 
     def estado_aleatorio(self):
         """
@@ -64,7 +65,7 @@ class problema_grafica_grafo(blocales.Problema):
         Un estado para este problema de define como:
 
            s = [s(1), s(2),..., s(2*len(vertices))],
- 
+
         en donde s(i) \in {10, 11, ..., self.dim - 10} es la posición
         en x del nodo i/2 si i es par, o la posicion en y
         del nodo (i-1)/2 si i es non y(osease las parejas (x,y)).
@@ -94,11 +95,22 @@ class problema_grafica_grafo(blocales.Problema):
 
         """
         vecino = list(estado)
+        #se generan dos numeros aleatorios para la dirección x y y
+        x,y = random.randint(-30,30),random.randint(-30,30)
+        #se genera un número aleatorio que representa un vertice
+        n = random.randint(0, len(self.vertices) - 1)
+        #se suman los numeros aleatorios en dirección x y derección y
+        #se utiliza el modulo para no salirse de la matriz sobre la que se dibuja
+        vecino[n] = (vecino[n] + x)%360 + 20
+        vecino[n+1] = (vecino[n+1] + y)%360 + 20
+        return tuple(vecino)
+        """
+        vecino = list(estado)
         i = random.randint(0, len(vecino) - 1)
         vecino[i] = max(10,
                         min(self.dim - 10,
                             vecino[i] + random.randint(-dmax,  dmax)))
-        return tuple(vecino)
+        return tuple(vecino)"""
 
         #######################################################################
         #                          20 PUNTOS
@@ -123,11 +135,12 @@ class problema_grafica_grafo(blocales.Problema):
         """
 
         # Inicializa fáctores lineales para los criterios más importantes
-        # (default solo cuanta el criterio 1)
-        K1 = 1.0
-        K2 = 0.0
-        K3 = 0.0
-        K4 = 0.0
+        # Pesos para los elementos de la función de costo
+        K1 = 0.05
+        K2 = 2.5
+        K3 = 0.5
+        K4 = 3.0
+        k5 = 5.0
 
         # Genera un diccionario con el estado y la posición
         estado_dic = self.estado2dic(estado)
@@ -135,7 +148,8 @@ class problema_grafica_grafo(blocales.Problema):
         return (K1 * self.numero_de_cruces(estado_dic) +
                 K2 * self.separacion_vertices(estado_dic) +
                 K3 * self.angulo_aristas(estado_dic) +
-                K4 * self.criterio_propio(estado_dic))
+                K4 * self.criterio_propio(estado_dic) +
+                k5 * self.criterio_propio2(estado_dic))
 
         # Como podras ver en los resultados, el costo inicial
         # propuesto no hace figuras particularmente bonitas, y esto es
@@ -203,7 +217,7 @@ class problema_grafica_grafo(blocales.Problema):
                 total += 1
         return total
 
-    def separacion_vertices(self, estado_dic, min_dist=50):
+    def separacion_vertices(self, estado_dic):
         """
         A partir de una posicion "estado" devuelve una penalización
         proporcional a cada par de vertices que se encuentren menos
@@ -221,16 +235,35 @@ class problema_grafica_grafo(blocales.Problema):
         @return: Un número.
 
         """
+        #se calcula la distancia minima en función del número de vertices y la dimension de la imagen.
+        min_dist = self.dim/len(self.vertices)
         total = 0
         for (v1, v2) in itertools.combinations(self.vertices, 2):
             # Calcula la distancia entre dos vertices
             (x1, y1), (x2, y2) = estado_dic[v1], estado_dic[v2]
-            dist = math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
-
+            dist = math.sqrt((x1 - x2)**2 + (y1 - y2)**2)
             # Penaliza la distancia si es menor a min_dist
             if dist < min_dist:
                 total += (1.0 - (dist / min_dist))
         return total
+
+    def calcula_angulo(self,p1,p2,p3):
+        #Metodo que resive tres puntos y regresa el ángulo entre ellos.
+        #el angulo que se calcula es sobre el primer punto que se resive
+
+        #se trasladan los puntos p2 y p3 con respecto a p1 para formar dos vectores
+        (x1,y1) = (p2[0] - p1[0]),(p2[1] - p1[1])
+        (x2,y2) = (p3[0] - p1[0]),(p3[1] - p1[1])
+
+        #se calcula la norma y el producto punto de los dos vectores.
+        norma1 = math.sqrt(x1*x1 + y1*y1)
+        norma2 = math.sqrt(x2*x2 + y2*y2)
+        ppunto = x1*x2 + y1*y2
+
+        #se calcula el angulo entre los dos vectores.
+        elem = round(ppunto/(norma1*norma2),4)
+        angulo = math.acos(elem)
+        return angulo
 
     def angulo_aristas(self, estado_dic):
         """
@@ -259,13 +292,34 @@ class problema_grafica_grafo(blocales.Problema):
         #
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
-        #
-        return 0
+        #angulo minimo que puede tomar un vertice
+        ang_min = math.pi/6
+
+        total = 0.0
+        for (a1, a2) in itertools.combinations(self.aristas, 2):
+            #Se revisa si dos aristas comparten un nodo en común.
+            #Si no comparten se hace un continue.
+            if not a1[0] in a2 and not a1[1] in a2:
+                continue
+
+            #Se sacan las coordenadas de los tres vertices en orden para calcular el angulo entre ellos
+            #p1 es el vertice sobre el cual se calcula el águlo.
+            (p1,p2) = (estado_dic[a1[0]],estado_dic[a1[1]]) if a1[0] in a2 else (estado_dic[a1[1]],estado_dic[a1[0]])
+            p3 = estado_dic[a2[0]] if not a2[0] in a1 else estado_dic[a2[1]]
+
+            #Se revisa que los puntos no estén encimados para evitar divisiones entre 0.
+            if p1 != p2 and p1 != p3 and p2!=p3:
+                angulo = self.calcula_angulo(p1,p2,p3)
+                #si el angulo es menor que el minimo se penaliza.
+                if angulo < ang_min:
+                    total += 1.0 - angulo/ang_min
+
+        return total
 
     def criterio_propio(self, estado_dic):
         """
-        Implementa y comenta correctamente un criterio de costo que sea
-        conveniente para que un grafo luzca bien.
+        Mide que tan centrado está el grafo en la imagen sobre la que se dibuja
+        en función de el punto medio de todos los puntos.
 
         @param estado_dic: Diccionario cuyas llaves son los vértices
                            del grafo y cuyos valores es una tupla con
@@ -287,7 +341,51 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+
+        #Se calcula el punto medio de la imagen donde se dibuja el grafo
+        pmed_pantallax,pmed_pantallay = self.dim/2,self.dim/2
+
+        #Se obtienen los minimos y maximos del grafo en x y en y y se calcula el punto medio del grafo.
+        minx,miny = min(estado_dic[x][0] for x in self.vertices),min(estado_dic[x][1] for x in self.vertices)
+        maxx,maxy = max(estado_dic[x][0] for x in self.vertices),max(estado_dic[x][1] for x in self.vertices)
+        xmed,ymed = (maxx+minx)/2, (maxy+miny)/2
+
+        #se calcula la distancia de el punto medio a la mitad de la imagen
+        dist = math.sqrt((xmed - pmed_pantallax) ** 2 + (ymed - pmed_pantallay) ** 2)
+
+        #se penaliza tomando en cuanta la distancia al centro
+        return (1.0 - 1/dist) if dist > 0 else 0
+
+    def criterio_propio2(self, estado_dic):
+        """
+        Cuenta la cantidad de puntos que hay en una mitad del grafo y en la otra
+        para medir la simetría de el grafo
+
+        @param estado_dic: Diccionario cuyas llaves son los vértices
+                           del grafo y cuyos valores es una tupla con
+                           la posición (x, y) de ese vértice en el
+                           dibujo.
+
+        @return: Un número.
+
+        """
+
+        #Se obtienen los minimos y maximos del grafo en x y se calcula el punto medio del grafo.
+        minx = min(estado_dic[x][0] for x in self.vertices)
+        maxx = max(estado_dic[x][0] for x in self.vertices)
+        xmed = (maxx+minx)/2
+
+        #Se cuentan la cantidad de vertices que hay en cada mitad de el grafo
+        izq,der = 0,0
+        for v in self.vertices:
+            x,_ = estado_dic[v]
+            if x > xmed:
+                izq+=1
+            elif x < xmed:
+                der+=1
+
+        #Se penaliza con la siguiente formula
+        return 1.0 - (izq/der if  izq<der else der/izq)
 
     def estado2dic(self, estado):
         """
@@ -331,26 +429,27 @@ class problema_grafica_grafo(blocales.Problema):
 
         imagen.save(filename)
 
+def calendarizador(t0,alpha=0.999):
+    while True:
+        t0 *= alpha
+        yield t0
+
+def calendarizadorNewton(t0,k=0.05):
+    t = t0
+    i = 0
+    while True:
+        t = t0*math.exp(-k*i)
+        i+=1
+        yield t
 
 def main():
     """
     La función principal
 
     """
-
     # Vamos a definir un grafo sencillo
     vertices_sencillo = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
-    aristas_sencillo = [('B', 'G'),
-                        ('E', 'F'),
-                        ('H', 'E'),
-                        ('D', 'B'),
-                        ('H', 'G'),
-                        ('A', 'E'),
-                        ('C', 'F'),
-                        ('H', 'B'),
-                        ('F', 'A'),
-                        ('C', 'B'),
-                        ('H', 'F')]
+    aristas_sencillo = list(itertools.combinations(vertices_sencillo,2))
     dimension = 400
 
     # Y vamos a hacer un dibujo del grafo sin decirle como hacer para
@@ -366,7 +465,7 @@ def main():
 
     # Ahora vamos a encontrar donde deben de estar los puntos
     t_inicial = time.time()
-    solucion = blocales.temple_simulado(grafo_sencillo)
+    solucion = blocales.temple_simulado(grafo_sencillo,calendarizador(150))
     t_final = time.time()
     costo_final = grafo_sencillo.costo(solucion)
 
