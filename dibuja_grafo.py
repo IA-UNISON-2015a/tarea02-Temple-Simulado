@@ -12,7 +12,7 @@ gráfos por computadora pero da una idea de la utilidad de los métodos de
 optimización en un problema divertido.
 
 Para realizar este problema es necesario contar con el módulo Pillow
-instalado (en Anaconda se instala por default. Si no se encuentr instalado, 
+instalado (en Anaconda se instala por default. Si no se encuentr instalado,
 desde la termnal se puede instalar utilizando
 
 $pip install pillow
@@ -64,7 +64,7 @@ class problema_grafica_grafo(blocales.Problema):
         Un estado para este problema de define como:
 
            s = [s(1), s(2),..., s(2*len(vertices))],
- 
+
         en donde s(i) \in {10, 11, ..., self.dim - 10} es la posición
         en x del nodo i/2 si i es par, o la posicion en y
         del nodo (i-1)/2 si i es non y(osease las parejas (x,y)).
@@ -94,10 +94,9 @@ class problema_grafica_grafo(blocales.Problema):
 
         """
         vecino = list(estado)
-        i = random.randint(0, len(vecino) - 1)
-        vecino[i] = max(10,
-                        min(self.dim - 10,
-                            vecino[i] + random.randint(-dmax,  dmax)))
+        i = random.randint(0, (len(vecino)/2)-1)
+        vecino[i*2] = max(10,min(self.dim - 10,vecino[i*2] + random.randint(-dmax,  dmax)))
+        vecino[(i*2)+1] = max(10,min(self.dim - 10,vecino[(i*2)+1] + random.randint(-dmax,  dmax)))
         return tuple(vecino)
 
         #######################################################################
@@ -107,6 +106,11 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # Propon una manera alternativa de vecino_aleatorio y muestra que
         # con tu propuesta se obtienen resultados mejores o en menor tiempo
+        #
+        # Este vecino es bastante mejor que el anterior, aunque solamente tuvo
+        # un pequeno cambio el cual fue que hiciera cambio no solo en una direccion
+        # al azar si no que moviera por completo un vertice a otro punto en
+        # espacio
 
     def costo(self, estado):
         """
@@ -124,10 +128,10 @@ class problema_grafica_grafo(blocales.Problema):
 
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
-        K1 = 1.0
-        K2 = 0.0
-        K3 = 0.0
-        K4 = 0.0
+        K1 = 0.1
+        K2 = 0.4
+        K3 = 0.2
+        K4 = 0.3
 
         # Genera un diccionario con el estado y la posición
         estado_dic = self.estado2dic(estado)
@@ -248,25 +252,48 @@ class problema_grafica_grafo(blocales.Problema):
         @return: Un número.
 
         """
+        peso = 0
         #######################################################################
-        #                          20 PUNTOS
+        #                          20 1 PUNTOS
         #######################################################################
         # Agrega el método que considere el angulo entre aristas de
         # cada vertice. Dale diferente peso a cada criterio hasta
         # lograr que el sistema realice gráficas "bonitas"
         #
         # ¿Que valores de diste a K1, K2 y K3 respectivamente?
-        #
-        #
+        # En mi opinion una de las cosas mas importantes es que no haya
+        # demasiado cruzamiento de lineas en un grafo para que sea mas entendible
+        # y al mismo tiempo diria que tienen que tener una buena separacion
+        # para que estos sean mas faciles de apreciar, tambien con el criterio
+        # que yo formule los nodos se distribuyen mejor en todo el grafo
+        # ya que este es un criterio de simetria
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+        for (aristaA, aristaB) in itertools.combinations(self.aristas, 2):
+
+            # Encuentra los valores de (x0A,y0A), (xFA, yFA) para los
+            # vertices de una arista y los valores (x0B,y0B), (x0B,
+            # y0B) para los vertices de la otra arista
+            (x0A, y0A) = estado_dic[aristaA[0]]
+            (xFA, yFA) = estado_dic[aristaA[1]]
+            (x0B, y0B) = estado_dic[aristaB[0]]
+            (xFB, yFB) = estado_dic[aristaB[1]]
+            try:
+                pendienteA = (y0A - yFA)/(x0A - xFA)
+                pendienteB = (y0B - yFB)/(x0B - xFB)
+                angulo = abs(math.degrees(math.atan((pendienteB-pendienteA)/(1+(pendienteA*pendienteB)))))
+            except Exception:
+                continue
+            if angulo < 30.0 and angulo != 0:
+                peso += .5*(30-angulo)
+
+        return peso
 
     def criterio_propio(self, estado_dic):
         """
-        Implementa y comenta correctamente un criterio de costo que sea
-        conveniente para que un grafo luzca bien.
-
+        A partir de una posicion "estado", devuelve una penalizacion
+        por la diferencia entre puntos en los ejes de simetria que atraviesan
+        justo a la mitad al grafo
         @param estado_dic: Diccionario cuyas llaves son los vértices
                            del grafo y cuyos valores es una tupla con
                            la posición (x, y) de ese vértice en el
@@ -287,7 +314,23 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+        #
+        #
+        #
+        #
+        #
+        #
+        #
+        #
+        #
+        #
+        simetria = self.dim/2
+        horizontal,vertical = 0,0
+        for vertice in self.vertices:
+            x,y = estado_dic[vertice]
+            horizontal += 1 if x>simetria else -1
+            vertical += 1 if y>simetria else -1
+        return (abs(horizontal)+abs(vertical))
 
     def estado2dic(self, estado):
         """
@@ -339,22 +382,35 @@ def main():
     """
 
     # Vamos a definir un grafo sencillo
-    vertices_sencillo = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
-    aristas_sencillo = [('B', 'G'),
-                        ('E', 'F'),
-                        ('H', 'E'),
-                        ('D', 'B'),
-                        ('H', 'G'),
+    vertices_sencillo = ['A', 'B', 'C', 'D', 'E', 'F']
+    aristas_sencillo = [('A', 'B'),
+                        ('A', 'C'),
+                        ('A', 'D'),
                         ('A', 'E'),
+                        ('A', 'F'),
+                        ('B', 'C'),
+                        ('B', 'D'),
+                        ('B', 'E'),
+                        ('B', 'F'),
+                        ('C', 'D'),
+                        ('C', 'E'),
                         ('C', 'F'),
-                        ('H', 'B'),
-                        ('F', 'A'),
-                        ('C', 'B'),
-                        ('H', 'F')]
+                        ('D', 'E'),
+                        ('D', 'F'),
+                        ('E', 'F'),]
     dimension = 400
 
     # Y vamos a hacer un dibujo del grafo sin decirle como hacer para
     # ajustarlo.
+    def calendarizador_logaritmico(Temp,k=.05):
+        while True:
+            Temp=Temp/math.log(k+1);
+            yield Temp;
+    def calendarizador_kirkpatrick(temp,alpha=0.9999):
+        T=temp
+        while True:
+            yield T
+            T=alpha*T
     grafo_sencillo = problema_grafica_grafo(vertices_sencillo,
                                             aristas_sencillo,
                                             dimension)
@@ -366,7 +422,7 @@ def main():
 
     # Ahora vamos a encontrar donde deben de estar los puntos
     t_inicial = time.time()
-    solucion = blocales.temple_simulado(grafo_sencillo)
+    solucion = blocales.temple_simulado(grafo_sencillo,calendarizador_kirkpatrick(10),.001)
     t_final = time.time()
     costo_final = grafo_sencillo.costo(solucion)
 
@@ -395,7 +451,15 @@ def main():
     # Escribe aqui tus conclusiones
     #
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
-    #
+    # utilizando
+    # utilizando el calendarizador de kirkpatrick es mucho mas rapido que el
+    # estar utilizando el calendarizador por default, tambien se tomo en cuenta
+    # el calendarizador logaritmico pero no es tan eficiente como kirkpatrick
+    # que rapidamente baja su temperatura y luego lentamente sigue enfriando
+    # hasta llegar a 0, tambien el bajar la tolerancia ayudo ya que nuca se consiguen
+    # grafos perfectos
+
+
 
 
 if __name__ == '__main__':

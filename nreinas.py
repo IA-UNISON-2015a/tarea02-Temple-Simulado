@@ -10,7 +10,7 @@ Ejemplo de las n_reinas con búsquedas locales
 
 __author__ = 'juliowaissman'
 
-
+from time import time
 import blocales
 from random import shuffle
 from random import sample
@@ -76,6 +76,15 @@ class ProblemaNreinas(blocales.Problema):
         return sum([1 for (i, j) in combinations(range(self.n), 2)
                     if abs(estado[i] - estado[j]) == abs(i - j)])
 
+def calendarizador_logaritmico(Temp,k=.05):
+    while True:
+        Temp=Temp/math.log(k+1);
+        yield Temp;
+def calendarizador_kirkpatrick(temp,alpha=0.999):
+    T=temp
+    while True:
+        yield T
+        T=alpha*T
 
 def prueba_descenso_colinas(problema=ProblemaNreinas(8), repeticiones=10):
     """ Prueba el algoritmo de descenso de colinas con n repeticiones """
@@ -92,7 +101,7 @@ def prueba_descenso_colinas(problema=ProblemaNreinas(8), repeticiones=10):
 def prueba_temple_simulado(problema=ProblemaNreinas(8)):
     """ Prueba el algoritmo de temple simulado """
 
-    solucion = blocales.temple_simulado(problema)
+    solucion = blocales.temple_simulado(problema,calendarizador_kirkpatrick(10))
     print("\n\nTemple simulado con calendarización To/(1 + i).")
     print("Costo de la solución: ", problema.costo(solucion))
     print("Y la solución es: ")
@@ -100,9 +109,9 @@ def prueba_temple_simulado(problema=ProblemaNreinas(8)):
 
 
 if __name__ == "__main__":
-
-    prueba_descenso_colinas(ProblemaNreinas(32), 10)
+    #prueba_descenso_colinas(ProblemaNreinas(32), 10)
     prueba_temple_simulado(ProblemaNreinas(32))
+
 
     ##########################################################################
     #                          20 PUNTOS
@@ -124,4 +133,9 @@ if __name__ == "__main__":
     # Escribe aqui tus conclusiones
     #
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
+    # Se incluyo una grafica que describe el comportamiento de las reinas, y
+    # se puede notar que este es un tiepo exponencial.
+    # alrededor de 100 reinas es lo maximo asi como esta el codigo
     #
+    # al igual que con el dibujo de graficas utilize kirkpatrick, pero el
+    # enfriador logaritmicoe s bastante bueno para el problema
