@@ -15,7 +15,8 @@ import blocales
 from random import shuffle
 from random import sample
 from itertools import combinations
-
+import time
+import math
 
 class ProblemaNreinas(blocales.Problema):
     """
@@ -98,11 +99,40 @@ def prueba_temple_simulado(problema=ProblemaNreinas(8)):
     print("Y la solución es: ")
     print(solucion)
 
+def prueba2_temple_simulado(problema=ProblemaNreinas(8)):
 
+    t0 = T_inicial(problema)
+    solucion = blocales.temple_simulado(problema,calend_geom(t0))
+    print("\n\nTemple simulado con calendarización to*\u0391^k.")
+    print("Costo de la solución: ", problema.costo(solucion))
+    print("Y la solución es: ")
+    print(solucion)
+    
+def prueba3_temple_simulado(problema=ProblemaNreinas(8)):
+    t0 = T_inicial(problema)
+    solucion = blocales.temple_simulado(problema,calend_exp(t0,problema.n))
+    print("\n\nTemple simulado con calendarización To*exp^(-\u0391*k^(1/N)).")
+    print("Costo de la solución: ", problema.costo(solucion))
+    print("Y la solución es: ")
+    print(solucion)
+    
+def prueba4_temple_simulado(problema=ProblemaNreinas(8)):
+    t0 = T_inicial(problema)
+    solucion = blocales.temple_simulado(problema,calend_log(t0))
+    print("\n\nTemple simulado con calendarización To*\u0391/log(1 + k).")
+    print("Costo de la solución: ", problema.costo(solucion))
+    print("Y la solución es: ")
+    print(solucion)
+
+def T_inicial(problema=ProblemaNreinas(8)):
+    costos = [problema.costo(problema.estado_aleatorio())
+              for _ in range(10 * len(problema.estado_aleatorio()))]
+    minimo,  maximo = min(costos), max(costos)
+    return 2 * (maximo - minimo)      
+    
 if __name__ == "__main__":
-
-    prueba_descenso_colinas(ProblemaNreinas(32), 10)
-    prueba_temple_simulado(ProblemaNreinas(32))
+    
+    
 
     ##########################################################################
     #                          20 PUNTOS
@@ -110,18 +140,80 @@ if __name__ == "__main__":
     #
     # ¿Cual es el máximo número de reinas que se puede resolver en
     # tiempo aceptable con el método de 10 reinicios aleatorios?
-    #
+    
     # ¿Que valores para ajustar el temple simulado son los que mejor
     # resultado dan? ¿Cual es el mejor ajuste para el temple simulado
     # y hasta cuantas reinas puede resolver en un tiempo aceptable?
     #
     # En general para obtener mejores resultados del temple simulado,
     # es necesario utilizarprobar diferentes metdos de
-    # calendarización, prueba al menos otros dis métodos sencillos de
+    # calendarización, prueba al menos otros dos métodos sencillos de
     # calendarización y ajusta los parámetros para que funcionen de la
     # mejor manera
     #
     # Escribe aqui tus conclusiones
+    #En base a la subjetividad del término 'aceptable' diría que 78 reinas.
+    # Me tomó alrededor de dos horas correr de 10 reinas hasta 78
+    #(tomando en cuenta que hice corridas para los pares entre 10 y 78 reinas)
     #
+    #Para el temple_simulado, modifiqué el nivel de tolerancia pero el tiempo se
+    #elevava significativamente. Cuando utilicé otros métodos de calendarización 
+    #resultó que el calend_geom fue el mejor en tiempos con alpha igual a 0.9. De hecho 
+    # el tiempo siempre fue muy muy bueno, sin embargo los costos se veían afectados. Para
+    # alphas menores a 0.8, los costos eran considerablemente altos en promedio. Para 
+    # alpha = 0.9 el costo promedio oscilaba entre 0 y 1 pero el tiempo fue tan pequeño que
+    #que marcaba 0s.
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
     #
+    """archivo = open("nreinas_dc.txt",'a')
+
+    for i in range(32,80,2):
+           
+        t_inicial = time.time()
+        prueba_descenso_colinas(ProblemaNreinas(i), 10)
+        t_final = time.time()
+            
+        t_dc = t_final - t_inicial
+            
+        archivo.write("{} \t {} ".format(i,t_dc))
+        archivo.write("\n")
+    """    
+    """ t_inicial = time.time()
+    prueba_descenso_colinas(ProblemaNreinas(32), 10)
+    t_final = time.time()
+    print("Tiempo - descenso_colinas: {} s".format(t_final - t_inicial))
+    """
+    
+    t_inicial = time.time()
+    prueba2_temple_simulado(ProblemaNreinas(32))
+    t_final = time.time()
+    print("Tiempo - temple_simulado: {} s".format(t_final - t_inicial))
+    
+    
+
+def calend_geom(To,alpha=0.9):
+    k=0
+    
+    for k in range(int(1e10)):
+        k+=1
+        T = math.pow(alpha,k)*To
+        yield T
+        
+def calend_exp(To,N,alpha=0.01):
+    k=0
+    for k in range(int(1e10)):
+        k+=1
+        T = To*math.exp(-1*alpha* math.pow(k,1/N))
+        yield T
+    
+    
+def calend_log(To,alpha=1):
+    k=0
+    for k in range(int(1e10)):
+        k+=1
+        T = alpha*To/math.log(1+k,math.e)
+        yield T
+    
+  
+    
+    

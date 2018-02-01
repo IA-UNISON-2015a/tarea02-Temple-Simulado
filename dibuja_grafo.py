@@ -19,7 +19,7 @@ $pip install pillow
 
 """
 
-__author__ = 'Escribe aquí tu nombre'
+__author__ = 'Belen Chavarría'
 
 import blocales
 import random
@@ -56,6 +56,7 @@ class problema_grafica_grafo(blocales.Problema):
         self.vertices = vertices
         self.aristas = aristas
         self.dim = dimension_imagen
+        self.r=150
 
     def estado_aleatorio(self):
         """
@@ -78,7 +79,7 @@ class problema_grafica_grafo(blocales.Problema):
 
     def vecino_aleatorio(self, estado, dmax=10):
         """
-        Encuentra un vecino en forma aleatoria. En estea primera
+        Encuentra un vecino en forma aleatoria. En esta primera
         versión lo que hacemos es tomar un valor aleatorio, y
         sumarle o restarle x pixeles al azar.
 
@@ -93,13 +94,14 @@ class problema_grafica_grafo(blocales.Problema):
         @return: Una tupla con un estado vecino al estado de entrada.
 
         """
+        """   
         vecino = list(estado)
         i = random.randint(0, len(vecino) - 1)
         vecino[i] = max(10,
                         min(self.dim - 10,
                             vecino[i] + random.randint(-dmax,  dmax)))
         return tuple(vecino)
-
+        """
         #######################################################################
         #                          20 PUNTOS
         #######################################################################
@@ -107,6 +109,53 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # Propon una manera alternativa de vecino_aleatorio y muestra que
         # con tu propuesta se obtienen resultados mejores o en menor tiempo
+        
+        # calculé el vecino, primero modificando aleatoriamente una de las
+        # coordenadas de un vértice como en el ejemplo, después acercando/alejando
+        # a este vértice de tal forma que quede en la circunferencia con centro de la
+        # pantalla y radio= r
+        
+        centx = round(self.dim)/2
+       
+        
+        vecino = list(estado)
+        #escogemos una cordenada que corresponderá a un vértice y se mueve en x o en y
+        i = random.randint(0, len(vecino) - 1)
+        vecino[i] = max(10,
+                        min(self.dim - 10,
+                            vecino[i] + random.randint(-dmax,  dmax)))
+        
+        #ahora se coloca dentro del círculo
+        x = i  if i%2 is 0  else i-1
+        y = i if i%2 is 1  else i+1
+        
+        dx = centx - vecino[x]
+        dy = centx - vecino[y]
+
+        dh = math.sqrt(dx**2 + dy**2)
+        
+        #casos especiales en que los ángulos del vertice sean multiplos de 90°
+        
+        #otro caso
+        dhp = abs(self.r-dh)
+        dxp, dyp = round(dhp*abs(dx)/dh), round(dhp*abs(dy)/dh)
+        
+        #cuatro casos dependiendo del cuadrante del círculo en el que se
+        # encuentra el vértice
+        if (dx<0 and self.r-dh>0) or (dx>0 and self.r-dh<0):
+            vecino[x]= vecino[x] + dxp
+        else:
+            vecino[x]= vecino[x] - dxp
+
+        
+        if (dy>0 and self.r-dh<0) or (dy<0 and self.r-dh>0):
+            vecino[y]= vecino[y] + dyp
+        else:
+            vecino[y]= vecino[y] - dyp
+            
+         
+        return tuple(vecino)
+       
 
     def costo(self, estado):
         """
@@ -125,9 +174,9 @@ class problema_grafica_grafo(blocales.Problema):
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
         K1 = 1.0
-        K2 = 0.0
-        K3 = 0.0
-        K4 = 0.0
+        K2 = 4.0
+        K3 = 1.0
+        K4 = 2.0
 
         # Genera un diccionario con el estado y la posición
         estado_dic = self.estado2dic(estado)
@@ -255,13 +304,43 @@ class problema_grafica_grafo(blocales.Problema):
         # cada vertice. Dale diferente peso a cada criterio hasta
         # lograr que el sistema realice gráficas "bonitas"
         #
-        # ¿Que valores de diste a K1, K2 y K3 respectivamente?
+        # ¿Que valores le diste a K1, K2 y K3 respectivamente?
         #
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
-
+        
+        suma = 0
+        lower = math.pi/4
+        upper = math.pi/3
+        #calcular el ángulo en cada vértice (recorrer todos los vértices)
+        for vert in self.vertices:
+            #encontramos los vértices con los que se forman las aristas con vert.
+            vert_op = [item[1] for item in self.aristas if item[0] == vert]
+            (x1,y1) = estado_dic[vert]
+            
+            for (v1, v2) in itertools.combinations(vert_op, 2):
+                
+                (x2, y2), (x3, y3) = estado_dic[v1], estado_dic[v2]
+                
+                a = distancia(x2,y2,x3,y3)        
+                b = distancia(x1,y1,x2,y2)
+                c = distancia(x1,y1,x3,y3)
+                
+                
+                if b*c > 0:
+                    arg = (a**2 - b**2 - c**2)/(-2*b*c)
+    
+                    angle = math.acos(arg) if arg<=1 and arg>-1 else math.pi/2 #en radianes
+                    #se penalizan con la diferencia menor entre el ángulo y
+                    #pi/4 y pi/3
+                    suma+= min(abs(lower-angle), abs(angle-upper))
+                else: #de haber puntos encimados
+                    suma+=math.pi
+            
+        return suma
+            
+        
     def criterio_propio(self, estado_dic):
         """
         Implementa y comenta correctamente un criterio de costo que sea
@@ -287,7 +366,21 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+        
+        # mi criterio extra consistirá en penalizar al grafo por la cantidad de
+        # vértices que tenga dentro del círculo de radio r
+        
+        v_fuera = 0
+        centx = round(self.dim/2)
+        
+        for v in self.vertices:
+            (x,y) = estado_dic[v]
+            d = distancia(x,y,centx,centx)
+            if d< self.r:
+                v_fuera+=1 
+            
+        
+        return 5*v_fuera
 
     def estado2dic(self, estado):
         """
@@ -325,13 +418,24 @@ class problema_grafica_grafo(blocales.Problema):
         dibujar = ImageDraw.ImageDraw(imagen)
 
         for (v1, v2) in self.aristas:
-            dibujar.line((lugar[v1], lugar[v2]), fill=(255, 0, 0))
+            dibujar.line((lugar[v1], lugar[v2]), fill=(203,40,33))
         for v in self.vertices:
             dibujar.text(lugar[v], v, (0, 0, 0))
 
+        #pintar círculo para ver la proximidad
+        a = round(self.dim/2)-self.r
+        b = round(self.dim/2)+self.r
+        dibujar.arc((a,a,b,b),0,360,fill=(59,131,189))
+        
         imagen.save(filename)
 
-
+        
+        
+        
+def distancia (x1,y1,x2,y2):
+        
+        return math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
+    
 def main():
     """
     La función principal
@@ -339,7 +443,7 @@ def main():
     """
 
     # Vamos a definir un grafo sencillo
-    vertices_sencillo = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+    vertices_sencillo = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H','I', 'J', 'K', 'L', 'M']
     aristas_sencillo = [('B', 'G'),
                         ('E', 'F'),
                         ('H', 'E'),
@@ -350,7 +454,13 @@ def main():
                         ('H', 'B'),
                         ('F', 'A'),
                         ('C', 'B'),
-                        ('H', 'F')]
+                        ('H', 'F'),
+                        ('I', 'B'),
+                        ('K', 'C'),
+                        ('K', 'E'),
+                        ('M', 'F'),
+                        ('L', 'A'),
+                        ('J', 'B')]
     dimension = 400
 
     # Y vamos a hacer un dibujo del grafo sin decirle como hacer para
@@ -364,9 +474,12 @@ def main():
     grafo_sencillo.dibuja_grafo(estado_aleatorio, "prueba_inicial.gif")
     print("Costo del estado aleatorio: {}".format(costo_inicial))
 
+    
+    
+    
     # Ahora vamos a encontrar donde deben de estar los puntos
     t_inicial = time.time()
-    solucion = blocales.temple_simulado(grafo_sencillo)
+    solucion = blocales.temple_simulado(grafo_sencillo,calend_geom(grafo_sencillo))
     t_final = time.time()
     costo_final = grafo_sencillo.costo(solucion)
 
@@ -393,10 +506,26 @@ def main():
     # menor tiempo posible.
     #
     # Escribe aqui tus conclusiones
+    #Con el calendarizador por Default, tardó alrededor de 3 minutos, con un costo
+    # promedio de aproximadamente 100 mientras que con el calendarizador geométrico
+    # los tiempos fueron se redujeron a una centésima parte con un costo promedio
+    # de 90
     #
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
     #
-
+    
+    
+def calend_geom(problema, alpha=0.99):
+    costos = [problema.costo(problema.estado_aleatorio())
+              for _ in range(10 * len(problema.estado_aleatorio()))]
+    minimo,  maximo = min(costos), max(costos)
+    To = 2 * (maximo - minimo)
+    k=0
+    
+    for k in range(int(1e10)):
+        k+=1
+        T = math.pow(alpha,k)*To
+        yield T
 
 if __name__ == '__main__':
     main()
