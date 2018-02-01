@@ -19,12 +19,11 @@ $pip install pillow
 
 """
 
-__author__ = 'Escribe aquí tu nombre'
+__author__ = 'Carlos_huguez'
 
 import blocales
-import random
-import itertools
-import math
+import random, operator, itertools    
+import numpy as np
 import time
 from PIL import Image, ImageDraw
 
@@ -36,7 +35,7 @@ class problema_grafica_grafo(blocales.Problema):
 
     """
 
-    def __init__(self, vertices, aristas, dimension_imagen=400):
+    def __init__(self, vertices, aristas, dimension_imagen = 400):
         """
         Un grafo se define como un conjunto de vertices, en forma de
         lista (no conjunto, el orden es importante a la hora de
@@ -53,9 +52,10 @@ class problema_grafica_grafo(blocales.Problema):
                                  en pixeles (cuadrada por facilidad).
 
         """
+
         self.vertices = vertices
         self.aristas = aristas
-        self.dim = dimension_imagen
+        self.dim = dimension_imagen 
 
     def estado_aleatorio(self):
         """
@@ -73,8 +73,7 @@ class problema_grafica_grafo(blocales.Problema):
                  cada vertice en la imagen.
 
         """
-        return tuple(random.randint(10, self.dim - 10) for _ in
-                     range(2 * len(self.vertices)))
+        return tuple( random.randint( 10, self.dim - 10 ) for _ in range( 2 * len( self.vertices ) ) )
 
     def vecino_aleatorio(self, estado, dmax=10):
         """
@@ -93,12 +92,16 @@ class problema_grafica_grafo(blocales.Problema):
         @return: Una tupla con un estado vecino al estado de entrada.
 
         """
-        vecino = list(estado)
-        i = random.randint(0, len(vecino) - 1)
-        vecino[i] = max(10,
-                        min(self.dim - 10,
-                            vecino[i] + random.randint(-dmax,  dmax)))
-        return tuple(vecino)
+        vecino = list( estado )
+    
+        i = random.randint( 0, len( vecino ) - 1 )
+        
+        mini =  random.randint( 10, self.dim-10 ) 
+
+        vecino[i] = mini
+        
+        
+        return tuple( vecino )
 
         #######################################################################
         #                          20 PUNTOS
@@ -107,6 +110,10 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # Propon una manera alternativa de vecino_aleatorio y muestra que
         # con tu propuesta se obtienen resultados mejores o en menor tiempo
+        # 
+        # Propuesta:
+        # yo decidí en vez de que un subíndice aumentara o disminuyera por 10
+        # opte por generar un numero random desde 10 hasta dimencion -10
 
     def costo(self, estado):
         """
@@ -124,13 +131,13 @@ class problema_grafica_grafo(blocales.Problema):
 
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
-        K1 = 1.0
-        K2 = 0.0
-        K3 = 0.0
-        K4 = 0.0
+        K1 = 10.0
+        K2 = 3.0
+        K3 = 8.5
+        K4 = 3.0
 
         # Genera un diccionario con el estado y la posición
-        estado_dic = self.estado2dic(estado)
+        estado_dic = self.estado2dic( estado )
 
         return (K1 * self.numero_de_cruces(estado_dic) +
                 K2 * self.separacion_vertices(estado_dic) +
@@ -201,9 +208,10 @@ class problema_grafica_grafo(blocales.Problema):
                       (yFA - y0A) * (x0A - x0B)) / den
             if 0 < puntoA < 1 and 0 < puntoB < 1:
                 total += 1
+        
         return total
 
-    def separacion_vertices(self, estado_dic, min_dist=50):
+    def separacion_vertices(self, estado_dic, min_dist=80):
         """
         A partir de una posicion "estado" devuelve una penalización
         proporcional a cada par de vertices que se encuentren menos
@@ -222,14 +230,16 @@ class problema_grafica_grafo(blocales.Problema):
 
         """
         total = 0
-        for (v1, v2) in itertools.combinations(self.vertices, 2):
+        
+        for (v1, v2) in itertools.combinations( self.vertices, 2 ):
             # Calcula la distancia entre dos vertices
             (x1, y1), (x2, y2) = estado_dic[v1], estado_dic[v2]
-            dist = math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
+            dist = np.sqrt( ( x1 - x2 ) ** 2 + ( y1 - y2 ) ** 2 )
 
             # Penaliza la distancia si es menor a min_dist
             if dist < min_dist:
                 total += (1.0 - (dist / min_dist))
+        
         return total
 
     def angulo_aristas(self, estado_dic):
@@ -239,7 +249,7 @@ class problema_grafica_grafo(blocales.Problema):
         grados). Los angulos de pi/6 o mayores no llevan ninguna
         penalización, y la penalizacion crece conforme el angulo es
         menor.
-
+        
         @param estado_dic: Diccionario cuyas llaves son los vértices
                            del grafo y cuyos valores es una tupla con
                            la posición (x, y) de ese vértice en el
@@ -247,22 +257,71 @@ class problema_grafica_grafo(blocales.Problema):
 
         @return: Un número.
 
+        
         """
+
         #######################################################################
         #                          20 PUNTOS
         #######################################################################
+        #
         # Agrega el método que considere el angulo entre aristas de
         # cada vertice. Dale diferente peso a cada criterio hasta
         # lograr que el sistema realice gráficas "bonitas"
         #
         # ¿Que valores de diste a K1, K2 y K3 respectivamente?
-        #
+        #  K1 = 10.0
+        #  K2 = 3.0
+        #  K3 = 8.5
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
-        #
-        return 0
+        
+        total = 0
+        mis_aristas = []
+        for vertice in self.vertices:
+        
+            m1 = m2 = 0
+            
+            for ar in self.aristas:
+                if vertice in ar:
+                    mis_aristas.append( ar ) 
+
+            for ( a1, a2 ) in itertools.combinations( mis_aristas, 2 ):
+
+               if vertice in a1 and vertice in a2:
+                    try:                            
+                        n1, n2 = a1
+                        x1, y1 = estado_dic[n1]
+                        x2, y2 = estado_dic[n2]
+
+                        if ( x2 - x1 ) == 0:
+                            continue
+                        
+                        m1 =  ( y2 - y1 ) / ( x2 - x1 )
+
+                        n1, n2 = a2
+                        x1, y1 = estado_dic[n1]
+                        x2, y2 = estado_dic[n2]
+
+                        m2 =  ( y2 - y1 ) / ( x2 - x1 )
+                        
+                        if ( x2 - x1 ) == 0:
+                            continue
+
+                        angulo = np.degrees( np.arctan( np.abs( ( m2 - m1 ) / ( 1 + m1*m2 ) ) ) ) 
+                
+                        if angulo < np.degrees( np.pi / 6 ):
+                            total += (1 - angulo / 31 )
+                    
+                    except ZeroDivisionError:
+                        pass
+                        #print( "división entre cero" )           
+            
+            del mis_aristas[:] 
+
+        return total
 
     def criterio_propio(self, estado_dic):
+        
         """
         Implementa y comenta correctamente un criterio de costo que sea
         conveniente para que un grafo luzca bien.
@@ -279,15 +338,45 @@ class problema_grafica_grafo(blocales.Problema):
         #                          20 PUNTOS
         #######################################################################
         # ¿Crees que hubiera sido bueno incluir otro criterio? ¿Cual?
+        #   si, yo solo lo puse para un circuito de 3 hubiera sido mejor generalizarlo 
+        #   crei que se veia bien en circuitos de 3 
         #
         # Desarrolla un criterio propio y ajusta su importancia en el
         # costo total con K4 ¿Mejora el resultado? ¿En que mejora el
         # resultado final?
-        #
+        #   si mejora por que al poder ser mas legibles la conexion de nodos
+        #   con las aristas y siento que en un circuito tener la misma distancia
+        #   en las aristas suele darle mejor apariencia 
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+        
+        d1 = d2 = d3 = total = 0
+
+        for ( v1, v2, v3 ) in  itertools.combinations( self.vertices, 3 ):
+
+            for ( a1, a2, a3 ) in itertools.combinations( self.aristas, 3 ):
+                
+                if v1 in a1 and v1 in a2 and v2 in a3 and v2 in a1 and v3 in a2 and v3 in a3:
+
+                    x1, y1 = estado_dic[v1]
+                    x2, y2 = estado_dic[v2]
+                    x3, y3 = estado_dic[v3]
+
+                    d1 = np.sqrt( ( x2 - x1 )**2 + ( y2 - y1 )**2 )
+                    d2 = np.sqrt( ( x3 - x1 )**2 + ( y3 - y1 )**2 )
+                    d3 = np.sqrt( ( x3 - x2 )**2 + ( y3 - y2 )**2 )
+
+                    if d1 != d2:
+                        total += ( 1 / 3 )
+                    
+                    if d2 != d3:
+                        total += ( 1 / 3 )
+                    
+                    if d3 != d1:
+                        total += ( 1 / 3 )
+
+        return total
 
     def estado2dic(self, estado):
         """
@@ -299,8 +388,7 @@ class problema_grafica_grafo(blocales.Problema):
                  arista y su valor es una tupla (x, y)
 
         """
-        return {self.vertices[i]: (estado[2 * i], estado[2 * i + 1])
-                for i in range(len(self.vertices))}
+        return { self.vertices[i]: (estado[2 * i], estado[2 * i + 1] ) for i in range( len( self.vertices ) ) }
 
     def dibuja_grafo(self, estado=None, filename="prueba.gif"):
         """
@@ -326,6 +414,7 @@ class problema_grafica_grafo(blocales.Problema):
 
         for (v1, v2) in self.aristas:
             dibujar.line((lugar[v1], lugar[v2]), fill=(255, 0, 0))
+        
         for v in self.vertices:
             dibujar.text(lugar[v], v, (0, 0, 0))
 
@@ -337,7 +426,7 @@ def main():
     La función principal
 
     """
-
+    
     # Vamos a definir un grafo sencillo
     vertices_sencillo = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     aristas_sencillo = [('B', 'G'),
@@ -351,22 +440,24 @@ def main():
                         ('F', 'A'),
                         ('C', 'B'),
                         ('H', 'F')]
+             
     dimension = 400
 
     # Y vamos a hacer un dibujo del grafo sin decirle como hacer para
     # ajustarlo.
-    grafo_sencillo = problema_grafica_grafo(vertices_sencillo,
-                                            aristas_sencillo,
-                                            dimension)
+    grafo_sencillo = problema_grafica_grafo( vertices_sencillo,
+                                             aristas_sencillo,
+                                             dimension )
 
     estado_aleatorio = grafo_sencillo.estado_aleatorio()
     costo_inicial = grafo_sencillo.costo(estado_aleatorio)
     grafo_sencillo.dibuja_grafo(estado_aleatorio, "prueba_inicial.gif")
+    
     print("Costo del estado aleatorio: {}".format(costo_inicial))
 
     # Ahora vamos a encontrar donde deben de estar los puntos
     t_inicial = time.time()
-    solucion = blocales.temple_simulado(grafo_sencillo)
+    solucion = blocales.temple_simulado_exp( grafo_sencillo )
     t_final = time.time()
     costo_final = grafo_sencillo.costo(solucion)
 
@@ -374,6 +465,7 @@ def main():
     print("\nUtilizando la calendarización por default")
     print("Costo de la solución encontrada: {}".format(costo_final))
     print("Tiempo de ejecución en segundos: {}".format(t_final - t_inicial))
+
 
     ##########################################################################
     #                          20 PUNTOS

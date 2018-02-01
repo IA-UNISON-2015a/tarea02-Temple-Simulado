@@ -8,14 +8,38 @@ Algoritmos generales para búsquedas locales
 
 """
 
-__author__ = 'juliowaissman'
+__author__ = 'Carlos_Huguez'
 
 from itertools import takewhile
-from math import exp
-from math import log2
+import numpy as np
 from random import random
 
 
+class Cale_exp:
+
+    def __init__(self, fin = 1e10 ):
+        
+        self.costos = [ problema.costo( problema.estado_aleatorio() ) for _ in range( 10 * len( problema.estado_aleatorio() ) ) ]
+        
+        self.fin = fin
+        self.current = 1
+        self.k = 0.001
+        
+        self.minimo = min(costos)
+        self.maximo = max( costos )
+        
+        self.T_ini = 2 * ( maximo - minimo )
+    
+    def __iter__(self):
+        return iter(self)
+
+    def next(self): 
+        if self.current > int( self.fin ):
+            raise StopIteration
+        else:
+            self.current += 1
+            return T_ini * np.exp(-self.k*self.current)
+            
 class Problema(object):
     """
     Definición formal de un problema de búsqueda local. Es necesario
@@ -69,8 +93,7 @@ class Problema(object):
         """
         raise NotImplementedError("Este metodo debe ser implementado")
 
-
-def descenso_colinas(problema, maxit=1e6):
+def descenso_colinas( problema, maxit = 1e6 ):
     """
     Busqueda local por descenso de colinas.
 
@@ -80,19 +103,23 @@ def descenso_colinas(problema, maxit=1e6):
     @return: El estado con el menor costo encontrado
 
     """
-    estado = problema.estado_aleatorio()
-    costo = problema.costo(estado)
 
-    for _ in range(int(maxit)):
-        e = min(problema.vecinos(estado), key=problema.costo)
+    estado = problema.estado_aleatorio()
+    costo = problema.costo( estado )
+
+    for _ in range( int( maxit ) ):
+    
+        e = min( problema.vecinos( estado ), key = problema.costo )
         c = problema.costo(e)
+    
         if c >= costo:
             break
+        
         estado, costo = e, c
+    
     return estado
 
-
-def temple_simulado(problema, calendarizador=None, tol=0.001):
+def temple_simulado_exp( problema, calendarizador = None, tol = 0.001 ):
     """
     Busqueda local por temple simulado
 
@@ -104,21 +131,86 @@ def temple_simulado(problema, calendarizador=None, tol=0.001):
 
     """
     if calendarizador is None:
-        costos = [problema.costo(problema.estado_aleatorio())
-                  for _ in range(10 * len(problema.estado_aleatorio()))]
-        minimo,  maximo = min(costos), max(costos)
-        T_ini = 2 * (maximo - minimo)
-        calendarizador = (T_ini/(1 + i) for i in range(int(1e10)))
+        costos = [ problema.costo( problema.estado_aleatorio() ) for _ in range( 10 * len( problema.estado_aleatorio() ) ) ]
+        minimo,  maximo = min(costos), max( costos )
+        T_ini = 2 * ( maximo - minimo )
+        k = 0.001
+        calendarizador = ( T_ini * np.exp(-k*i) for i in range( int( 1e10 ) ) )
+
 
     estado = problema.estado_aleatorio()
-    costo = problema.costo(estado)
+    costo = problema.costo( estado )
 
-    for T in takewhile(lambda i: i > tol, calendarizador):
+    for T in takewhile( lambda i: i > tol, calendarizador ):
 
         vecino = problema.vecino_aleatorio(estado)
         costo_vecino = problema.costo(vecino)
         incremento_costo = costo_vecino - costo
 
-        if incremento_costo <= 0 or random() < exp(-incremento_costo / T):
+        if incremento_costo <= 0 or random() < np.exp( -incremento_costo / T ):
             estado, costo = vecino, costo_vecino
+
+    return estado
+
+def temple_simulado_log( problema, calendarizador = None, tol = 0.001 ):
+    """
+    Busqueda local por temple simulado
+
+    @param problema: Un objeto de la clase `Problema`.
+    @param calendarizador: Un generador de temperatura (simulación).
+    @param tol: Temperatura mínima considerada diferente a cero.
+
+    @return: El estado con el menor costo encontrado
+
+    """
+    if calendarizador is None:
+        costos = [ problema.costo( problema.estado_aleatorio() ) for _ in range( 10 * len( problema.estado_aleatorio() ) ) ]
+        minimo,  maximo = min(costos), max( costos )
+        T_ini = 2 * ( maximo - minimo )
+        calendarizador = ( T_ini / ( ( np.log( i + 1 ) ) + 1 )   for i in range( int( 1e10 ) ) )
+
+    estado = problema.estado_aleatorio()
+    costo = problema.costo( estado )
+
+    for T in takewhile( lambda i: i > tol, calendarizador ):
+
+        vecino = problema.vecino_aleatorio( estado )
+        costo_vecino = problema.costo( vecino )
+        incremento_costo = costo_vecino - costo
+
+        if incremento_costo <= 0 or random() < np.exp( -incremento_costo / T ):
+            estado, costo = vecino, costo_vecino
+
+    return estado
+
+def temple_simulado( problema, calendarizador = None, tol = 0.001 ):
+    """
+    Busqueda local por temple simulado
+
+    @param problema: Un objeto de la clase `Problema`.
+    @param calendarizador: Un generador de temperatura (simulación).
+    @param tol: Temperatura mínima considerada diferente a cero.
+
+    @return: El estado con el menor costo encontrado
+
+    """
+    if calendarizador is None:
+        costos = [ problema.costo( problema.estado_aleatorio() ) for _ in range( 10 * len( problema.estado_aleatorio() ) ) ]
+        minimo,  maximo = min(costos), max( costos )
+        T_ini = 2 * ( maximo - minimo )
+        calendarizador = ( T_ini / (i + 1) for i in range( int( 1e10 ) ) )
+        
+
+    estado = problema.estado_aleatorio()
+    costo = problema.costo( estado )
+
+    for T in takewhile( lambda i: i > tol, calendarizador ):
+
+        vecino = problema.vecino_aleatorio(estado)
+        costo_vecino = problema.costo(vecino)
+        incremento_costo = costo_vecino - costo
+
+        if incremento_costo <= 0 or random() < np.exp( -incremento_costo / T ):
+            estado, costo = vecino, costo_vecino
+    
     return estado
