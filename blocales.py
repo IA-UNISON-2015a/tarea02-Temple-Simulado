@@ -112,7 +112,9 @@ def temple_simulado(problema, calendarizador=None, tol=0.001):
     estado = problema.estado_aleatorio()
     costo = problema.costo(estado)
 
-    for T in takewhile(lambda i: i > tol, calendarizador):
+    costo_vecino = -1
+    #for T in takewhile(lambda i: i > tol, calendarizador):
+    for T in takewhile(lambda i: i > tol and costo_vecino is not 0, calendarizador):
 
         vecino = problema.vecino_aleatorio(estado)
         costo_vecino = problema.costo(vecino)
