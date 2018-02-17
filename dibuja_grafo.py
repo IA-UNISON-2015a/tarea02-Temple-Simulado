@@ -28,6 +28,8 @@ import math
 import time
 from PIL import Image, ImageDraw
 
+from math import cos, sin
+
 
 class problema_grafica_grafo(blocales.Problema):
 
@@ -78,7 +80,7 @@ class problema_grafica_grafo(blocales.Problema):
 
     def vecino_aleatorio(self, estado, dmax=10):
         """
-        Encuentra un vecino en forma aleatoria. En estea primera
+        Encuentra un vecino en forma aleatoria. En esta primera
         versión lo que hacemos es tomar un valor aleatorio, y
         sumarle o restarle x pixeles al azar.
 
@@ -93,12 +95,15 @@ class problema_grafica_grafo(blocales.Problema):
         @return: Una tupla con un estado vecino al estado de entrada.
 
         """
+        """
         vecino = list(estado)
+
         i = random.randint(0, len(vecino) - 1)
         vecino[i] = max(10,
                         min(self.dim - 10,
                             vecino[i] + random.randint(-dmax,  dmax)))
         return tuple(vecino)
+        """
 
         #######################################################################
         #                          20 PUNTOS
@@ -107,6 +112,34 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # Propon una manera alternativa de vecino_aleatorio y muestra que
         # con tu propuesta se obtienen resultados mejores o en menor tiempo
+
+        """
+        Nueva idea: Tomar un vertice del grafo y moverlo aleatoriamente a otra
+        posicion que este limitada por una circunferencia del radio de la
+        dispersion. Ya que se mueve tanto en x como en y, es posible explorar
+        el area de soluciones en menos pasos (o eso pienso).
+        """
+        vecino = list(estado)
+        print("Lista de estados")
+        print(vecino)
+
+        x = random.randint(0, len(vecino) - 1)
+        y = x+1 if x % 2 == 0 else x-1
+        if x > y:   #hace vecino[x] horizontal, vecino[y] vertical si no lo eran
+            x,y = y,x
+        theta = 2 * math.pi * random.random()
+        magnitud  = dmax * random.random()
+        dx = int(magnitud*cos(theta))
+        dy = int(magnitud*sin(theta))
+        vecino[x] = max(10, min(self.dim - 10, vecino[x] + dx))
+        vecino[y] = max(10, min(self.dim - 10, vecino[y] + dy))
+
+        print("Indices cambiados: {}, {}".format(x,y))
+        print("Lista de vecinos con cambios")
+        print(vecino)
+        x = input("ENTER")
+
+        return tuple(vecino)
 
     def costo(self, estado):
         """
@@ -401,3 +434,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
