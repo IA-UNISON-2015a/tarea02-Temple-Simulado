@@ -149,10 +149,11 @@ class problema_grafica_grafo(blocales.Problema):
 
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
-        K1 = 0.25
-        K2 = 0.25
-        K3 = 0.25
-        K4 = 0.25
+        K1 = 0.5
+        K2 = 3
+        K3 = 2.0
+        K4 = 0.5
+        K5 = 4
 
         # Genera un diccionario con el estado y la posición
         estado_dic = self.estado2dic(estado)
@@ -160,7 +161,8 @@ class problema_grafica_grafo(blocales.Problema):
         return (K1 * self.numero_de_cruces(estado_dic) +
                 K2 * self.separacion_vertices(estado_dic) +
                 K3 * self.angulo_aristas(estado_dic) +
-                K4 * self.criterio_propio(estado_dic))
+                K4 * self.criterio_propio(estado_dic) +
+                K5 * self.criterioPropio2(estado_dic))
 
         # Como podras ver en los resultados, el costo inicial
         # propuesto no hace figuras particularmente bonitas, y esto es
@@ -347,6 +349,28 @@ class problema_grafica_grafo(blocales.Problema):
             penalizacion += abs(distancia-radio)/radio
 
         return penalizacion
+
+    """
+    Criterio que revisa que haya el mismo numero de vertices en la parte
+    izquierda que la parte derecha y en la parte superior e inferior de la
+    grafica.
+    """
+    def criterioPropio2(self, estado_dic):
+        verticesIzq = 0
+        verticesInf = 0
+        mitadHorizontal = self.dim/2
+        mitadVertical = self.dim/2
+
+        for i in estado_dic:
+            if estado_dic[i][0] < mitadHorizontal:
+                verticesIzq += 1
+            if estado_dic[i][1] < mitadVertical:
+                verticesInf += 1
+
+        penalizacion1 = 1 - 2*abs(len(self.vertices)-verticesIzq)/len(self.vertices)
+        penalizacion2 = 1 - 2*abs(len(self.vertices)-verticesInf)/len(self.vertices)
+
+        return (penalizacion1+penalizacion2)/2
 
     def estado2dic(self, estado):
         """
