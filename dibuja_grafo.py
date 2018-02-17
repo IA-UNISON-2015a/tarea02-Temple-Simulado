@@ -30,7 +30,6 @@ from PIL import Image, ImageDraw
 
 from math import cos, sin
 
-
 class problema_grafica_grafo(blocales.Problema):
 
     """
@@ -222,7 +221,6 @@ class problema_grafica_grafo(blocales.Problema):
             den = (xFA - x0A) * (yFB - y0B) - (xFB - x0B) * (yFA - y0A)
             if den == 0:
                 continue
-
             # Y entonces sacamos el largo del cruce, normalizado por
             # den. Esto significa que en 0 se encuentran en la primer
             # arista y en 1 en la última. Si los puntos de cruce de
@@ -288,12 +286,30 @@ class problema_grafica_grafo(blocales.Problema):
         # cada vertice. Dale diferente peso a cada criterio hasta
         # lograr que el sistema realice gráficas "bonitas"
         #
-        # ¿Que valores de diste a K1, K2 y K3 respectivamente?
+        # ¿Que valores le diste a K1, K2 y K3 respectivamente?
         #
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+
+        anguloMin = math.pi/6
+        penalizacion = 0
+
+        for (a1, a2) in itertools.combinations(self.aristas, 2):
+            #si las aristas no comparten un vertice
+            if not a1[0] in a2 and not a1[1] in a2:
+                continue
+
+            v1 = estado_dic[a1[0]] if a1[0] in a2 else estado_dic[a1[1]]
+            v2 = estado_dic[a1[0]] if a1[0] not in a2 else estado_dic[a1[1]]
+            v3 = estado_dic[a2[0]] if a2[0] not in a1 else estado_dic[a2[1]]
+
+            angulo = calcularAngulo(v1, v2, v3)
+
+            if angulo < anguloMin:
+                penalizacion += 1 - angulo/anguloMin
+
+        return penalizacion
 
     def criterio_propio(self, estado_dic):
         """
@@ -431,6 +447,26 @@ def main():
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
     #
 
+"""
+Funcion que calcula el angulo de un arco dado 3 puntos.
+Cada punto es una tupla de la fomar (posX, posY).
+
+@param punto1: Es el punto que une los otros dos en el arco
+@param punto2: Uno de los puntos del arco
+@param punto3: Uno de los puntos del arco
+
+@return El angulo en radianes del punto 2 al punto 3 unidos por el punto 1
+"""
+def calcularAngulo(punto1, punto2, punto3):
+    #crea 2 vectores que van de p1 a p2 y de p1 a p3
+    vector12 = (punto1[0] - punto2[0], punto1[1] - punto2[1])
+    vector13 = (punto1[0] - punto3[0], punto1[1] - punto3[1])
+
+    prodPunto = vector12[0]*vector13[0] + vector12[1]*vector13[1]
+    magnitud12 = math.sqrt(vector12[0]**2 + vector12[1]**2)
+    magnitud13 = math.sqrt(vector13[0]**2 + vector13[1]**2)
+    val = prodPunto/(magnitud12+magnitud13)
+    return math.acos(prodPunto/(magnitud12*magnitud13)) if magnitud12+magnitud13>0 else 0
 
 if __name__ == '__main__':
     main()
