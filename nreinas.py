@@ -8,14 +8,15 @@ Ejemplo de las n_reinas con búsquedas locales
 
 """
 
-__author__ = 'juliowaissman'
+__author__ = 'CesarSalazar'
 
 
 import blocales
 from random import shuffle
 from random import sample
 from itertools import combinations
-
+#Para calcular el tiempo
+from time import time
 
 class ProblemaNreinas(blocales.Problema):
     """
@@ -89,30 +90,59 @@ class ProblemaNreinas(blocales.Problema):
 
 def prueba_descenso_colinas(problema=ProblemaNreinas(8), repeticiones=10):
     """ Prueba el algoritmo de descenso de colinas con n repeticiones """
-
+    acum=0
     print("\n\n" + "intento".center(10) +
           "estado".center(60) + "costo".center(10))
     for intento in range(repeticiones):
+        tInicial = time()
         solucion = blocales.descenso_colinas(problema)
+        tFinal = time()
+        tTotal = tFinal - tInicial
+        acum+=tTotal
         print(str(intento).center(10) +
               str(solucion).center(60) +
               str(problema.costo(solucion)).center(10))
+    print("Tiempo total:",acum)
 
 
-def prueba_temple_simulado(problema=ProblemaNreinas(8)):
+def prueba_temple_simulado(problema=ProblemaNreinas(8),calendarizador=None,tol=0.9):
     """ Prueba el algoritmo de temple simulado """
-
+    tInicial = time()
     solucion = blocales.temple_simulado(problema)
+    tFinal = time()
     print("\n\nTemple simulado con calendarización To/(1 + i).")
     print("Costo de la solución: ", problema.costo(solucion))
+    print("Tiempo total:", tFinal - tInicial)
+    print("Y la solución es: ")
+    print(solucion)
+#Prueba temple simulado con calendarizacion blah, calendarizador=None, tol=0.001    
+def prueba_temple_simulado1(problema=ProblemaNreinas(8)):
+    """ Prueba el algoritmo de temple simulado """
+    tInicial = time()
+    solucion = blocales.temple_simulado(problema)
+    tFinal = time()
+    print("\n\nTemple simulado con calendarización To/(1 + i).")
+    print("Costo de la solución: ", problema.costo(solucion))
+    print("Tiempo total:", tFinal - tInicial)
+    print("Y la solución es: ")
+    print(solucion)
+#Prueba temple simulado con calendarizacion blah2, calendarizador=None, tol=0.001    
+def prueba_temple_simulado2(problema=ProblemaNreinas(8)):
+    """ Prueba el algoritmo de temple simulado """
+    tInicial = time()
+    solucion = blocales.temple_simulado(problema)
+    tFinal = time()
+    print("\n\nTemple simulado con calendarización To/(1 + i).")
+    print("Costo de la solución: ", problema.costo(solucion))
+    print("Tiempo total:", tFinal - tInicial)
     print("Y la solución es: ")
     print(solucion)
 
-
 if __name__ == "__main__":
-
-    prueba_descenso_colinas(ProblemaNreinas(32), 10)
-    prueba_temple_simulado(ProblemaNreinas(32))
+    for i in (8,16,32):
+        print("\nPrueba con",i,"reinas")
+        #prueba_descenso_colinas(ProblemaNreinas(i), 10)
+        prueba_temple_simulado(ProblemaNreinas(i))
 
     ##########################################################################
     #                          20 PUNTOS
@@ -120,6 +150,12 @@ if __name__ == "__main__":
     #
     # ¿Cual es el máximo número de reinas que se puede resolver en
     # tiempo aceptable con el método de 10 reinicios aleatorios?
+    #
+    """ RESPUESTA
+        El tiempo "aceptable" mas grande me parece que es de 19.9 minutos que es el de 80 reinas
+        con los 10 reinicios aleatorios, para el de 100 reinas el tiempo es de 61.13 minutos.
+    """
+    #
     #
     # ¿Que valores para ajustar el temple simulado son los que mejor
     # resultado dan? ¿Cual es el mejor ajuste para el temple simulado
