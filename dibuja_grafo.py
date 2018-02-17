@@ -119,8 +119,6 @@ class problema_grafica_grafo(blocales.Problema):
         el area de soluciones en menos pasos (o eso pienso).
         """
         vecino = list(estado)
-        print("Lista de estados")
-        print(vecino)
 
         x = random.randint(0, len(vecino) - 1)
         y = x+1 if x % 2 == 0 else x-1
@@ -132,11 +130,6 @@ class problema_grafica_grafo(blocales.Problema):
         dy = int(magnitud*sin(theta))
         vecino[x] = max(10, min(self.dim - 10, vecino[x] + dx))
         vecino[y] = max(10, min(self.dim - 10, vecino[y] + dy))
-
-        print("Indices cambiados: {}, {}".format(x,y))
-        print("Lista de vecinos con cambios")
-        print(vecino)
-        x = input("ENTER")
 
         return tuple(vecino)
 
@@ -156,10 +149,10 @@ class problema_grafica_grafo(blocales.Problema):
 
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
-        K1 = 1.0
-        K2 = 0.0
-        K3 = 0.0
-        K4 = 0.0
+        K1 = 0.25
+        K2 = 0.25
+        K3 = 0.25
+        K4 = 0.25
 
         # Genera un diccionario con el estado y la posición
         estado_dic = self.estado2dic(estado)
@@ -336,7 +329,24 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+        """
+        Este criterio trata de encajar los vertices de la grafica en una
+        circunferencia porque creo que eso lo hace bonito.
+        La circunferencia tiene centro en el centro de la ventana y el diametro
+        es el largo o ancho (el que sea menor) de la ventana menos un marco de
+        10 pixeles.
+        """
+        centro = (int(self.dim/2), int(self.dim/2))
+        radio = int(self.dim/2) - 10
+        penalizacion = 0
+
+        for i in estado_dic:
+            distancia = math.sqrt((estado_dic[i][0]-centro[0])**2 + \
+                        (estado_dic[i][1]-centro[1])**2)
+            diferencia = abs(distancia-radio)
+            penalizacion += abs(distancia-radio)/radio
+
+        return penalizacion
 
     def estado2dic(self, estado):
         """
@@ -459,6 +469,8 @@ Cada punto es una tupla de la fomar (posX, posY).
 """
 def calcularAngulo(punto1, punto2, punto3):
     #crea 2 vectores que van de p1 a p2 y de p1 a p3
+    if punto1 == punto2 or punto1 == punto3 or punto2 == punto3:
+        return 0
     vector12 = (punto1[0] - punto2[0], punto1[1] - punto2[1])
     vector13 = (punto1[0] - punto3[0], punto1[1] - punto3[1])
 
@@ -466,7 +478,8 @@ def calcularAngulo(punto1, punto2, punto3):
     magnitud12 = math.sqrt(vector12[0]**2 + vector12[1]**2)
     magnitud13 = math.sqrt(vector13[0]**2 + vector13[1]**2)
     val = prodPunto/(magnitud12+magnitud13)
-    return math.acos(prodPunto/(magnitud12*magnitud13)) if magnitud12+magnitud13>0 else 0
+    return math.acos(prodPunto/(magnitud12*magnitud13))
+
 
 if __name__ == '__main__':
     main()
