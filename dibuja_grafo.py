@@ -466,7 +466,7 @@ def main():
 
     # Ahora vamos a encontrar donde deben de estar los puntos
     t_inicial = time.time()
-    solucion = blocales.temple_simulado(grafo_sencillo)
+    solucion = blocales.temple_simulado(grafo_sencillo,calendarizador2(600,0.999))
     t_final = time.time()
     costo_final = grafo_sencillo.costo(solucion)
 
@@ -496,7 +496,38 @@ def main():
     #
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
     #
+'''
+El que modifica mas el los factores es la tolerancia, y esta depende a su vez del
+calendarizador y del tipo de funcion que se evalue.
 
+Con el calenderizador 1 con t0 de 1000 y k = 0.001 tardamos un poco (de 20 s a 40s)
+mas pero el resultado es mejor
+
+Podemos ver que con los nuevos calendarizadores es posible modificar al vecino
+para que tome decisiones mas arriesgadas
+
+con el calendirzador 2  con t0 de 500 y k = 0.999 pasa lo contrario en cuanto al
+tiempo (de 20s a 4s ), extrañamente aunque los costos son mejores numericamente 
+visualmente no son mejores que con el calendarizador estandar
+
+'''
+
+
+def calendarizador1(t0,k=0.05):
+    #Descenso exponencial.
+    t = t0
+    i = 0
+    while True:
+        t = t0*math.exp(-k*i)
+        i+=1
+        yield t
+        
+def calendarizador2(t0,alpha=0.95):
+    #Descenso lineal
+    'incluso se podria modificar alpha con cada iteracion'
+    while True:
+        t0 *= alpha
+        yield t0
 
 if __name__ == '__main__':
     main()
