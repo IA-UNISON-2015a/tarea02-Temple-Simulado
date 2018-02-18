@@ -16,7 +16,7 @@ from random import shuffle
 from random import sample
 from itertools import combinations
 from time import time
-
+from math import log
 
 class ProblemaNreinas(blocales.Problema):
     """
@@ -110,17 +110,14 @@ def prueba_descenso_colinas(problema=ProblemaNreinas(8), repeticiones=10):
 
 def prueba_temple_simulado(problema=ProblemaNreinas(8)):
     """ Prueba el algoritmo de temple simulado """
-
+    
     solucion = blocales.temple_simulado(problema)
     print("\n\nTemple simulado con calendarización To/(1 + i).")
     print("Costo de la solución: ", problema.costo(solucion))
     print("Y la solución es: ")
     print(solucion)
 
-
 if __name__ == "__main__":
-    prueba_temple_simulado(ProblemaNreinas(8))
-
     ##########################################################################
     #                          20 PUNTOS
     ##########################################################################
@@ -147,9 +144,43 @@ if __name__ == "__main__":
     # honestamente, no vale la pena seguir aumentando la dimensión del problema
     # cuando existe el temple simulado.
     #
+    # Para el temple simulado, sin meternos a la calendarización, reducir
+    # la tolerancia ocasiona que el algoritmo pueda resolver satisfactoriamente
+    # hasta 150 reinas en poco más de 40 segundos. Al intentar con tolerancia más
+    # pequeñas que 0.001, el algoritmo toma demasiado tiempo, seguro debido
+    # a que el calendarizador predeterminado tarda mucho en llegar al umbral.
+    #
+    # Una calendarización cuadrática obtiene muy buenos resultados en casi la
+    # mitad del tiempo que el método original. Una calendarización exponencial
+    # resuelve el problema rápido pero con resultados mixtos.
+    #
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
     #
 
     for n in (8, 16, 32, 50, 64, 70, 80, 85, 90):
         print("Prueba de descenso de colinas para: " + str(n) + " reinas.")
         prueba_descenso_colinas(ProblemaNreinas(n), 10)
+
+    n = 150
+
+    problema = ProblemaNreinas(n)
+
+    prueba_temple_simulado(problema)
+    
+    costos = [problema.costo(problema.estado_aleatorio())
+              for _ in range(10 * len(problema.estado_aleatorio()))]
+    minimo,  maximo = min(costos), max(costos)
+
+    T_ini = 20 * (maximo - minimo)
+    cal1 = (T_ini / (0.01*x**2) for x in range(1, int(1e10)))
+    cal2 = (T_ini * (0.99**x) for x in range(1, int(1e10)))
+
+    for cal, texto in zip((cal1, cal2), ("To/(0.01x^2)", "To * 0.99^x")):
+        t_inicial = time()
+        solucion = blocales.temple_simulado(problema, cal)
+        t_final = time()
+        print("\n\nTemple simulado con calendarización: " + texto + ".")
+        print("Costo de la solución: ", problema.costo(solucion))
+        print("La solución es: ")
+        print(solucion)
+        print("Calculada en: " + str(t_final - t_inicial))
