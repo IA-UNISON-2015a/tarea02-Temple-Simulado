@@ -65,7 +65,7 @@ class problema_grafica_grafo(blocales.Problema):
 
            s = [s(1), s(2),..., s(2*len(vertices))],
 
-        en donde s(i) \in {10, 11, ..., self.dim - 10} es la posición
+        en donde s(i) en {10, 11, ..., self.dim - 10} es la posición
         en x del nodo i/2 si i es par, o la posicion en y
         del nodo (i-1)/2 si i es non y(osease las parejas (x,y)).
 
@@ -78,7 +78,7 @@ class problema_grafica_grafo(blocales.Problema):
 
     def vecino_aleatorio(self, estado, dmax=10):
         """
-        Encuentra un vecino en forma aleatoria. En estea primera
+        Encuentra un vecino en forma aleatoria. En esta primera
         versión lo que hacemos es tomar un valor aleatorio, y
         sumarle o restarle x pixeles al azar.
 
@@ -123,10 +123,10 @@ class problema_grafica_grafo(blocales.Problema):
         """
 
         # Inicializa fáctores lineales para los criterios más importantes
-        # (default solo cuanta el criterio 1)
-        K1 = 1.0
-        K2 = 0.0
-        K3 = 0.0
+        # (default solo cuenta el criterio 1)
+        K1 = 2.0
+        K2 = 1.0
+        K3 = 1.5
         K4 = 0.0
 
         # Genera un diccionario con el estado y la posición
@@ -147,10 +147,10 @@ class problema_grafica_grafo(blocales.Problema):
         # (positivo o negativo). Igualemtente se puede penalizar el
         # que dos nodos estén muy cercanos entre si en la gráfica
         #
-        # Así, vamos a calcular el costo en trescuatro partes, una es el
+        # Así, vamos a calcular el costo en cuatro partes, una es el
         # numero de cruces (ya programada), otra la distancia entre
         # nodos (ya programada) y otro el angulo entre arista de cada
-        # nodo (para programar). Por último, un criterio propio
+        # nodo (para programar). Por último, un criterio propio.
         #
         # Al final, es necesario darle un peso lineal a cada uno de
         # los subcriterios.
@@ -170,7 +170,7 @@ class problema_grafica_grafo(blocales.Problema):
         """
         total = 0
 
-        # Por cada arista en relacion a las otras (todas las combinaciones de
+        # Por cada arista en relación a las otras (todas las combinaciones de
         # aristas)
         for (aristaA, aristaB) in itertools.combinations(self.aristas, 2):
 
@@ -256,11 +256,45 @@ class problema_grafica_grafo(blocales.Problema):
         # lograr que el sistema realice gráficas "bonitas"
         #
         # ¿Que valores de diste a K1, K2 y K3 respectivamente?
-        #
+        # K1 = 2.0, K2 = 1.0, y K3 = 1.5. El cruce de aristas tiene mayor
+        # prioridad porque eso causa que no se pueda leer la gráfica. Después,
+        # el ángulo entre aristas crea espacio con el cual apreciar las aristas
+        # y las etiquetas, por lo que tiene la segunda prioridad más alta.
+        # Respecto a la separación entre vértices, sólo hace falta que cumplan
+        # el mínimo de distancia para que se acoplen bien a los otros dos
+        # criterios.
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+        costo_total = 0
+
+        # Revisa todas las aristas de cada vértice.
+        for v in self.vertices:
+            for (aristaA, aristaB) in itertools.combinations([arista for arista in self.aristas if v in arista], 2):
+                (x0A, y0A) = estado_dic[aristaA[0]]
+                (xFA, yFA) = estado_dic[aristaA[1]]
+                (x0B, y0B) = estado_dic[aristaB[0]]
+                (xFB, yFB) = estado_dic[aristaB[1]]
+
+                if xFA - x0A != 0:
+                    mA = (yFA - y0A) / (xFA - x0A)
+                else:
+                    mA = 0
+
+                if xFB - x0B != 0:
+                    mB = (yFB - y0B) / (xFB - x0B)
+                else:
+                    mB = 0
+
+                if 1 + mA*mB != 0:
+                    alpha = abs((mB - mA) / (1 + mA*mB))
+                else:
+                    alpha = 0
+
+                angulo = math.atan(alpha)
+                if abs(angulo) < math.pi/6:
+                    costo_total += abs(math.pi/6 - angulo)
+        return costo_total
 
     def criterio_propio(self, estado_dic):
         """
