@@ -91,14 +91,16 @@ class problema_grafica_grafo(blocales.Problema):
                            vertice seleccionado
 
         @return: Una tupla con un estado vecino al estado de entrada.
-
         """
+        
+        '''     
         vecino = list(estado)
         i = random.randint(0, len(vecino) - 1)
         vecino[i] = max(10,min(self.dim - 10,vecino[i] + random.randint(-dmax,  dmax)))
-                            
         return tuple(vecino)
-
+        
+       
+        '''
         #######################################################################
         #                          20 PUNTOS
         #######################################################################
@@ -106,7 +108,22 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # Propon una manera alternativa de vecino_aleatorio y muestra que
         # con tu propuesta se obtienen resultados mejores o en menor tiempo
-
+        '''
+        Debemos crear un vecino aleatorio que de un paso, relativamente, mas
+        grande o mas variado para poder explorar mejor el espacio.
+        '''
+        #una primera idea es mover las dos coordenadas
+        
+        vecino = list(estado)
+        #seleccionamos el vertice
+        i = random.randint(0, len(self.vertices)-1)*2
+        
+        vecino[i] = max(10,min(self.dim - 10,vecino[i] + random.randint(-dmax,  dmax)))
+        vecino[i+1] = max(10,min(self.dim - 10,vecino[i+1] + random.randint(-dmax,  dmax)))
+        
+        return tuple(vecino)
+        
+        
     def costo(self, estado):
         """
         Encuentra el costo de un estado. En principio el costo de un estado
@@ -123,9 +140,9 @@ class problema_grafica_grafo(blocales.Problema):
 
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
-        K1 = 1.0
-        K2 = 0.0
-        K3 = 0.0
+        K1 = 7.0
+        K2 = 3.0
+        K3 = 2.0
         K4 = 0.0
 
         # Genera un diccionario con el estado y la posición
@@ -259,7 +276,53 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+        '''
+        1.
+        Usaremos el metodo clasico para encontrar angulos internos de un triangulo
+        dados sus puntos
+        
+        fuente: https://www.algebra.com/algebra/homework/Points-lines-and-rays/Points-lines-and-rays.faq.question.725621.html
+        
+        
+        con parametros de 
+        K1 = 7.0
+        K2 = 3.0
+        K3 = 2.0
+        K4 = 0.0
+        
+        y calendarizador estandar y tolerancia de 0.01
+        
+        obtenemos algo decente en 11 s
+        '''
+        
+        costo = 0
+        for v1 in self.vertices:
+            for (a1,a2) in itertools.combinations(self.aristas,2):
+                if(v1 in a1 and v1 in a2):
+                    v2 = a1[abs(a1.index(v1)-1)]
+                    v3 = a2[abs(a2.index(v1)-1)]
+                    p1,p2,p3 = estado_dic[v1], estado_dic[v2], estado_dic[v3]
+                    
+                    if(p1 != p2 and p1 != p3 and p2!=p3):
+                        
+                        if p2[0] == p1[0]:
+                            m1=100
+                        else:
+                            m1 = ((float)(p2[1]-p1[1])/(p2[0]-p1[0]))
+                        
+                        if p3[0] == p1[0]:
+                            m2=100
+                        else:
+                            m2 =  ((float)(p3[1]-p1[1])/(p3[0]-p1[0]))
+                        
+                        if(1+m2*m1 == 0):
+                            continue
+                        
+                        angulo = math.degrees( math.atan( abs( (m1-m2)/(1+m2*m1) ) ) )
+                        
+                        if(angulo < 30):
+                            costo= costo + math.ceil(5 - (angulo / 6))
+        return costo
 
     def criterio_propio(self, estado_dic):
         """
