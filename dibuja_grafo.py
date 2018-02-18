@@ -19,7 +19,7 @@ $pip install pillow
 
 """
 
-__author__ = 'Escribe aquí tu nombre'
+__author__ = 'Ivan Moreno'
 
 import blocales
 import random
@@ -76,7 +76,7 @@ class problema_grafica_grafo(blocales.Problema):
         return tuple(random.randint(10, self.dim - 10) for _ in
                      range(2 * len(self.vertices)))
 
-    def vecino_aleatorio(self, estado, dmax=10):
+    def vecino_aleatorio(self, estado, dmax=15):
         """
         Encuentra un vecino en forma aleatoria. En esta primera
         versión lo que hacemos es tomar un valor aleatorio, y
@@ -94,10 +94,16 @@ class problema_grafica_grafo(blocales.Problema):
 
         """
         vecino = list(estado)
+
+        # Se elige un vértice que quedará estático.
         i = random.randint(0, len(vecino) - 1)
-        vecino[i] = max(10,
-                        min(self.dim - 10,
-                            vecino[i] + random.randint(-dmax,  dmax)))
+
+        # Se cambia ligeramente el resto de los vértices.
+        for j in range(i):
+            vecino[j] = max(20, min(self.dim - 20, vecino[j] + random.randint(-dmax,  dmax)))
+        for j in range(i+1, len(vecino)):
+            vecino[j] = max(20, min(self.dim - 20, vecino[j] + random.randint(-dmax,  dmax)))
+
         return tuple(vecino)
 
         #######################################################################
@@ -107,6 +113,13 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # Propon una manera alternativa de vecino_aleatorio y muestra que
         # con tu propuesta se obtienen resultados mejores o en menor tiempo
+        #
+        # El vecino_aleatorio alternativo que propongo elige un único vértice que
+        # no cambiará de posición y mueve ligeramente el resto de los vértices.
+        # Este método para generar vecinos aleatorios toma de 2 a 4 segundos más
+        # en el tiempo total del temple simulado (con calendarización predeterminada,)
+        # pero da más libertad a los vecinos, permitiendo explorar mejor el
+        # espacio de estados y permite encontrar costos cercanos a 0 constantemente.
 
     def costo(self, estado):
         """
@@ -425,17 +438,6 @@ def main():
     grafo_sencillo.dibuja_grafo(estado_aleatorio, "prueba_inicial.gif")
     print("Costo del estado aleatorio: {}".format(costo_inicial))
 
-    # Ahora vamos a encontrar donde deben de estar los puntos
-    t_inicial = time.time()
-    solucion = blocales.temple_simulado(grafo_sencillo)
-    t_final = time.time()
-    costo_final = grafo_sencillo.costo(solucion)
-
-    grafo_sencillo.dibuja_grafo(solucion, "prueba_final.gif")
-    print("\nUtilizando la calendarización por default")
-    print("Costo de la solución encontrada: {}".format(costo_final))
-    print("Tiempo de ejecución en segundos: {}".format(t_final - t_inicial))
-
     ##########################################################################
     #                          20 PUNTOS
     ##########################################################################
@@ -455,9 +457,37 @@ def main():
     #
     # Escribe aqui tus conclusiones
     #
+    # Si se utiliza una tolerancia más pequeña que la predeterminada, se
+    # obtienen resultados parecidos. Al usar una tolerancia más grande,
+    # ni se minimiza el tiempo ni se mejoran los resultados.
+    #
+    # La calendarización es el parámetro más importante para el temple
+    # simulado, por que es el que dicta como realizará el movimiento
+    # hacia arriba de la búsqueda. Con una calendarización exponencial
+    # consigue resultados excelentes en menos de un segundo para el grafo
+    # sencillo, claro, tomando en cuenta el resto de las modificaciones
+    # hechas a los vecinos y al costo.
+    #
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
     #
 
+    costos = [grafo_sencillo.costo(grafo_sencillo.estado_aleatorio())
+              for _ in range(10 * len(grafo_sencillo.estado_aleatorio()))]
+    minimo,  maximo = min(costos), max(costos)
+
+    T_ini = 15 * (maximo - minimo)
+
+    calen_exp = ((T_ini * (0.99**x) for x in range(1, int(1e10))))
+
+    t_inicial = time.time()
+    solucion = blocales.temple_simulado(grafo_sencillo, calen_exp)
+    t_final = time.time()
+    costo_final = grafo_sencillo.costo(solucion)
+
+    grafo_sencillo.dibuja_grafo(solucion, "prueba_final.gif")
+    print("\nUtilizando una calendarización exponencial.")
+    print("Costo de la solución encontrada: {}".format(costo_final))
+    print("Tiempo de ejecución en segundos: {}".format(t_final - t_inicial))
 
 if __name__ == '__main__':
     main()
