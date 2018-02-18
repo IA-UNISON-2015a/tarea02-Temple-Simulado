@@ -127,7 +127,7 @@ class problema_grafica_grafo(blocales.Problema):
         K1 = 2.0
         K2 = 1.0
         K3 = 1.5
-        K4 = 0.0
+        K4 = 0.5
 
         # Genera un diccionario con el estado y la posición
         estado_dic = self.estado2dic(estado)
@@ -298,8 +298,8 @@ class problema_grafica_grafo(blocales.Problema):
 
     def criterio_propio(self, estado_dic):
         """
-        Implementa y comenta correctamente un criterio de costo que sea
-        conveniente para que un grafo luzca bien.
+        Revisa si la gráfica se encuentra amontonada en una porción del
+        espacio.
 
         @param estado_dic: Diccionario cuyas llaves son los vértices
                            del grafo y cuyos valores es una tupla con
@@ -307,21 +307,47 @@ class problema_grafica_grafo(blocales.Problema):
                            dibujo.
 
         @return: Un número.
-
         """
         #######################################################################
         #                          20 PUNTOS
         #######################################################################
         # ¿Crees que hubiera sido bueno incluir otro criterio? ¿Cual?
+        # Sí. Un criterio con el cual se asegure que la gráfica ocupa todo
+        # el espacio que tiene disponible en la imagen, para evitar que
+        # quede amontonado en un espacio y deje mucho espacio en blanco.
         #
         # Desarrolla un criterio propio y ajusta su importancia en el
         # costo total con K4 ¿Mejora el resultado? ¿En que mejora el
         # resultado final?
-        #
+        # Si mejora el resultado. Evita que la gráfica reduzca su proporción
+        # en la imagen cuando la inicial abarca una proporción considerable.
+        # Alarga la gráfica en ambos ejes si la inicial queda amontonada en
+        # alguna parte de la imagen.
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+
+        # Obtenemos las coordenadas en X y Y de la gráfica actual.
+        pos_x = [estado_dic[x][0] for x in estado_dic.keys()]
+        pos_y = [estado_dic[y][1] for y in estado_dic.keys()]
+
+        minV_X = min(pos_x)
+        maxV_X = max(pos_x)
+
+        minV_Y = min(pos_y)
+        maxV_Y = max(pos_y)
+
+        costo = 0
+
+        # Se incrementa el costo si se encuentra que alguno de los
+        # ejes de la gráfica están muy juntos entre sí.
+        # El costo es proporcional a la dimensión de la imagen.
+        if maxV_X - minV_X < self.dim/2:
+            costo += (maxV_X - minV_X) / self.dim
+        if maxV_Y - minV_Y < self.dim/2:
+            costo += (maxV_Y - minV_Y) / self.dim
+
+        return costo
 
     def estado2dic(self, estado):
         """
