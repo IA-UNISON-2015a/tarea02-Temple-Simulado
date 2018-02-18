@@ -91,15 +91,14 @@ class problema_grafica_grafo(blocales.Problema):
                            vertice seleccionado
 
         @return: Una tupla con un estado vecino al estado de entrada.
-
+        """
         """
         vecino = list(estado)
         i = random.randint(0, len(vecino) - 1)
         vecino[i] = max(10,
                         min(self.dim - 10,
                             vecino[i] + random.randint(-dmax,  dmax)))
-        return tuple(vecino)
-
+        return tuple(vecino)"""
         #######################################################################
         #                          20 PUNTOS
         #######################################################################
@@ -107,6 +106,39 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # Propon una manera alternativa de vecino_aleatorio y muestra que
         # con tu propuesta se obtienen resultados mejores o en menor tiempo
+        """
+        Para el grafo completo de 5 vertices los resultados con los dos vecino_aleatorio fueron
+        los siguientes:
+        con vecino aleatorio nuevo
+            -115.0 en 132.69 seg
+            -114.4 en 257.40 seg
+            -110.3 en 196.86 seg
+            -114.4 en 191.79 seg
+            -111.7 en 194.06 seg
+            -115.0 en 196.9 seg
+        con vecino aleatorio inicial
+            23.09 en 202.70 seg
+            13.70 en 252.83 seg
+            7.308 en 195.42 seg
+            -12.8 en 134.68 seg
+            89.62 en 158.87 seg
+
+        En general creo yo que con el nuevo vecino aleatorio llega a unos grafos mas "bonitos"
+        en ambos casos el tiempo varia mucho.
+        Note que para mi el mejor grafo es cuando el costo es -115, ya que hace un grafo simetrico y
+        bastante separados los vertices
+        """ 
+        vecino = list(estado)
+        #agarra un indice random
+        i = random.randint(0, len(vecino) - 1)
+        #si es par significa que esta en un valor que es perteneciente a x, si no es un y y lo retrasa a una x
+        i=i if i%2==0 else i-1
+        #asigna valores randoms en ese rango a x y a y
+        vecino[i]=random.randint(30, self.dim - 30)
+        vecino[i+1]=random.randint(30, self.dim - 30)
+        return tuple(vecino)
+        
+        
     def costo(self, estado):
         """
         Encuentra el costo de un estado. En principio el costo de un estado
@@ -126,7 +158,7 @@ class problema_grafica_grafo(blocales.Problema):
         K1 = 2.0
         K2 = 3.0
         K3 = 4.0
-        K4 = 4.0
+        K4 = 5.0
         K5 = 1.0
 
         # Genera un diccionario con el estado y la posición
@@ -389,7 +421,7 @@ def main():
     """
 
     # Vamos a definir un grafo sencillo
-    """vertices_sencillo = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+    vertices_sencillo = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     aristas_sencillo = [('B', 'G'),
                         ('E', 'F'),
                         ('H', 'E'),
@@ -402,17 +434,17 @@ def main():
                         ('C', 'B'),
                         ('H', 'F')]
     """
-    vertices_sencillo = ['A', 'B', 'C', 'D', 'E', 'F']
+    vertices_sencillo = ['A', 'B', 'C', 'D', 'E']
     aristas_sencillo = [('A', 'B'),
+                        ('A', 'C'),
+                        ('A', 'D'),
                         ('A', 'E'),
-                        ('A', 'F'),
-                        ('B', 'E'),
                         ('B', 'C'),
+                        ('B', 'D'),
+                        ('B', 'E'),
                         ('C', 'D'),
-                        ('D', 'E'),
-                        ('D', 'F'),
-                        ('E', 'F')]
-    
+                        ('C', 'E'),
+                        ('D', 'E'),]"""
     dimension = 400
 
     # Y vamos a hacer un dibujo del grafo sin decirle como hacer para
@@ -458,7 +490,10 @@ def main():
     #
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
     #
-
-
+#con vecino aleatorio nuevo
+#-115.0 en 132.69 seg
+#-114.4 en 257.40 seg
+#con vecino aleatorio inicial
+#12 en 166 seg
 if __name__ == '__main__':
     main()
