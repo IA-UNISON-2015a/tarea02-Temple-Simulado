@@ -94,13 +94,6 @@ class problema_grafica_grafo(blocales.Problema):
         @return: Una tupla con un estado vecino al estado de entrada.
 
         """
-        vecino = list(estado)
-        i = random.randint(0, len(vecino) - 1)
-        vecino[i] = max(10,
-                        min(self.dim - 10,
-                            vecino[i] + random.randint(-dmax,  dmax)))
-        return tuple(vecino)
-
         #######################################################################
         #                          20 PUNTOS
         #######################################################################
@@ -108,6 +101,37 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # Propon una manera alternativa de vecino_aleatorio y muestra que
         # con tu propuesta se obtienen resultados mejores o en menor tiempo
+        #
+        #   Grafo completos
+        #   N       Vecino    Costo inicial     Costo Final    Tiempo
+        #   5       default       118.54           30.56        22.22 seg
+        #   5       nuevo         105.43           30.57        21.57 seg
+        #   6       default       102.58           56.58        34.13 seg
+        #   6       nuevo         127.66           47.15        31.22 seg
+        #   7       default       147.97           94.39        49.82 seg  
+        #   7       nuevo         186.68           92.72        48.22 seg
+        #
+        #   En general con la nueva funcion de vecinos aleatorios, se optiene una pequeña
+        #   disminucion del tiempo y un mejor costo al final 
+        #
+
+        #"""
+        vecino = list(estado)    
+        i = random.randint(0, len(vecino) - 1)
+        vecino[i] = max(10,
+                        min(self.dim - 10,
+                            vecino[i] + random.randint(-dmax,  dmax)))
+        return tuple(vecino)
+        """
+        vecino = list(estado)    
+        i = random.randint(0, len(vecino) - 1)
+        # si i es par entonces esta en las x, sino en la y
+        j = (i+1) if i%2==0 else (i-1)
+        # mueve el vertice elegido en 'x' y en 'y'
+        vecino[i] = max(10, min(self.dim-10, vecino[i] + random.randint(-dmax, dmax)))
+        vecino[j] = max(10, min(self.dim-10, vecino[j] + random.randint(-dmax, dmax)))
+        """
+        return tuple(vecino)
 
     def costo(self, estado):
         """
