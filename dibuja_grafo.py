@@ -412,14 +412,15 @@ class problema_grafica_grafo(blocales.Problema):
         for v in self.vertices:
             dibujar.text(lugar[v], v, (0, 0, 0))
         imagen.save(filename)
-
+#calendarizador exp
+def calend_exp(To=30000,d=0.000001):
+    for i in range(int(1e10)):
+        To *=math.exp(-d*i)
+        yield To  
 
 def main():
     """
     La función principal
-
-    """
-
     # Vamos a definir un grafo sencillo
     vertices_sencillo = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     aristas_sencillo = [('B', 'G'),
@@ -433,7 +434,7 @@ def main():
                         ('F', 'A'),
                         ('C', 'B'),
                         ('H', 'F')]
-    """
+    """"""
     vertices_sencillo = ['A', 'B', 'C', 'D', 'E']
     aristas_sencillo = [('A', 'B'),
                         ('A', 'C'),
@@ -445,6 +446,10 @@ def main():
                         ('C', 'D'),
                         ('C', 'E'),
                         ('D', 'E'),]"""
+    
+    vertices_sencillo = ['A', 'B', 'C']
+    aristas_sencillo = [('A', 'B'),('A', 'C'),
+                        ('B', 'C'),]                    
     dimension = 400
 
     # Y vamos a hacer un dibujo del grafo sin decirle como hacer para
@@ -465,7 +470,7 @@ def main():
     costo_final = grafo_sencillo.costo(solucion)
 
     grafo_sencillo.dibuja_grafo(solucion, "prueba_final.gif")
-    print("\nUtilizando la calendarización por default")
+    print("\nUtilizando la calendarización exp")
     print("Costo de la solución encontrada: {}".format(costo_final))
     print("Tiempo de ejecución en segundos: {}".format(t_final - t_inicial))
 
@@ -475,8 +480,17 @@ def main():
     # ¿Que valores para ajustar el temple simulado son los que mejor
     # resultado dan?
     #
+    """
+    con el nuevo vecino_aleatorio los valores por default del temple da un muy buen resultado, 
+    el grafo completamente simetrico, pero note que disminuyendo la tolerancia a 0.1 el tiempo es de ejecucion es de
+    1 segundo!!! y el grafo es "bonito" en un nivel bastante aceptable, no simetrico ni perfecto pero muuy acetable
+    """
     # ¿Que encuentras en los resultados?, ¿Cual es el criterio mas importante?
     #
+    """
+    El criterio al cual le di mas importancia es que estuvieran alejados del centro y dentro del rango del anillo
+    que le coloque, despues el valor del angulo, luego la distancia y a los cruces no les puse mucho valor
+    """
     # En general para obtener mejores resultados del temple simulado,
     # es necesario utilizar una función de calendarización acorde con
     # el metodo en que se genera el vecino aleatorio.  Existen en la
@@ -486,14 +500,20 @@ def main():
     # parámetros para que obtenga la mejor solución posible en el
     # menor tiempo posible.
     #
+    """
+    Despues de cambiar la calendarizacion con una exp, los tiempos se redujeron mucho, aun asi
+    el mejor resultado creo yo que resulto el de un grafo completo de 5 vertices con los valores por default
+    """
     # Escribe aqui tus conclusiones
     #
+    """
+    Los grafos en general quedan bien, algunos mas simetricos que otros, si es un grafo completo es mas facil porque aplica
+    todos los criterios en sus aristas pero si un vertice solo tiene una conexion no puede aplicar el del angulo
+    por ejemplo. Primero sin modificar el metodo de vecinos los resultados eran buenos, pero cuando lo modifique, 
+    resultaron mucho mejores. En ese punto los tiempos eran muy grandes, cuando cambie la tolerancia y la 
+    calendarizacion los tiempos mejoraron bastante y eran inmediatos los resultados.
+    """
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
     #
-#con vecino aleatorio nuevo
-#-115.0 en 132.69 seg
-#-114.4 en 257.40 seg
-#con vecino aleatorio inicial
-#12 en 166 seg
 if __name__ == '__main__':
     main()
