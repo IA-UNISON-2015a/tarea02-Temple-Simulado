@@ -123,9 +123,9 @@ class problema_grafica_grafo(blocales.Problema):
 
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
-        K1 = 1.0
-        K2 = 4.0
-        K3 = 3.0
+        K1 = 2.0
+        K2 = 3.0
+        K3 = 4.0
         K4 = 4.0
         K5 = 1.0
 
