@@ -123,10 +123,11 @@ class problema_grafica_grafo(blocales.Problema):
 
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
-        K1 = 3.0
-        K2 = 1.0
-        K3 = 4.0
-        K4 = 1.0
+        K1 = 1.0
+        K2 = 4.0
+        K3 = 3.0
+        K4 = 4.0
+        K5 = 1.0
 
         # Genera un diccionario con el estado y la posición
         estado_dic = self.estado2dic(estado)
@@ -134,7 +135,8 @@ class problema_grafica_grafo(blocales.Problema):
         return (K1 * self.numero_de_cruces(estado_dic) +
                 K2 * self.separacion_vertices(estado_dic) +
                 K3 * self.angulo_aristas(estado_dic) +
-                K4 * self.criterio_propio(estado_dic))
+                K4 * self.criterio_propio(estado_dic)+
+                K5 * self.separacion_bordes(estado_dic))
 
         # Como podras ver en los resultados, el costo inicial
         # propuesto no hace figuras particularmente bonitas, y esto es
@@ -261,7 +263,7 @@ class problema_grafica_grafo(blocales.Problema):
         #
         total = 0
         #angulominimo
-        aMin =90
+        aMin =30
         for (aristaA, aristaB) in itertools.combinations(self.aristas, 2):
             if not aristaA[0] in aristaB and not aristaA[1] in aristaB:
                 continue
@@ -311,8 +313,32 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
-
+        #se trata de que los vertices esten separados del centro y y del borde, en una especie de anillo
+        #si el vertice esta fuera de este, entonces se penaliza y si se encuenta exactamente en el centro
+        #del anillo se premia disminuyendo la penalizacion
+        fueraAnillo=0
+        distMax=160
+        distMed=150
+        distMin=140
+        for i in self.vertices:
+           (x,y) = estado_dic[i]
+           dist = math.sqrt((x - 200) ** 2 + (y - 200) ** 2)
+           #si se encuentra en el "anillo" aumenta el costo
+           if dist<distMin or dist>distMax:
+               fueraAnillo+=3
+           #si se encuentra en la distancia media reduce el costo    
+           elif dist==distMed:
+               fueraAnillo-=1
+        
+        return 5*fueraAnillo
+    def separacion_bordes(self, estado_dic):
+        distMin=20
+        costo=0
+        for i in self.vertices:
+            (x,y) = estado_dic[i]
+            if x<distMin or self.dim-x<distMin or y<distMin or self.dim-y<distMin:
+                costo+=1
+        return costo
     def estado2dic(self, estado):
         """
         Convierte el estado en forma de tupla a un estado en forma
@@ -353,7 +379,6 @@ class problema_grafica_grafo(blocales.Problema):
             dibujar.line((lugar[v1], lugar[v2]), fill=(255, 0, 0))
         for v in self.vertices:
             dibujar.text(lugar[v], v, (0, 0, 0))
-
         imagen.save(filename)
 
 
@@ -364,7 +389,7 @@ def main():
     """
 
     # Vamos a definir un grafo sencillo
-    vertices_sencillo = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+    """vertices_sencillo = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     aristas_sencillo = [('B', 'G'),
                         ('E', 'F'),
                         ('H', 'E'),
@@ -376,6 +401,18 @@ def main():
                         ('F', 'A'),
                         ('C', 'B'),
                         ('H', 'F')]
+    """
+    vertices_sencillo = ['A', 'B', 'C', 'D', 'E', 'F']
+    aristas_sencillo = [('A', 'B'),
+                        ('A', 'E'),
+                        ('A', 'F'),
+                        ('B', 'E'),
+                        ('B', 'C'),
+                        ('C', 'D'),
+                        ('D', 'E'),
+                        ('D', 'F'),
+                        ('E', 'F')]
+    
     dimension = 400
 
     # Y vamos a hacer un dibujo del grafo sin decirle como hacer para
