@@ -16,6 +16,7 @@ from random import shuffle
 from random import sample
 from itertools import combinations
 from math import log
+from math import exp
 from time import time
 
 
@@ -148,19 +149,19 @@ def prueba_temple_simulado(problema=ProblemaNreinas(8), calendarizador=None, cad
     # de 1.
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
     #
-def genCalendarizador1(problema):
+def genCalendarizadorLog(problema):
     costos = [problema.costo(problema.estado_aleatorio())
               for _ in range(len(problema.estado_aleatorio()))]
     minimo,  maximo = min(costos), max(costos)
     T_ini = 3*(maximo - minimo)
-    return  (T_ini/(1 + i*log(i)/1.5) for i in range(1,int(1e10)+1))
+    return  (T_ini/(1 + i*log(i)) for i in range(1,int(1e10)+1))
 
-def genCalendarizador2(problema):
+def genCalendarizadorExp(problema):
     costos = [problema.costo(problema.estado_aleatorio())
               for _ in range(10 * len(problema.estado_aleatorio()))]
     minimo,  maximo = min(costos), max(costos)
-    T_ini = 12*(maximo - minimo)
-    return (T_ini/(1 + i*log(i)*log(i)) for i in range(1,int(1e10)+1))
+    T_ini = 3*(maximo - minimo)
+    return (T_ini*exp(-0.0015*i) for i in range(1,int(1e10)+1))
 
 if __name__ == "__main__":
 
@@ -171,11 +172,11 @@ if __name__ == "__main__":
     #print(end-start)
 
     start = time()
-    prueba_temple_simulado(ProblemaNreinas(150), genCalendarizador1(ProblemaNreinas(150)), "To/(1+i*log(i))")
+    prueba_temple_simulado(ProblemaNreinas(50), genCalendarizador1(ProblemaNreinas(50)), "To/(1+i*log(i))")
     end = time()
     print(end-start)
 
     start = time()
-    prueba_temple_simulado(ProblemaNreinas(150), genCalendarizador2(ProblemaNreinas(150)), "To/(i*log(i)*log(i))")
+    prueba_temple_simulado(ProblemaNreinas(50), genCalendarizador2(ProblemaNreinas(50)), "To*exp(-0.0015*i)")
     end = time()
     print(end-start)
