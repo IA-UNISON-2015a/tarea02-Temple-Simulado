@@ -19,7 +19,7 @@ $pip install pillow
 
 """
 
-__author__ = 'Escribe aquí tu nombre'
+__author__ = 'CesarSalazar'
 
 import blocales
 import random
@@ -91,15 +91,14 @@ class problema_grafica_grafo(blocales.Problema):
                            vertice seleccionado
 
         @return: Una tupla con un estado vecino al estado de entrada.
-
+        """
         """
         vecino = list(estado)
         i = random.randint(0, len(vecino) - 1)
         vecino[i] = max(10,
                         min(self.dim - 10,
                             vecino[i] + random.randint(-dmax,  dmax)))
-        return tuple(vecino)
-
+        return tuple(vecino)"""
         #######################################################################
         #                          20 PUNTOS
         #######################################################################
@@ -107,7 +106,39 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # Propon una manera alternativa de vecino_aleatorio y muestra que
         # con tu propuesta se obtienen resultados mejores o en menor tiempo
+        """
+        Para el grafo completo de 5 vertices los resultados con los dos vecino_aleatorio fueron
+        los siguientes:
+        con vecino aleatorio nuevo
+            -115.0 en 132.69 seg
+            -114.4 en 257.40 seg
+            -110.3 en 196.86 seg
+            -114.4 en 191.79 seg
+            -111.7 en 194.06 seg
+            -115.0 en 196.9 seg
+        con vecino aleatorio inicial
+            23.09 en 202.70 seg
+            13.70 en 252.83 seg
+            7.308 en 195.42 seg
+            -12.8 en 134.68 seg
+            89.62 en 158.87 seg
 
+        En general creo yo que con el nuevo vecino aleatorio llega a unos grafos mas "bonitos"
+        en ambos casos el tiempo varia mucho.
+        Note que para mi el mejor grafo es cuando el costo es -115, ya que hace un grafo simetrico y
+        bastante separados los vertices
+        """ 
+        vecino = list(estado)
+        #agarra un indice random
+        i = random.randint(0, len(vecino) - 1)
+        #si es par significa que esta en un valor que es perteneciente a x, si no es un y y lo retrasa a una x
+        i=i if i%2==0 else i-1
+        #asigna valores randoms en ese rango a x y a y
+        vecino[i]=random.randint(30, self.dim - 30)
+        vecino[i+1]=random.randint(30, self.dim - 30)
+        return tuple(vecino)
+        
+        
     def costo(self, estado):
         """
         Encuentra el costo de un estado. En principio el costo de un estado
@@ -124,10 +155,11 @@ class problema_grafica_grafo(blocales.Problema):
 
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
-        K1 = 1.0
-        K2 = 0.0
-        K3 = 0.0
-        K4 = 0.0
+        K1 = 2.0
+        K2 = 3.0
+        K3 = 4.0
+        K4 = 5.0
+        K5 = 1.0
 
         # Genera un diccionario con el estado y la posición
         estado_dic = self.estado2dic(estado)
@@ -135,7 +167,8 @@ class problema_grafica_grafo(blocales.Problema):
         return (K1 * self.numero_de_cruces(estado_dic) +
                 K2 * self.separacion_vertices(estado_dic) +
                 K3 * self.angulo_aristas(estado_dic) +
-                K4 * self.criterio_propio(estado_dic))
+                K4 * self.criterio_propio(estado_dic)+
+                K5 * self.separacion_bordes(estado_dic))
 
         # Como podras ver en los resultados, el costo inicial
         # propuesto no hace figuras particularmente bonitas, y esto es
@@ -260,7 +293,32 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+        total = 0
+        #angulominimo
+        aMin =30
+        for (aristaA, aristaB) in itertools.combinations(self.aristas, 2):
+            if not aristaA[0] in aristaB and not aristaA[1] in aristaB:
+                continue
+            # Encuentra los valores de (x0A,y0A), (xFA, yFA) para los
+            # vertices de una arista y los valores (x0B,y0B), (x0B,
+            # y0B) para los vertices de la otra arista
+            (x0A, y0A) = estado_dic[aristaA[0]]
+            (xFA, yFA) = estado_dic[aristaA[1]]
+            (x0B, y0B) = estado_dic[aristaB[0]]
+            (xFB, yFB) = estado_dic[aristaB[1]]
+            # Utilizando la clasica formula para encontrar la pendiente
+            angulo=0
+            try:
+                m1 = (yFA - y0A) / (xFA - x0A)
+                m2 = (yFB - y0B) / (xFB - x0B)
+                angulo = math.degrees(math.atan(abs((m2 - m1) / (1+(m1*m2)))))
+            except ZeroDivisionError:
+                None
+            if angulo > aMin:
+                continue    
+            total += 1.0 - angulo/aMin
+        return total
+
 
     def criterio_propio(self, estado_dic):
         """
@@ -287,8 +345,32 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
-
+        #se trata de que los vertices esten separados del centro y y del borde, en una especie de anillo
+        #si el vertice esta fuera de este, entonces se penaliza y si se encuenta exactamente en el centro
+        #del anillo se premia disminuyendo la penalizacion
+        fueraAnillo=0
+        distMax=160
+        distMed=150
+        distMin=140
+        for i in self.vertices:
+           (x,y) = estado_dic[i]
+           dist = math.sqrt((x - 200) ** 2 + (y - 200) ** 2)
+           #si se encuentra en el "anillo" aumenta el costo
+           if dist<distMin or dist>distMax:
+               fueraAnillo+=3
+           #si se encuentra en la distancia media reduce el costo    
+           elif dist==distMed:
+               fueraAnillo-=1
+        
+        return 5*fueraAnillo
+    def separacion_bordes(self, estado_dic):
+        distMin=20
+        costo=0
+        for i in self.vertices:
+            (x,y) = estado_dic[i]
+            if x<distMin or self.dim-x<distMin or y<distMin or self.dim-y<distMin:
+                costo+=1
+        return costo
     def estado2dic(self, estado):
         """
         Convierte el estado en forma de tupla a un estado en forma
@@ -329,17 +411,17 @@ class problema_grafica_grafo(blocales.Problema):
             dibujar.line((lugar[v1], lugar[v2]), fill=(255, 0, 0))
         for v in self.vertices:
             dibujar.text(lugar[v], v, (0, 0, 0))
-
         imagen.save(filename)
-
+#calendarizador exp
+def calend_exp(To=30000,d=0.000001):
+    for i in range(int(1e10)):
+        To *=math.exp(-d*i)
+        yield To  
 
 def main():
     """
     La función principal
-
-    """
-
-    # Vamos a definir un grafo sencillo
+    """# Vamos a definir un grafo sencillo
     vertices_sencillo = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     aristas_sencillo = [('B', 'G'),
                         ('E', 'F'),
@@ -352,6 +434,19 @@ def main():
                         ('F', 'A'),
                         ('C', 'B'),
                         ('H', 'F')]
+    """
+    vertices_sencillo = ['A', 'B', 'C', 'D', 'E']
+    aristas_sencillo = [('A', 'B'),
+                        ('A', 'C'),
+                        ('A', 'D'),
+                        ('A', 'E'),
+                        ('B', 'C'),
+                        ('B', 'D'),
+                        ('B', 'E'),
+                        ('C', 'D'),
+                        ('C', 'E'),
+                        ('D', 'E'),]"""
+                     
     dimension = 400
 
     # Y vamos a hacer un dibujo del grafo sin decirle como hacer para
@@ -367,12 +462,12 @@ def main():
 
     # Ahora vamos a encontrar donde deben de estar los puntos
     t_inicial = time.time()
-    solucion = blocales.temple_simulado(grafo_sencillo)
+    solucion = blocales.temple_simulado(grafo_sencillo,calend_exp(),tol=0.00001)
     t_final = time.time()
     costo_final = grafo_sencillo.costo(solucion)
 
     grafo_sencillo.dibuja_grafo(solucion, "prueba_final.gif")
-    print("\nUtilizando la calendarización por default")
+    print("\nUtilizando la calendarización exp")
     print("Costo de la solución encontrada: {}".format(costo_final))
     print("Tiempo de ejecución en segundos: {}".format(t_final - t_inicial))
 
@@ -382,8 +477,17 @@ def main():
     # ¿Que valores para ajustar el temple simulado son los que mejor
     # resultado dan?
     #
+    """
+    con el nuevo vecino_aleatorio los valores por default del temple da un muy buen resultado, 
+    el grafo completamente simetrico, pero note que disminuyendo la tolerancia a 0.1 el tiempo es de ejecucion es de
+    1 segundo!!! y el grafo es "bonito" en un nivel bastante aceptable, no simetrico ni perfecto pero muuy acetable
+    """
     # ¿Que encuentras en los resultados?, ¿Cual es el criterio mas importante?
     #
+    """
+    El criterio al cual le di mas importancia es que estuvieran alejados del centro y dentro del rango del anillo
+    que le coloque, despues el valor del angulo, luego la distancia y a los cruces no les puse mucho valor
+    """
     # En general para obtener mejores resultados del temple simulado,
     # es necesario utilizar una función de calendarización acorde con
     # el metodo en que se genera el vecino aleatorio.  Existen en la
@@ -393,11 +497,20 @@ def main():
     # parámetros para que obtenga la mejor solución posible en el
     # menor tiempo posible.
     #
+    """
+    Despues de cambiar la calendarizacion con una exp, los tiempos se redujeron mucho, aun asi
+    el mejor resultado creo yo que resulto el de un grafo completo de 5 vertices con los valores por default
+    """
     # Escribe aqui tus conclusiones
     #
+    """
+    Los grafos en general quedan bien, algunos mas simetricos que otros, si es un grafo completo es mas facil porque aplica
+    todos los criterios en sus aristas pero si un vertice solo tiene una conexion no puede aplicar el del angulo
+    por ejemplo. Primero sin modificar el metodo de vecinos los resultados eran buenos, pero cuando lo modifique, 
+    resultaron mucho mejores. En ese punto los tiempos eran muy grandes, cuando cambie la tolerancia y la 
+    calendarizacion los tiempos mejoraron bastante y eran inmediatos los resultados.
+    """
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
     #
-
-
 if __name__ == '__main__':
     main()
