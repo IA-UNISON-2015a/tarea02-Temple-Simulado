@@ -26,6 +26,7 @@ import random
 import itertools
 import math
 import time
+import statistics as stats
 from PIL import Image, ImageDraw
 
 
@@ -125,9 +126,9 @@ class problema_grafica_grafo(blocales.Problema):
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
         K1 = 1.0
-        K2 = 1.0
-        K3 = 2.0
-        K4 = 0.0
+        K2 = 5.0
+        K3 = 4.0
+        K4 = 6.0
 
         # Genera un diccionario con el estado y la posición
         estado_dic = self.estado2dic(estado)
@@ -203,7 +204,7 @@ class problema_grafica_grafo(blocales.Problema):
                 total += 1
         return total
 
-    def separacion_vertices(self, estado_dic, min_dist=50):
+    def separacion_vertices(self, estado_dic, min_dist=100):
         """
         A partir de una posicion "estado" devuelve una penalización
         proporcional a cada par de vertices que se encuentren menos
@@ -263,7 +264,7 @@ class problema_grafica_grafo(blocales.Problema):
 
         for (aristaA, aristaB) in itertools.combinations(self.aristas, 2):
             # deben tener un vertice comun
-            if aristaA[0] in aristaB or aristaA[1] in aristaB: 
+            if (aristaA[0] in aristaB) or (aristaA[1] in aristaB): 
                 # Encuentra los valores de (x0A,y0A), (xFA, yFA) para los
                 # vertices de una arista y los valores (x0B,y0B), (x0B,
                 # y0B) para los vertices de la otra arista
@@ -273,10 +274,10 @@ class problema_grafica_grafo(blocales.Problema):
                 (xFB, yFB) = estado_dic[aristaB[1]]
                 # calcular el angulo entre dos rectas
                 try:
-                    m1 = (yFA - y0A) / (xFA - x0A)
-                    m2 = (yFB - y0B) / (xFB - x0B)
+                    m1 = (yFA-y0A)/(xFA-x0A)
+                    m2 = (yFB-y0B)/(xFB-x0B)
                     angulo = math.degrees(math.atan(abs((m2-m1)/(1+(m1*m2)))))
-                except ZeroDivisionError:
+                except Exception:
                     angulo = 0   
                 if angulo < angulo_minimo:
                     total += (1.0 - (angulo/angulo_minimo))    
@@ -284,8 +285,8 @@ class problema_grafica_grafo(blocales.Problema):
 
     def criterio_propio(self, estado_dic):
         """
-        Implementa y comenta correctamente un criterio de costo que sea
-        conveniente para que un grafo luzca bien.
+        A partir de un estado, devuelve una penalizacion con respecto 
+        a la desviacion estandar de la distancia de las aristas.
 
         @param estado_dic: Diccionario cuyas llaves son los vértices
                            del grafo y cuyos valores es una tupla con
@@ -307,7 +308,20 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+        total = 0
+        distancias = []
+        desviacion_minima = 10
+
+        for (v1, v2) in itertools.combinations(self.vertices, 2):
+            # Calcula la distancia entre dos vertices
+            (x1, y1), (x2, y2) = estado_dic[v1], estado_dic[v2]
+            dist = math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
+            distancias.append(dist)
+        # calcula la desviacion con las distancias
+        desviacion = stats.stdev(distancias)
+        if desviacion > desviacion_minima:
+            total += (1 + (desviacion/desviacion_minima) )
+        return total
 
     def estado2dic(self, estado):
         """
@@ -352,6 +366,8 @@ class problema_grafica_grafo(blocales.Problema):
 
         imagen.save(filename)
 
+def calendarizador(To=1000, df=0.001):
+    return (((To * math.exp(-df*i))) for i in range(int(1e10)))   
 
 def main():
     """
@@ -373,8 +389,8 @@ def main():
                         ('F', 'A'),
                         ('C', 'B'),
                         ('H', 'F')]
-    """
-    vertices_sencillo = [vertice for vertice in "ABCDEFGH"]
+    #"""
+    vertices_sencillo = [vertice for vertice in "ABCDEFG"]
     aristas_sencillo = [(v1, v2) for (v1, v2) in itertools.combinations(vertices_sencillo, 2)]
     dimension = 400
 
@@ -391,7 +407,7 @@ def main():
 
     # Ahora vamos a encontrar donde deben de estar los puntos
     t_inicial = time.time()
-    solucion = blocales.temple_simulado(grafo_sencillo)
+    solucion = blocales.temple_simulado(grafo_sencillo, calendarizador=calendarizador(), tol=0.0001)
     t_final = time.time()
     costo_final = grafo_sencillo.costo(solucion)
 
