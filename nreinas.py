@@ -119,20 +119,21 @@ def prueba_temple_simulado(problema=ProblemaNreinas(8), calendarizador=None, cad
     # ¿Cual es el máximo número de reinas que se puede resolver en
     # tiempo aceptable con el método de 10 reinicios aleatorios?
     #
-    # Después de 60 reinas considero que el tiempo que transcurre  por cada
-    # iteración es mucho para llamarla aceptable.
-    #
     # ¿Que valores para ajustar el temple simulado son los que mejor
     # resultado dan? ¿Cual es el mejor ajuste para el temple simulado
     # y hasta cuantas reinas puede resolver en un tiempo aceptable?
+    #
+    # Escribe aqui tus conclusiones
+    #
+    # Después de 65 reinas considero que el tiempo que transcurre  por cada
+    # iteración es mucho para llamarla aceptable, donde cada intento tardaba 16
+    # segundos mientras que un recocido simulado tardaba casi 3 segundos.
     #
     # En general para obtener mejores resultados del temple simulado,
     # es necesario probar diferentes metodos de
     # calendarización, prueba al menos otros dos métodos sencillos de
     # calendarización y ajusta los parámetros para que funcionen de la
     # mejor manera
-    #
-    # Escribe aqui tus conclusiones
     #
     # Mover la temperatura inicial a algo más pequeño hara que generalmente se
     # llegue a un resultado más rápido pero también hara que el resultado no sea
@@ -165,18 +166,21 @@ def genCalendarizadorExp(problema):
 
 if __name__ == "__main__":
 
-    #prueba_descenso_colinas(ProblemaNreinas(32), 1)
+    start = time()
+    prueba_descenso_colinas(ProblemaNreinas(65), 10)
+    end = time()
+    print(end-start)
     #start = time()
     #prueba_temple_simulado(ProblemaNreinas(150))
     #end = time()
     #print(end-start)
 
     start = time()
-    prueba_temple_simulado(ProblemaNreinas(50), genCalendarizador1(ProblemaNreinas(50)), "To/(1+i*log(i))")
+    prueba_temple_simulado(ProblemaNreinas(50), genCalendarizadorLog(ProblemaNreinas(50)), "To/(1+i*log(i))")
     end = time()
     print(end-start)
 
     start = time()
-    prueba_temple_simulado(ProblemaNreinas(50), genCalendarizador2(ProblemaNreinas(50)), "To*exp(-0.0015*i)")
+    prueba_temple_simulado(ProblemaNreinas(50), genCalendarizadorExp(ProblemaNreinas(50)), "To*exp(-0.0015*i)")
     end = time()
     print(end-start)

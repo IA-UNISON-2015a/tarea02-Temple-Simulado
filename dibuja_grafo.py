@@ -259,12 +259,12 @@ class problema_grafica_grafo(blocales.Problema):
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
 
-        #angulo = 30
+        anguloMin = 30
         total = 0
         for v in self.vertices:
             #Se seleccionan las aristas que estan en el vertice
             aristas = [a for a in self.aristas if v in a]
-            for aristaA, aristaB in itertools.combinations(aristas):
+            for aristaA, aristaB in itertools.combinations(aristas,2):
                 xA1, yA1 = estado_dic[aristaA[0]]
                 xB1, yB1 = estado_dic[aristaA[1]]
                 xA2, yA2 = estado_dic[aristaB[0]]
@@ -273,11 +273,12 @@ class problema_grafica_grafo(blocales.Problema):
                     m1 = (yB1 - yA1)/(xB1 - xA1)
                     m2 = (yB2 - yA2)/(xB2 - xA2)
                     angulo = (math.degrees(abs(math.atan(((m2-m1)/(1+(m1*m2)))))))
-                    if angulo < 30:
-                        total+= 1-(angulo/angulomenor)
+                    if angulo < anguloMin:
+                        total+= 1-(angulo/anguloMin)
 
                 except ZeroDivisionError:
-                    print("division 0")
+                    pass
+                    #print("division 0")
 
         return total
 
