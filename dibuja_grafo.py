@@ -421,7 +421,7 @@ def calend_exp(To=30000,d=0.000001):
 def main():
     """
     La función principal
-    # Vamos a definir un grafo sencillo
+    """# Vamos a definir un grafo sencillo
     vertices_sencillo = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     aristas_sencillo = [('B', 'G'),
                         ('E', 'F'),
@@ -434,7 +434,7 @@ def main():
                         ('F', 'A'),
                         ('C', 'B'),
                         ('H', 'F')]
-    """"""
+    """
     vertices_sencillo = ['A', 'B', 'C', 'D', 'E']
     aristas_sencillo = [('A', 'B'),
                         ('A', 'C'),
@@ -446,10 +446,7 @@ def main():
                         ('C', 'D'),
                         ('C', 'E'),
                         ('D', 'E'),]"""
-    
-    vertices_sencillo = ['A', 'B', 'C']
-    aristas_sencillo = [('A', 'B'),('A', 'C'),
-                        ('B', 'C'),]                    
+                     
     dimension = 400
 
     # Y vamos a hacer un dibujo del grafo sin decirle como hacer para
@@ -465,7 +462,7 @@ def main():
 
     # Ahora vamos a encontrar donde deben de estar los puntos
     t_inicial = time.time()
-    solucion = blocales.temple_simulado(grafo_sencillo)
+    solucion = blocales.temple_simulado(grafo_sencillo,calend_exp(),tol=0.00001)
     t_final = time.time()
     costo_final = grafo_sencillo.costo(solucion)
 
