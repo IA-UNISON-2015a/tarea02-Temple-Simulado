@@ -141,9 +141,9 @@ class problema_grafica_grafo(blocales.Problema):
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
         K1 = 7.0
-        K2 = 3.0
-        K3 = 2.0
-        K4 = 0.0
+        K2 = 2.0
+        K3 = 3.0
+        K4 = 4.0
 
         # Genera un diccionario con el estado y la posición
         estado_dic = self.estado2dic(estado)
@@ -320,8 +320,9 @@ class problema_grafica_grafo(blocales.Problema):
                         
                         angulo = math.degrees( math.atan( abs( (m1-m2)/(1+m2*m1) ) ) )
                         
+                        
                         if(angulo < 30):
-                            costo= costo + math.ceil(5 - (angulo / 6))
+                            costo= costo + math.ceil(5 - (angulo / 6))#5 y 6 son multiplos de 30
         return costo
 
     def criterio_propio(self, estado_dic):
@@ -349,8 +350,44 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
-
+        
+        '''
+        De los criterios que tenemos hasta el momento ninguno toma en cuenta el
+        area usada o su proporcion.
+        
+        Particualrmente en la imagen final cuando usamos 3 parametros podemos ver
+        que casi no hay aristas presentes a la derecha y que la mayoria de las 
+        aristas esta en la parte inferior izquierda.
+        
+        Inspiracion del primer criterio propio es el problema de particionamiento 
+        de grafos. 
+        
+        El grafo se nota mas disperso, se debe manejar un equilibrio entre la
+        separacion de los grafos.
+        
+        K1 = 6.0
+        K2 = 2.0
+        K3 = 3.0
+        K4 = 4.0
+        
+        '''
+        
+        minimo = 10
+        maximo = self.dim - 10
+        mitad = (minimo + maximo)/2
+        
+        #Contamos el numero de vertices por lado
+        derecha,izquierda = 0,0
+        for v in self.vertices:
+            x,_ = estado_dic[v]
+            if x > mitad:
+                derecha+=1
+            elif x < mitad:
+                izquierda+=1
+        #Este vale cero cuando izquierda == derecha
+        #Y aumenta el costo con la desigualdad
+        return 1-(izquierda/derecha if izquierda<derecha else derecha/izquierda)
+        
     def estado2dic(self, estado):
         """
         Convierte el estado en forma de tupla a un estado en forma
