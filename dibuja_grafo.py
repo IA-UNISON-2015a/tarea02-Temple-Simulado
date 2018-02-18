@@ -19,7 +19,7 @@ $pip install pillow
 
 """
 
-__author__ = 'Escribe aquí tu nombre'
+__author__ = 'Ricardo Holguin Esquer'
 
 import blocales
 import random
@@ -95,9 +95,7 @@ class problema_grafica_grafo(blocales.Problema):
         """
         vecino = list(estado)
         i = random.randint(0, len(vecino) - 1)
-        vecino[i] = max(10,
-                        min(self.dim - 10,
-                            vecino[i] + random.randint(-dmax,  dmax)))
+        vecino[i] = max(10, min(self.dim - 10, vecino[i] + random.randint(-dmax,  dmax)))
         return tuple(vecino)
 
         #######################################################################
@@ -260,7 +258,28 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+
+        #angulo = 30
+        total = 0
+        for v in self.vertices:
+            #Se seleccionan las aristas que estan en el vertice
+            aristas = [a for a in self.aristas if v in a]
+            for aristaA, aristaB in itertools.combinations(aristas):
+                xA1, yA1 = estado_dic[aristaA[0]]
+                xB1, yB1 = estado_dic[aristaA[1]]
+                xA2, yA2 = estado_dic[aristaB[0]]
+                xB2, yB2 = estado_dic[aristaB[1]]
+                try:
+                    m1 = (yB1 - yA1)/(xB1 - xA1)
+                    m2 = (yB2 - yA2)/(xB2 - xA2)
+                    angulo = (math.degrees(abs(math.atan(((m2-m1)/(1+(m1*m2)))))))
+                    if angulo < 30:
+                        total+= 1-(angulo/angulomenor)
+
+                except ZeroDivisionError:
+                    print("division 0")
+
+        return total
 
     def criterio_propio(self, estado_dic):
         """
@@ -287,6 +306,7 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
+
         return 0
 
     def estado2dic(self, estado):
