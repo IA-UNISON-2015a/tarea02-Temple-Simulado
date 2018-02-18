@@ -78,7 +78,7 @@ class problema_grafica_grafo(blocales.Problema):
 
     def vecino_aleatorio(self, estado, dmax=10):
         """
-        Encuentra un vecino en forma aleatoria. En estea primera
+        Encuentra un vecino en forma aleatoria. En esta primera
         versión lo que hacemos es tomar un valor aleatorio, y
         sumarle o restarle x pixeles al azar.
 
@@ -125,8 +125,8 @@ class problema_grafica_grafo(blocales.Problema):
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
         K1 = 1.0
-        K2 = 0.0
-        K3 = 0.0
+        K2 = 1.0
+        K3 = 2.0
         K4 = 0.0
 
         # Genera un diccionario con el estado y la posición
@@ -214,9 +214,9 @@ class problema_grafica_grafo(blocales.Problema):
         @param estado_dic: Diccionario cuyas llaves son los vértices
                            del grafo y cuyos valores es una tupla con
                            la posición (x, y) de ese vértice en el
-                           dibujo.  @param min_dist: Mínima distancia
-                           aceptable en pixeles entre dos vértices en
-                           el dibujo.
+                           dibujo.  
+        @param min_dist: Mínima distancia aceptable en pixeles entre 
+                         dos vértices en el dibujo.
 
         @return: Un número.
 
@@ -226,7 +226,6 @@ class problema_grafica_grafo(blocales.Problema):
             # Calcula la distancia entre dos vertices
             (x1, y1), (x2, y2) = estado_dic[v1], estado_dic[v2]
             dist = math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
-
             # Penaliza la distancia si es menor a min_dist
             if dist < min_dist:
                 total += (1.0 - (dist / min_dist))
@@ -260,7 +259,28 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+        total, angulo_minimo = 0, 30
+
+        for (aristaA, aristaB) in itertools.combinations(self.aristas, 2):
+            # deben tener un vertice comun
+            if aristaA[0] in aristaB or aristaA[1] in aristaB: 
+                # Encuentra los valores de (x0A,y0A), (xFA, yFA) para los
+                # vertices de una arista y los valores (x0B,y0B), (x0B,
+                # y0B) para los vertices de la otra arista
+                (x0A, y0A) = estado_dic[aristaA[0]]
+                (xFA, yFA) = estado_dic[aristaA[1]]
+                (x0B, y0B) = estado_dic[aristaB[0]]
+                (xFB, yFB) = estado_dic[aristaB[1]]
+                # calcular el angulo entre dos rectas
+                try:
+                    m1 = (yFA - y0A) / (xFA - x0A)
+                    m2 = (yFB - y0B) / (xFB - x0B)
+                    angulo = math.degrees(math.atan(abs((m2-m1)/(1+(m1*m2)))))
+                except ZeroDivisionError:
+                    angulo = 0   
+                if angulo < angulo_minimo:
+                    total += (1.0 - (angulo/angulo_minimo))    
+        return total
 
     def criterio_propio(self, estado_dic):
         """
@@ -340,6 +360,7 @@ def main():
     """
 
     # Vamos a definir un grafo sencillo
+    """
     vertices_sencillo = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     aristas_sencillo = [('B', 'G'),
                         ('E', 'F'),
@@ -352,6 +373,9 @@ def main():
                         ('F', 'A'),
                         ('C', 'B'),
                         ('H', 'F')]
+    """
+    vertices_sencillo = [vertice for vertice in "ABCDEFGH"]
+    aristas_sencillo = [(v1, v2) for (v1, v2) in itertools.combinations(vertices_sencillo, 2)]
     dimension = 400
 
     # Y vamos a hacer un dibujo del grafo sin decirle como hacer para
