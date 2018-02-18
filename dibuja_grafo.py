@@ -95,9 +95,8 @@ class problema_grafica_grafo(blocales.Problema):
         """
         vecino = list(estado)
         i = random.randint(0, len(vecino) - 1)
-        vecino[i] = max(10,
-                        min(self.dim - 10,
-                            vecino[i] + random.randint(-dmax,  dmax)))
+        vecino[i] = max(10,min(self.dim - 10,vecino[i] + random.randint(-dmax,  dmax)))
+                            
         return tuple(vecino)
 
         #######################################################################
