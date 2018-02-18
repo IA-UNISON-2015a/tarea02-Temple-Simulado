@@ -19,7 +19,7 @@ $pip install pillow
 
 """
 
-__author__ = 'Escribe aquí tu nombre'
+__author__ = 'CesarSalazar'
 
 import blocales
 import random
@@ -107,7 +107,6 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # Propon una manera alternativa de vecino_aleatorio y muestra que
         # con tu propuesta se obtienen resultados mejores o en menor tiempo
-
     def costo(self, estado):
         """
         Encuentra el costo de un estado. En principio el costo de un estado
@@ -124,10 +123,10 @@ class problema_grafica_grafo(blocales.Problema):
 
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
-        K1 = 1.0
-        K2 = 0.0
-        K3 = 0.0
-        K4 = 0.0
+        K1 = 3.0
+        K2 = 1.0
+        K3 = 4.0
+        K4 = 1.0
 
         # Genera un diccionario con el estado y la posición
         estado_dic = self.estado2dic(estado)
@@ -260,7 +259,32 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+        total = 0
+        #angulominimo
+        aMin =90
+        for (aristaA, aristaB) in itertools.combinations(self.aristas, 2):
+            if not aristaA[0] in aristaB and not aristaA[1] in aristaB:
+                continue
+            # Encuentra los valores de (x0A,y0A), (xFA, yFA) para los
+            # vertices de una arista y los valores (x0B,y0B), (x0B,
+            # y0B) para los vertices de la otra arista
+            (x0A, y0A) = estado_dic[aristaA[0]]
+            (xFA, yFA) = estado_dic[aristaA[1]]
+            (x0B, y0B) = estado_dic[aristaB[0]]
+            (xFB, yFB) = estado_dic[aristaB[1]]
+            # Utilizando la clasica formula para encontrar la pendiente
+            angulo=0
+            try:
+                m1 = (yFA - y0A) / (xFA - x0A)
+                m2 = (yFB - y0B) / (xFB - x0B)
+                angulo = math.degrees(math.atan(abs((m2 - m1) / (1+(m1*m2)))))
+            except ZeroDivisionError:
+                None
+            if angulo > aMin:
+                continue    
+            total += 1.0 - angulo/aMin
+        return total
+
 
     def criterio_propio(self, estado_dic):
         """
