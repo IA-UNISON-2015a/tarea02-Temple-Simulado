@@ -19,13 +19,14 @@ $pip install pillow
 
 """
 
-__author__ = 'Escribe aquí tu nombre'
+__author__ = 'RaulPerez'
 
 import blocales
 import random
 import itertools
 import math
 import time
+import statistics as stats
 from PIL import Image, ImageDraw
 
 
@@ -78,7 +79,7 @@ class problema_grafica_grafo(blocales.Problema):
 
     def vecino_aleatorio(self, estado, dmax=10):
         """
-        Encuentra un vecino en forma aleatoria. En estea primera
+        Encuentra un vecino en forma aleatoria. En esta primera
         versión lo que hacemos es tomar un valor aleatorio, y
         sumarle o restarle x pixeles al azar.
 
@@ -93,13 +94,6 @@ class problema_grafica_grafo(blocales.Problema):
         @return: Una tupla con un estado vecino al estado de entrada.
 
         """
-        vecino = list(estado)
-        i = random.randint(0, len(vecino) - 1)
-        vecino[i] = max(10,
-                        min(self.dim - 10,
-                            vecino[i] + random.randint(-dmax,  dmax)))
-        return tuple(vecino)
-
         #######################################################################
         #                          20 PUNTOS
         #######################################################################
@@ -107,6 +101,37 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # Propon una manera alternativa de vecino_aleatorio y muestra que
         # con tu propuesta se obtienen resultados mejores o en menor tiempo
+        #
+        #   Grafo completos
+        #   N       Vecino    Costo inicial     Costo Final    Tiempo
+        #   5       default       118.54           30.56        22.22 seg
+        #   5       nuevo         105.43           30.57        21.57 seg
+        #   6       default       102.58           56.58        34.13 seg
+        #   6       nuevo         127.66           47.15        31.22 seg
+        #   7       default       147.97           94.39        49.82 seg  
+        #   7       nuevo         186.68           92.72        48.22 seg
+        #
+        #   En general con la nueva funcion de vecinos aleatorios, se optiene una pequeña
+        #   disminucion del tiempo y un mejor costo al final 
+        #
+
+        """
+        vecino = list(estado)    
+        i = random.randint(0, len(vecino) - 1)
+        vecino[i] = max(10,
+                        min(self.dim - 10,
+                            vecino[i] + random.randint(-dmax,  dmax)))
+        return tuple(vecino)
+        """
+        vecino = list(estado)    
+        i = random.randint(0, len(vecino) - 1)
+        # si i es par entonces esta en las x, sino en la y
+        j = (i+1) if i%2==0 else (i-1)
+        # mueve el vertice elegido en 'x' y en 'y'
+        vecino[i] = max(10, min(self.dim-10, vecino[i] + random.randint(-dmax, dmax)))
+        vecino[j] = max(10, min(self.dim-10, vecino[j] + random.randint(-dmax, dmax)))
+        #"""
+        return tuple(vecino)
 
     def costo(self, estado):
         """
@@ -125,9 +150,9 @@ class problema_grafica_grafo(blocales.Problema):
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
         K1 = 1.0
-        K2 = 0.0
-        K3 = 0.0
-        K4 = 0.0
+        K2 = 5.0
+        K3 = 4.0
+        K4 = 6.0
 
         # Genera un diccionario con el estado y la posición
         estado_dic = self.estado2dic(estado)
@@ -203,7 +228,7 @@ class problema_grafica_grafo(blocales.Problema):
                 total += 1
         return total
 
-    def separacion_vertices(self, estado_dic, min_dist=50):
+    def separacion_vertices(self, estado_dic, min_dist=100):
         """
         A partir de una posicion "estado" devuelve una penalización
         proporcional a cada par de vertices que se encuentren menos
@@ -214,9 +239,9 @@ class problema_grafica_grafo(blocales.Problema):
         @param estado_dic: Diccionario cuyas llaves son los vértices
                            del grafo y cuyos valores es una tupla con
                            la posición (x, y) de ese vértice en el
-                           dibujo.  @param min_dist: Mínima distancia
-                           aceptable en pixeles entre dos vértices en
-                           el dibujo.
+                           dibujo.  
+        @param min_dist: Mínima distancia aceptable en pixeles entre 
+                         dos vértices en el dibujo.
 
         @return: Un número.
 
@@ -226,7 +251,6 @@ class problema_grafica_grafo(blocales.Problema):
             # Calcula la distancia entre dos vertices
             (x1, y1), (x2, y2) = estado_dic[v1], estado_dic[v2]
             dist = math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
-
             # Penaliza la distancia si es menor a min_dist
             if dist < min_dist:
                 total += (1.0 - (dist / min_dist))
@@ -260,12 +284,33 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+        total, angulo_minimo = 0, 30
+
+        for (aristaA, aristaB) in itertools.combinations(self.aristas, 2):
+            # deben tener un vertice comun
+            if (aristaA[0] in aristaB) or (aristaA[1] in aristaB): 
+                # Encuentra los valores de (x0A,y0A), (xFA, yFA) para los
+                # vertices de una arista y los valores (x0B,y0B), (x0B,
+                # y0B) para los vertices de la otra arista
+                (x0A, y0A) = estado_dic[aristaA[0]]
+                (xFA, yFA) = estado_dic[aristaA[1]]
+                (x0B, y0B) = estado_dic[aristaB[0]]
+                (xFB, yFB) = estado_dic[aristaB[1]]
+                # calcular el angulo entre dos rectas
+                try:
+                    m1 = (yFA-y0A)/(xFA-x0A)
+                    m2 = (yFB-y0B)/(xFB-x0B)
+                    angulo = math.degrees(math.atan(abs((m2-m1)/(1+(m1*m2)))))
+                except Exception:
+                    angulo = 0   
+                if angulo < angulo_minimo:
+                    total += (1.0 - (angulo/angulo_minimo))    
+        return total
 
     def criterio_propio(self, estado_dic):
         """
-        Implementa y comenta correctamente un criterio de costo que sea
-        conveniente para que un grafo luzca bien.
+        A partir de un estado, devuelve una penalizacion con respecto 
+        a la desviacion estandar de la distancia de las aristas.
 
         @param estado_dic: Diccionario cuyas llaves son los vértices
                            del grafo y cuyos valores es una tupla con
@@ -287,7 +332,20 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+        total = 0
+        distancias = []
+        desviacion_minima = 10
+
+        for (v1, v2) in itertools.combinations(self.vertices, 2):
+            # Calcula la distancia entre dos vertices
+            (x1, y1), (x2, y2) = estado_dic[v1], estado_dic[v2]
+            dist = math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
+            distancias.append(dist)
+        # calcula la desviacion con las distancias
+        desviacion = stats.stdev(distancias)
+        if desviacion > desviacion_minima:
+            total += (1 + (desviacion/desviacion_minima) )
+        return total
 
     def estado2dic(self, estado):
         """
@@ -332,6 +390,8 @@ class problema_grafica_grafo(blocales.Problema):
 
         imagen.save(filename)
 
+def calendarizador(To=1000, df=0.001):
+    return (((To * math.exp(-df*i))) for i in range(int(1e10)))   
 
 def main():
     """
@@ -340,6 +400,7 @@ def main():
     """
 
     # Vamos a definir un grafo sencillo
+    """
     vertices_sencillo = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     aristas_sencillo = [('B', 'G'),
                         ('E', 'F'),
@@ -352,6 +413,9 @@ def main():
                         ('F', 'A'),
                         ('C', 'B'),
                         ('H', 'F')]
+    #"""
+    vertices_sencillo = [vertice for vertice in "ABCDE"]
+    aristas_sencillo = [(v1, v2) for (v1, v2) in itertools.combinations(vertices_sencillo, 2)]
     dimension = 400
 
     # Y vamos a hacer un dibujo del grafo sin decirle como hacer para
@@ -367,7 +431,7 @@ def main():
 
     # Ahora vamos a encontrar donde deben de estar los puntos
     t_inicial = time.time()
-    solucion = blocales.temple_simulado(grafo_sencillo)
+    solucion = blocales.temple_simulado(grafo_sencillo, calendarizador=calendarizador(), tol=0.0001)
     t_final = time.time()
     costo_final = grafo_sencillo.costo(solucion)
 
@@ -382,7 +446,18 @@ def main():
     # ¿Que valores para ajustar el temple simulado son los que mejor
     # resultado dan?
     #
+    #  Cambiando el calendarizador por default por el nuevo, los resultados son mucho   
+    #  mas rapidos incluso utilizando una tolerancia menor. 
+    #  Cambiando la tolerancia por una mayor, los resultados son mas rapidos pero pierde
+    #  belleza en el grafo ya que el costo incrementa bastante.
+    #
     # ¿Que encuentras en los resultados?, ¿Cual es el criterio mas importante?
+    #
+    #  Los criterios a los cuales les di mas importantancia fueron el propio, la distancia
+    #  entre los vertices y el del angulo, y en menor medida el de cruce.  
+    #  Los resultados obtenidos son bastante buenos para grafos completos menores a 7, 
+    #  ya con uno mayor se empiezan a ver los vertices mas juntos.
+    #
     #
     # En general para obtener mejores resultados del temple simulado,
     # es necesario utilizar una función de calendarización acorde con
@@ -393,7 +468,14 @@ def main():
     # parámetros para que obtenga la mejor solución posible en el
     # menor tiempo posible.
     #
-    # Escribe aqui tus conclusiones
+    # Escribe aqui tus conclusiones:
+    #
+    #  Los grafos quedan bien en general, solo varian en la posicion de los vertices
+    #  en la pantalla en el caso de grafos completos.
+    #  Utilizando un nuevo calendarizados los tiempos disminuyeron bastante a comparacion
+    #  del default. Los resultados en cuanto a la 'belleza' del grafo utilizando los dos 
+    #  calendarizadores fueron practicamente iguales. Utilizando una tolerancia menor
+    #  se obtienen resultados muy rapidos pero dando grafos mas 'feos'.
     #
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
     #
