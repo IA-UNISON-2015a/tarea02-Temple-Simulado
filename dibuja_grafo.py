@@ -19,7 +19,7 @@ $pip install pillow
 
 """
 
-__author__ = 'Escribe aquí tu nombre'
+__author__ = 'gilbertoespinoza'
 
 import blocales
 import random
@@ -93,13 +93,14 @@ class problema_grafica_grafo(blocales.Problema):
         @return: Una tupla con un estado vecino al estado de entrada.
 
         """
+        """ PROFE VERSION
         vecino = list(estado)
         i = random.randint(0, len(vecino) - 1)
         vecino[i] = max(10,
                         min(self.dim - 10,
                             vecino[i] + random.randint(-dmax,  dmax)))
         return tuple(vecino)
-
+        """
         #######################################################################
         #                          20 PUNTOS
         #######################################################################
@@ -107,6 +108,16 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # Propon una manera alternativa de vecino_aleatorio y muestra que
         # con tu propuesta se obtienen resultados mejores o en menor tiempo
+
+        vecino = list(estado)
+        i = random.randint(0, len(vecino) - 1)
+
+        # modificamos exepto el que tomamos
+        for j in range(len(vecino)):
+            if j != i:
+                vecino[j] = max(10, min(self.dim-10, vecino[j] + random.randint(-dmax,  dmax)))
+        return tuple(vecino)
+
 
     def costo(self, estado):
         """
@@ -124,10 +135,10 @@ class problema_grafica_grafo(blocales.Problema):
 
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
-        K1 = 1.0
-        K2 = 0.0
-        K3 = 0.0
-        K4 = 0.0
+        K1 = 0.0
+        K2 = 1.0
+        K3 = 1.0
+        K4 = 1.0
 
         # Genera un diccionario con el estado y la posición
         estado_dic = self.estado2dic(estado)
@@ -260,7 +271,27 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+
+        costo = 0
+        #recorremos los vertices
+        angulo=30 #gtrados
+        for v in self.vertices:
+            for (aristaA, aristaB) in itertools.combinations([ar for ar in self.aristas if v in ar], 2):
+                p1 = (estado_dic[aristaA[0]])
+                p2 = (estado_dic[aristaA[1]])
+                p3 = (estado_dic[aristaB[0]])
+                p4 = (estado_dic[aristaB[1]])
+                try:
+                    m1=(p2[1]-p1[1])/(p2[0]-p1[0])
+                    m2=(p4[1]-p3[1])/(p4[0]-p3[0])
+                    angulo=(math.degrees(abs(math.atan(((m2-m1)/(1+(m1*m2)))))))
+                except ZeroDivisionError:
+                    continue
+                if(angulo < 30):
+                    costo += 1
+
+        return costo
+
 
     def criterio_propio(self, estado_dic):
         """
@@ -286,7 +317,6 @@ class problema_grafica_grafo(blocales.Problema):
         #
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
-        #
         return 0
 
     def estado2dic(self, estado):

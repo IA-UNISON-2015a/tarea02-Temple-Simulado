@@ -10,6 +10,7 @@ Ejemplo de las n_reinas con búsquedas locales
 
 __author__ = 'juliowaissman'
 
+#__author__ = "gilbertoespinoza"
 
 import blocales
 from random import shuffle
@@ -111,8 +112,8 @@ def prueba_temple_simulado(problema=ProblemaNreinas(8)):
 
 if __name__ == "__main__":
 
-    prueba_descenso_colinas(ProblemaNreinas(32), 10)
-    prueba_temple_simulado(ProblemaNreinas(32))
+    #prueba_descenso_colinas(ProblemaNreinas(75), 10)
+    #prueba_temple_simulado(ProblemaNreinas(90))
 
     ##########################################################################
     #                          20 PUNTOS
@@ -120,18 +121,42 @@ if __name__ == "__main__":
     #
     # ¿Cual es el máximo número de reinas que se puede resolver en
     # tiempo aceptable con el método de 10 reinicios aleatorios?
+    # -> 75 reinas 390seg dando un costo de 0 o 1 en descenso de colinas
     #
+
     # ¿Que valores para ajustar el temple simulado son los que mejor
     # resultado dan? ¿Cual es el mejor ajuste para el temple simulado
     # y hasta cuantas reinas puede resolver en un tiempo aceptable?
-    #
+    # -> con temple simulado el tiempo se reduce a 103 en 90 reinas, desmostrando que el
+    # -> temple es en efecto mejor, y mas comodo de modificar
+
     # En general para obtener mejores resultados del temple simulado,
     # es necesario probar diferentes metdos de
     # calendarización, prueba al menos otros dos métodos sencillos de
     # calendarización y ajusta los parámetros para que funcionen de la
     # mejor manera
-    #
+    # -> Podemos observar que una aproximacion con division es mas rapida que la de la multiplicacion
+    # con los valores 0.01 para la division, dado que el paso es mas significativo.
     # Escribe aqui tus conclusiones
     #
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
     #
+
+    n = 90
+
+    problema = ProblemaNreinas(n)
+
+    prueba_temple_simulado(problema)
+
+    costos = [problema.costo(problema.estado_aleatorio())
+              for _ in range(10 * len(problema.estado_aleatorio()))]
+    minimo,  maximo = min(costos), max(costos)
+    T_ini = 2 * (maximo - minimo)
+    calendarizador1 = (T_ini/(0.01*i) for i in range(1,int(1e10)))
+    calendarizador2 = (T_ini*(0.09*i) for i in range(1,int(1e10)))
+
+    for cal in (calendarizador1,calendarizador2):
+        solucion = blocales.temple_simulado(problema, cal)
+        print("Costo de la solución: ", problema.costo(solucion))
+        print("La solución es: ")
+        print(solucion)
