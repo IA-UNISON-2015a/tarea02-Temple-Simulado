@@ -91,7 +91,7 @@ def descenso_colinas(problema, maxit=1e6):
     return estado
 
 
-def temple_simulado(problema, calendarizador=None, tol=0.001):
+def temple_simulado(problema, calendarizador=None, tol=0.0001):
     """
     Busqueda local por temple simulado
 
@@ -113,7 +113,6 @@ def temple_simulado(problema, calendarizador=None, tol=0.001):
     costo = problema.costo(estado)
 
     for T in takewhile(lambda i: i > tol, calendarizador):
-
         vecino = problema.vecino_aleatorio(estado)
         costo_vecino = problema.costo(vecino)
         incremento_costo = costo_vecino - costo
