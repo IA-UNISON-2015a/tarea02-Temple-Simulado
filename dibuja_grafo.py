@@ -142,9 +142,9 @@ class problema_grafica_grafo(blocales.Problema):
 
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
-        K1 = 1.0
-        K2 = 0.0
-        K3 = 0.0
+        K1 = 3.0
+        K2 = 2.0
+        K3 = 1.0
         K4 = 0.0
 
         # Genera un diccionario con el estado y la posición
@@ -266,6 +266,38 @@ class problema_grafica_grafo(blocales.Problema):
         @return: Un número.
 
         """
+        
+        costo=0
+        for v1 in self.vertices:
+            for a1,a2 in itertools.combinations(self.aristas,2):
+                if(v1 in a1 and v1 in a2):
+                    if a1[0]==v1:
+                        v2=a1[1]
+                    else:
+                        v2=a1[0]
+                    if a2[0]==v1:
+                        v3=a2[1]
+                    else:
+                        v3=a2[0]
+                    
+                    c1,c2,c3 = estado_dic[v1], estado_dic[v2], estado_dic[v3]
+                    if c1!=c2 and c1!=c3 and c2!=c3:
+                        lc1=math.sqrt(((c2[0]-c3[0])**2)+((c2[1]-c3[1])**2))
+                        lc2=math.sqrt(((c1[0]-c3[0])**2)+((c1[1]-c3[1])**2))
+                        lc3=math.sqrt(((c1[0]-c2[0])**2)+((c1[1]-c2[1])**2))
+
+                        a=(lc1**2-lc2**2-lc3**2)/(-2*lc2*lc3)
+                        if a>1:
+                            a=1
+                        elif a<-1:
+                            a=-1
+                        ac1=math.acos(a)
+                        angulo=math.degrees(ac1)
+                        if angulo<30:
+                            costo+=1
+                             
+        return costo       
+                
         #######################################################################
         #                          20 PUNTOS
         #######################################################################
@@ -385,7 +417,7 @@ def main():
 
     # Ahora vamos a encontrar donde deben de estar los puntos
     t_inicial = time.time()
-    solucion = blocales.temple_simulado(grafo_sencillo)
+    solucion = blocales.temple_simulado(grafo_sencillo, None, 0.01)
     t_final = time.time()
     costo_final = grafo_sencillo.costo(solucion)
 

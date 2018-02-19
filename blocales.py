@@ -91,7 +91,7 @@ def descenso_colinas(problema, maxit=1e6):
     return estado
 
 
-def temple_simulado(problema, calendarizador=None, tol=0.001):
+def temple_simulado(problema, calendarizador=None, tol=0.0001):
     """
     Busqueda local por temple simulado
 
