@@ -16,6 +16,9 @@ from random import shuffle
 from random import sample
 from itertools import combinations
 
+from time import time
+from math import sqrt
+from math import log
 
 class ProblemaNreinas(blocales.Problema):
     """
@@ -133,5 +136,173 @@ if __name__ == "__main__":
     #
     # Escribe aqui tus conclusiones
     #
+    #
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
     #
+
+"""
+Descenso de colinas:
+Asumiendo que maximo es aceptable esperar un minuto para encontrar una
+solucion, entonces entre 50 y 60 reinas son aceptables en la computadora
+donde corro los algoritmos, ya que cada corrida del descenso de colinas
+dura al rededor de 6 segundos.
+
+
+Otros calendarizadores:
+Obtienen la misma temperatura inicial que el calendarizador originalmente propuesto, los cambios son solo de algunas operaciones en el generador.
+
+Ejemplos:
+1.- calendarizador = (T_ini/i for i in range(1, int(1e10), 2))
+Este calendarizador es practicamente el mismo que el original pero avanza la variable i dos unidades en lugar de solo una, lo cual disminuye la temperatura inicial mas rapidamente.
+En las pruebas que realize en realidad no se notan cambios con el original.
+
+2.- calendarizador = (T_ini/i for i in range(1, int(1e10), 10))
+Similar al anterior pero avanza 10 unidades. De igual manera no se notan cambios con el original.
+
+3.- calendarizador = (T_ini/sqrt(i) for i in range(1, int(1e10)))
+Saca raiz cuadrada a la variable i lo cual hace que la temperatura se enfrie mas lentamente. Con esta hubo cambios en el tiempo haciendolo mas lento comparado con el original.
+
+4.- calendarizador = (T_ini/(log(i)+1) for i in range(1, int(1e10)))
+Saca logaritmo en lugar de raiz cuadrada y lo enfria aun mas lento. El hecho de que se enfrie mas lento afecta gravemente al tiempo, haciendolo varias veces mas grande e innaceptable para reinas mayores a 32.
+
+5.- calendarizador = (T_ini*0.995**i for i in range(1, int(1e10)))
+En lugar de dividir entre la variable i, se eleva un porcentaje a la i y se multiplica por el.
+Este fue de los unicos calendarizadores en los que no siempre se obtuvo una solucion optima (1 de 5 veces no la obtuvo) pero cuando la obtuvo, el tiempo fue similar al original.
+"""
+
+"""
+Realiza una heurisitca y regresa una tupla con el costo de la solucion encontrada y el tiempo
+que le tomo encontrarla
+"""
+def infoHeuristica(heuristica = blocales.temple_simulado, parametros = [ProblemaNreinas(8)]):
+    tInicial = time()
+    solucion = heuristica(*parametros)
+    tFinal = time()
+    costo = parametros[0].costo(solucion)
+    tEjecucion = tFinal - tInicial
+
+    return costo, tEjecucion
+
+def calendarizar(problema, n):
+    costos = [problema.costo(problema.estado_aleatorio())
+              for _ in range(10 * len(problema.estado_aleatorio()))]
+    minimo,  maximo = min(costos), max(costos)
+    T_ini = 2 * (maximo - minimo)
+
+    if n == 1:
+        calendarizador = (T_ini/i for i in range(1, int(1e10)))
+    elif n == 2:
+        calendarizador = (T_ini/i for i in range(1, int(1e10), 2))
+    elif n == 3:
+        calendarizador = (T_ini/i for i in range(1, int(1e10), 10))
+    elif n == 4:
+        calendarizador = (T_ini/sqrt(i) for i in range(1, int(1e10)))
+    elif n == 5:
+        calendarizador = (T_ini/sqrt(i) for i in range(1, int(1e10), 2))
+    elif n == 6:
+        calendarizador = (T_ini/sqrt(i) for i in range(1, int(1e10), 10))
+    elif n == 7:
+        calendarizador = (T_ini/(log(i)+1) for i in range(1, int(1e10)))
+    elif n == 8:
+        calendarizador = (T_ini/(log(i)+1) for i in range(1, int(1e10), 2))
+    elif n == 9:
+        calendarizador = (T_ini/(log(i)+1) for i in range(1, int(1e10), 10))
+    elif n == 10:
+        calendarizador = (T_ini*0.995**i for i in range(1, int(1e10)))
+    elif n == 11:
+        calendarizador = (T_ini*0.95**i for i in range(1, int(1e10)))
+    elif n == 12:
+        calendarizador = (T_ini*0.9**i  for i in range(1, int(1e10)))
+    else:
+        calendarizador = (T_ini/i for i in range(1, int(1e10)))
+
+    return calendarizador 
+
+def cadenaCalendarizador(n):
+    if n == 1:
+        return "calendarizador = (T_ini/i for i in range(1, int(1e10)))"
+    elif n == 2:
+        return "calendarizador = (T_ini/i for i in range(1, int(1e10), 2))"
+    elif n == 3:
+        return "calendarizador = (T_ini/i for i in range(1, int(1e10), 10))"
+    elif n == 4:
+        return "calendarizador = (T_ini/sqrt(i) for i in range(1, int(1e10)))"
+    elif n == 5:
+        return "calendarizador = (T_ini/sqrt(i) for i in range(1, int(1e10), 2))"
+    elif n == 6:
+        return "calendarizador = (T_ini/sqrt(i) for i in range(1, int(1e10), 10))"
+    elif n == 7:
+        return "calendarizador = (T_ini/(log(i)+1) for i in range(1, int(1e10)))"
+    elif n == 8:
+        return "calendarizador = (T_ini/(log(i)+1) for i in range(1, int(1e10), 2))"
+    elif n == 9:
+        return "calendarizador = (T_ini/(log(i)+1) for i in range(1, int(1e10), 10))"
+    elif n == 10:
+        return "calendarizador = (T_ini*0.995**i for i in range(1, int(1e10)))"
+    elif n == 11:
+        return "calendarizador = (T_ini*0.95**i for i in range(1, int(1e10)))"
+    elif n == 12:
+        return "calendarizador = (T_ini*0.9**i  for i in range(1, int(1e10)))"
+    else:
+        return "calendarizador = (T_ini/i for i in range(1, int(1e10)))"
+
+    def pruebaTiempo():
+
+    reinas = 16
+    rep = 10
+    repeticiones = 5
+    n = 1
+
+    print("Reinicios aleatorios")
+    for intento in range(rep):
+        info = infoHeuristica(ProblemaNreinas(reinas), blocales.descenso_colinas)
+        print(info)
+
+        if info[0] is 0:
+            mejores.append( ("Colinas", *info) )
+
+    for reinas in [16, 32, 64, 100]:
+
+        mejores = []
+
+        print("##############################################################")
+
+        print("Numero reinas: ", str(reinas))
+
+        print("Temple")
+        for _ in range(repeticiones):
+            info = infoHeuristica(blocales.temple_simulado, [ProblemaNreinas(reinas)])
+            if info[0] is 0:
+                mejores.append(info)
+
+        print("De {} veces, {} veces se llego a costo 0".format(repeticiones, len(mejores)))
+        promedio1 = sum(info[1] for info in mejores) / len(mejores) if len(mejores) > 0 else 0
+
+        for n in range(1,12):
+
+            mejores = []
+
+            print("Temple otra calendarizacion")
+
+            print(cadenaCalendarizador(n))
+
+            for _ in range(repeticiones):
+                problema = ProblemaNreinas(reinas)
+
+                info = infoHeuristica(blocales.temple_simulado,
+                                      [problema, calendarizar(problema, n)])
+ 
+                if info[0] is 0:
+                    mejores.append(info)
+
+            print("De {} veces, {} veces se llego a costo 0".format(repeticiones, len(mejores)))
+            promedio2 = sum(info[1] for info in mejores) / len(mejores) if len(mejores) > 0 else 0
+            print("Promedio calendarizacion original:\t\t", str(promedio1))
+            print("Promedio otra calendarizacion:\t\t\t", str(promedio2))
+
+            if promedio1 < promedio2:
+                print("Promedio 1 es menor: ", str( (promedio1 + 1) / (promedio2 + 1)))
+            elif promedio2 < promedio1:
+                print("Promedio 2 es menor: ", str( (promedio2 + 1) / (promedio1 + 1)))
+            else:
+                print("Promedios iguales")

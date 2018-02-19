@@ -19,15 +19,31 @@ $pip install pillow
 
 """
 
-__author__ = 'Escribe aquí tu nombre'
+__author__ = 'luis fernando'
 
 import blocales
 import random
 import itertools
 import math
 import time
+import os
 from PIL import Image, ImageDraw
 
+from math import cos, sin
+
+"""
+Inicializa el valor de las k aleatoriamente para ver que combinaciones dan
+costos decentes y las graficas se ven mejores.
+"""
+def inicializaKAleatorio():
+    total = 10
+    ks = [0,0,0,0,0]
+    while total > 0:
+        i = random.randrange(0, len(ks))
+        ks[i] += 0.1
+        total -= 0.1
+
+    return ks
 
 class problema_grafica_grafo(blocales.Problema):
 
@@ -78,7 +94,7 @@ class problema_grafica_grafo(blocales.Problema):
 
     def vecino_aleatorio(self, estado, dmax=10):
         """
-        Encuentra un vecino en forma aleatoria. En estea primera
+        Encuentra un vecino en forma aleatoria. En esta primera
         versión lo que hacemos es tomar un valor aleatorio, y
         sumarle o restarle x pixeles al azar.
 
@@ -93,12 +109,15 @@ class problema_grafica_grafo(blocales.Problema):
         @return: Una tupla con un estado vecino al estado de entrada.
 
         """
+        """
         vecino = list(estado)
+
         i = random.randint(0, len(vecino) - 1)
         vecino[i] = max(10,
                         min(self.dim - 10,
                             vecino[i] + random.randint(-dmax,  dmax)))
         return tuple(vecino)
+        """
 
         #######################################################################
         #                          20 PUNTOS
@@ -107,6 +126,29 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # Propon una manera alternativa de vecino_aleatorio y muestra que
         # con tu propuesta se obtienen resultados mejores o en menor tiempo
+
+        #Creo que las graficas que me salen son mas bonitas usando estos vecinos. QED.
+
+        """
+        Nueva idea: Tomar un vertice del grafo y moverlo aleatoriamente a otra
+        posicion que este limitada por una circunferencia del radio de la
+        dispersion. Ya que se mueve tanto en x como en y, es posible explorar
+        el area de soluciones en menos pasos (o eso pienso).
+        """
+        vecino = list(estado)
+
+        x = random.randint(0, len(vecino) - 1)
+        y = x+1 if x % 2 == 0 else x-1
+        if x > y:   #hace vecino[x] horizontal, vecino[y] vertical si no lo eran
+            x,y = y,x
+        theta = 2 * math.pi * random.random()
+        magnitud  = dmax * random.random()
+        dx = int(magnitud*cos(theta))
+        dy = int(magnitud*sin(theta))
+        vecino[x] = max(10, min(self.dim - 10, vecino[x] + dx))
+        vecino[y] = max(10, min(self.dim - 10, vecino[y] + dy))
+
+        return tuple(vecino)
 
     def costo(self, estado):
         """
@@ -123,11 +165,11 @@ class problema_grafica_grafo(blocales.Problema):
         """
 
         # Inicializa fáctores lineales para los criterios más importantes
-        # (default solo cuanta el criterio 1)
-        K1 = 1.0
-        K2 = 0.0
-        K3 = 0.0
-        K4 = 0.0
+        K1 = 1.6
+        K2 = 2.1
+        K3 = 2.1
+        K4 = 2.1
+        K5 = 2.2
 
         # Genera un diccionario con el estado y la posición
         estado_dic = self.estado2dic(estado)
@@ -135,7 +177,8 @@ class problema_grafica_grafo(blocales.Problema):
         return (K1 * self.numero_de_cruces(estado_dic) +
                 K2 * self.separacion_vertices(estado_dic) +
                 K3 * self.angulo_aristas(estado_dic) +
-                K4 * self.criterio_propio(estado_dic))
+                K4 * self.criterio_propio(estado_dic) +
+                K5 * self.criterioPropio2(estado_dic))
 
         # Como podras ver en los resultados, el costo inicial
         # propuesto no hace figuras particularmente bonitas, y esto es
@@ -189,7 +232,6 @@ class problema_grafica_grafo(blocales.Problema):
             den = (xFA - x0A) * (yFB - y0B) - (xFB - x0B) * (yFA - y0A)
             if den == 0:
                 continue
-
             # Y entonces sacamos el largo del cruce, normalizado por
             # den. Esto significa que en 0 se encuentran en la primer
             # arista y en 1 en la última. Si los puntos de cruce de
@@ -255,12 +297,30 @@ class problema_grafica_grafo(blocales.Problema):
         # cada vertice. Dale diferente peso a cada criterio hasta
         # lograr que el sistema realice gráficas "bonitas"
         #
-        # ¿Que valores de diste a K1, K2 y K3 respectivamente?
-        #
+        # ¿Que valores le diste a K1, K2 y K3 respectivamente?
+        # 1.6, 2.1, 2.1
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+
+        anguloMin = math.pi/6
+        penalizacion = 0
+
+        for (a1, a2) in itertools.combinations(self.aristas, 2):
+            #si las aristas no comparten un vertice se ignoran
+            if not a1[0] in a2 and not a1[1] in a2:
+                continue
+
+            v1 = estado_dic[a1[0]] if a1[0] in a2 else estado_dic[a1[1]]
+            v2 = estado_dic[a1[0]] if a1[0] not in a2 else estado_dic[a1[1]]
+            v3 = estado_dic[a2[0]] if a2[0] not in a1 else estado_dic[a2[1]]
+
+            angulo = calcularAngulo(v1, v2, v3)
+
+            if angulo < anguloMin:
+                penalizacion += 1 - angulo/anguloMin
+
+        return penalizacion
 
     def criterio_propio(self, estado_dic):
         """
@@ -283,11 +343,57 @@ class problema_grafica_grafo(blocales.Problema):
         # Desarrolla un criterio propio y ajusta su importancia en el
         # costo total con K4 ¿Mejora el resultado? ¿En que mejora el
         # resultado final?
-        #
+
+        # Yo creo que si porque hay mas simetria teniendo el mismo numero de
+        # vertices en cada cuadrante y creo que se ve mejor cuando un grafo
+        # se asemeja a un circulo.
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+        """
+        Este criterio trata de encajar los vertices de la grafica en una
+        circunferencia porque creo que eso lo hace bonito.
+        La circunferencia tiene centro en el centro de la ventana y el diametro
+        es el largo o ancho (el que sea menor) de la ventana menos un marco de
+        10 pixeles.
+        """
+        centro = (int(self.dim/2), int(self.dim/2))
+        radio = int(self.dim/2) - 10
+        penalizacion = 0
+
+        for i in estado_dic:
+            distancia = math.sqrt((estado_dic[i][0]-centro[0])**2 + \
+                        (estado_dic[i][1]-centro[1])**2)
+            diferencia = abs(distancia-radio)
+            penalizacion += abs(distancia-radio)/radio
+
+        return penalizacion
+
+    """
+    Criterio que revisa que haya el mismo numero de vertices en la parte
+    izquierda que la parte derecha y en la parte superior e inferior de la
+    grafica.
+    """
+    def criterioPropio2(self, estado_dic):
+        vizq = 0
+        vinf = 0
+        total = len(self.vertices)
+        mitadHorizontal = self.dim/2
+        mitadVertical = self.dim/2
+
+        for i in estado_dic:
+            if estado_dic[i][0] < mitadHorizontal:
+                vizq += 1
+            if estado_dic[i][1] < mitadVertical:
+                vinf += 1
+
+        vder = total - vizq
+        vsup = total - vinf
+
+        penalizacion1 = 1 - vder / vizq if vder < vizq else 1 - vizq / vder
+        penalizacion2 = 1 - vsup / vinf if vsup < vinf else 1 - vinf / vsup
+
+        return (penalizacion1+penalizacion2)/2
 
     def estado2dic(self, estado):
         """
@@ -367,12 +473,13 @@ def main():
 
     # Ahora vamos a encontrar donde deben de estar los puntos
     t_inicial = time.time()
-    solucion = blocales.temple_simulado(grafo_sencillo)
+    solucion = blocales.temple_simulado(grafo_sencillo, calendarizarGrafo(grafo_sencillo, 3))
     t_final = time.time()
     costo_final = grafo_sencillo.costo(solucion)
 
     grafo_sencillo.dibuja_grafo(solucion, "prueba_final.gif")
-    print("\nUtilizando la calendarización por default")
+    #es la calendarizacion default pero asi suena mejor
+    print("\nUtilizando la calendarizacion lineal multiplicativa")
     print("Costo de la solución encontrada: {}".format(costo_final))
     print("Tiempo de ejecución en segundos: {}".format(t_final - t_inicial))
 
@@ -398,6 +505,190 @@ def main():
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
     #
 
+"""
+Funcion que calcula el angulo de un arco dado 3 puntos.
+Cada punto es una tupla de la fomar (posX, posY).
+
+@param punto1: Es el punto que une los otros dos en el arco
+@param punto2: Uno de los puntos del arco
+@param punto3: Uno de los puntos del arco
+
+@return El angulo en radianes del punto 2 al punto 3 unidos por el punto 1
+"""
+def calcularAngulo(punto1, punto2, punto3):
+    #crea 2 vectores que van de p1 a p2 y de p1 a p3
+    if punto1 == punto2 or punto1 == punto3 or punto2 == punto3:
+        return 0
+    vector12 = (punto1[0] - punto2[0], punto1[1] - punto2[1])
+    vector13 = (punto1[0] - punto3[0], punto1[1] - punto3[1])
+
+    prodPunto = vector12[0]*vector13[0] + vector12[1]*vector13[1]
+    magnitud12 = math.sqrt(vector12[0]**2 + vector12[1]**2)
+    magnitud13 = math.sqrt(vector13[0]**2 + vector13[1]**2)
+    val = prodPunto/(magnitud12*magnitud13)
+    #Arregla errores de punto flotante para que acos siempre tenga valor
+    if val < -1:
+        val = -1
+    if val > 1:
+        val = 1
+
+    return math.acos(val)
+
+"""
+Funcion que asigna un nombre al archivo de prueba final asegurandose que no sobreescriba
+uno pasado.
+
+@return El nombre del archivo con extension gif y el numero de prueba que es.
+"""
+def asignaNombre():
+    nombreFinal = "prueba_final"
+    numero = 0
+    extension = ".gif"
+    nombre = nombreFinal+str(numero)+extension
+    while os.path.isfile(nombre):
+        numero += 1
+        nombre = nombreFinal+str(numero)+extension
+
+    return nombre, numero
+
+"""
+Dado un numero de [0,4] regresa un calendarizador para el problema de
+dibujar grafos.
+
+@param n: Indicador de que calendarizador se quiere
+
+@return Calendarizador
+"""
+def calendarizarGrafo(problema, n):
+    costos = [problema.costo(problema.estado_aleatorio())
+              for _ in range(10 * len(problema.estado_aleatorio()))]
+    minimo,  maximo = min(costos), max(costos)
+    T_ini = 2 * (maximo - minimo)
+
+    if n == 1:
+        #Tipo 1, exponencial multiplicativa. .8 <= a <= .9
+        a = 0.85
+        calendarizador = (T_ini*a**i for i in range(1, int(1e5)))
+
+    elif n == 2:
+        #Tipo 2, logaritmica multiplicativa. a > 1
+        a = 2
+        calendarizador = (T_ini / (1+a*math.log(1+i)) for i in range(1, int(1e5)))
+
+    elif n == 3:
+        #Tipo 3, lineal multiplicativa. a > 0
+        a = 1
+        calendarizador = (T_ini / (1 + a*i) for i in range(1, int(1e5)))
+    
+    elif n == 4:
+        #Tipo 4, cuadratica multiplicativa. a > 0
+        a = 1
+        calendarizador = (T_ini / (1 + a*i**2) for i in range(1, int(1e5)))
+
+    else:
+        #Calendarizador por default
+        calendarizador = None
+
+    return calendarizador
+
+"""
+Es casi una copia de main
+"""
+def pruebaMain(kaleatorio = True):
+    vertices_sencillo = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+    aristas_sencillo = [('B', 'G'),
+                        ('E', 'F'),
+                        ('H', 'E'),
+                        ('D', 'B'),
+                        ('H', 'G'),
+                        ('A', 'E'),
+                        ('C', 'F'),
+                        ('H', 'B'),
+                        ('F', 'A'),
+                        ('C', 'B'),
+                        ('H', 'F')]
+    dimension = 400
+
+    #mejores k encontradas a prueba y error
+    K1 = 1.6
+    K2 = 2.1
+    K3 = 2.1
+    K4 = 2.1
+    K5 = 2.2
+
+    grafoCalendarizador = problema_grafica_grafo(vertices_sencillo,
+                                                 aristas_sencillo,
+                                                 dimension)
+
+    def prueba(calendarizador = None):
+
+        if kaleatorio:
+            K1, K2, K3, K4, K5 = inicializaKAleatorio()
+
+        grafo_sencillo = problema_grafica_grafo(vertices_sencillo,
+                                                aristas_sencillo,
+                                                dimension)
+
+        estado_aleatorio = grafo_sencillo.estado_aleatorio()
+        costo_inicial = grafo_sencillo.costo(estado_aleatorio)
+        grafo_sencillo.dibuja_grafo(estado_aleatorio, "prueba_inicial.gif")
+        print("Costo del estado aleatorio: {}".format(costo_inicial))
+
+
+        # Ahora vamos a encontrar donde deben de estar los puntos
+        t_inicial = time.time()
+        solucion = blocales.temple_simulado(grafo_sencillo, calendarizador)
+        t_final = time.time()
+        costo_final = grafo_sencillo.costo(solucion)
+
+        nombreFinal, numeroPrueba = asignaNombre()
+        grafo_sencillo.dibuja_grafo(solucion, nombreFinal)
+        print("\nPrueba numero: {}".format(numeroPrueba))
+        if calendarizador is None:
+            print("Utilizando la calendarización por default")
+        else:
+            print("Utilizando un calendarizador que no es default")
+
+        print("Los valores de K son:")
+        print("K1: {}\nK2: {}\nK3: {}\nK4: {}\nK5: {}".format(K1, K2, K3, K4, K5))
+
+        print("Costo de la solución encontrada: {}".format(costo_final))
+        print("Tiempo de ejecución en segundos: {}".format(t_final - t_inicial))
+
+    for i in range(2):
+        print("\nCalendarizador default")
+        prueba(calendarizarGrafo(grafoCalendarizador, 0))
+        print("\nCalendarizador 1, exponencial multiplicativo")
+        prueba(calendarizarGrafo(grafoCalendarizador, 1))
+        print("\nCalendarizador 2, logaritmico multiplicativo")
+        prueba(calendarizarGrafo(grafoCalendarizador, 2))
+        print("\nCalendarizador 3, lineal multiplicativo")
+        prueba(calendarizarGrafo(grafoCalendarizador, 3))
+        print("\nCalendarizador 4, cuadratico multiplicativo")
+        prueba(calendarizarGrafo(grafoCalendarizador, 4))
 
 if __name__ == '__main__':
+    #main()
     main()
+
+"""
+Conclusiones:
+El temple simulado lo deje casi exacto como fue codificado. La unica diferencia es
+que utilice otro calendarizador (con trampa). Hice pruebas con varios calendarizadores
+simples y los que mejor costo daban eran el default y el que utilice al final, asi que
+decidi usar el que no era default.
+
+La manera en que encontre que pesos lineales deberia darle a los criterios fue hechando
+a correr muchos diferentes, ver cuales daban costos mas bajos y volver a correrlos para
+ver si era coincidencia. Asi llegue a los pesos finales y sorprendentemente son bastante
+equilibrados. Personalmente creo que el criterio con el que los vertices deben estar con
+el mismo numero en la parter izquierda, derecha, superior e inferior es la que hace mas
+bonito el grafo, o que asi se puede parchar mas facilmente uno feo.
+
+En general las graficas generadas no son hermosas pero tampoco son horriblemente feas. Son
+en su mayoria aceptables pero de seguro utilizando otra combinacion de calendarizacion,
+diferentes criterios y pesos lineales para criterios se podrian conseguir graficas mas
+bonitas, pero una vez mas, creo que las que se generan con esta combinacion de parametros
+son aceptables.
+"""
+
