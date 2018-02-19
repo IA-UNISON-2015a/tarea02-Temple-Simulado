@@ -12,8 +12,8 @@ gráfos por computadora pero da una idea de la utilidad de los métodos de
 optimización en un problema divertido.
 
 Para realizar este problema es necesario contar con el módulo Pillow
-instalado (en Anaconda se instala por default. Si no se encuentr instalado,
-desde la termnal se puede instalar utilizando
+instalado (en Anaconda se instala por default. Si no se encuentra instalado,
+desde la terminal se puede instalar utilizando
 
 $pip install pillow
 
@@ -138,6 +138,7 @@ class problema_grafica_grafo(blocales.Problema):
                 K2 * self.separacion_vertices(estado_dic) +
                 K3 * self.angulo_aristas(estado_dic) +
                 K4 * self.criterio_propio(estado_dic))
+
 
         # Como podras ver en los resultados, el costo inicial
         # propuesto no hace figuras particularmente bonitas, y esto es
@@ -265,8 +266,21 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
 
+        angulomenor = 35
+        total = 0
+        for vertice in self.vertices:
+            aristas = [a for a in self.aristas if vertice in a]
+            for (a,b) in itertools.combinations(aristas, 2):
+                (ax1, ay1), (ax2, ay2), (bx1, by1), (bx2, by2) = estado_dic[a[0]], estado_dic[a[1]], estado_dic[b[0]], estado_dic[b[1]]
+                m1 = (ay2 - ay1)/((ax2 - ax1) if ax2-ax1 != 0 else 0.0000000001)
+                m2 = (by2 - by1)/((bx2 - bx1) if bx2-bx1 != 0 else 0.0000000001)
+                angulo = math.degrees(abs(math.atan((m2-m1)/((1+m2*m1) if m2*m1!=-1 else 0.00000001))))
+                if angulo < angulomenor:
+                    total += 1-(angulo/angulomenor)
+        return total
+    
+    
     def criterio_propio(self, estado_dic):
         """
         Implementa y comenta correctamente un criterio de costo que sea
@@ -284,6 +298,7 @@ class problema_grafica_grafo(blocales.Problema):
         #                          20 PUNTOS
         #######################################################################
         # ¿Crees que hubiera sido bueno incluir otro criterio? ¿Cual?
+        #  Podriamos haber incluido otro basado en otra caracteristica pero por el momento no se me ocurre ninguno
         #
         # Desarrolla un criterio propio y ajusta su importancia en el
         # costo total con K4 ¿Mejora el resultado? ¿En que mejora el
@@ -292,7 +307,24 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+
+        #Este criterio asegura de que el vertice con mas aristas se encuentre en el centro.
+
+        total = 0
+        #Establecemos una tolerancia de 100 alrededor del centro
+        minx, miny =  (self.dim/2)-100, (self.dim/2)-100
+        maxx, maxy =  (self.dim/2)+100, (self.dim/2)+100
+        #busca el vertice mas repetido
+        maxv = mas_comun(self.aristas)
+        #guarda coordenadas del vertice
+        x, y = estado_dic[maxv][0], estado_dic[maxv][1]
+        if x < minx or x > maxx:
+            total += 1
+        if y < miny or y > maxy:
+            total += 1
+        return total
+
+
 
     def estado2dic(self, estado):
         """
@@ -336,7 +368,20 @@ class problema_grafica_grafo(blocales.Problema):
             dibujar.text(lugar[v], v, (0, 0, 0))
 
         imagen.save(filename)
+        
+def mas_comun(lst):
+   lista = []
+   for x in lst:
+       lista.append(x[0])
+       lista.append(x[1])
+   return max(set(lista), key=lista.count)
 
+def calendarizador_lineal(K, delta, i):
+   return K - delta*i
+
+def calendarizador_exponencial(K, delta, i):
+    return math.exp(-delta/K*i)
+    
 
 def main():
     """
@@ -388,6 +433,9 @@ def main():
     # resultado dan?
     #
     # ¿Que encuentras en los resultados?, ¿Cual es el criterio mas importante?
+    # El criterio más importante para mí es el de los cruces para mí entre menos cruces
+    # mucho más claro el grafo porque lo que lo considero el criterio más importante
+    #
     #
     # En general para obtener mejores resultados del temple simulado,
     # es necesario utilizar una función de calendarización acorde con
