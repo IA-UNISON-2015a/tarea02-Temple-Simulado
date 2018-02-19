@@ -271,42 +271,25 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        def calcularAngulo(punto1, punto2, punto3):
-            #crea 2 vectores que van de p1 a p2 y de p1 a p3
-            if punto1 == punto2 or punto1 == punto3 or punto2 == punto3:
-                return 0
-            vector12 = (punto1[0] - punto2[0], punto1[1] - punto2[1])
-            vector13 = (punto1[0] - punto3[0], punto1[1] - punto3[1])
 
-            prodPunto = vector12[0]*vector13[0] + vector12[1]*vector13[1]
-            magnitud12 = math.sqrt(vector12[0]**2 + vector12[1]**2)
-            magnitud13 = math.sqrt(vector13[0]**2 + vector13[1]**2)
-            val = prodPunto/(magnitud12*magnitud13)
-            #Arregla errores de punto flotante para que acos siempre tenga valor
-            if val < -1:
-                val = -1
-            if val > 1:
-                val = 1
+        costo = 0
+        #recorremos los vertices
+        angulo=30 #gtrados
+        for v in self.vertices:
+            for (aristaA, aristaB) in itertools.combinations([ar for ar in self.aristas if v in ar], 2):
+                p1 = (estado_dic[aristaA[0]])
+                p2 = (estado_dic[aristaA[1]])
+                p3 = (estado_dic[aristaB[0]])
+                p4 = (estado_dic[aristaB[1]])
 
-            return math.acos(val)
+                m1=(p2[1]-p1[1])/(p2[0]-p1[0])
+                m2=(p4[1]-p3[1])/(p4[0]-p3[0]))
+                angulo=(math.degrees(abs(math.atan(((m2-m1)/(1+(m1*m2)))))))
 
-        angulo_min = math.pi/6
-        cruces = 0
-        for (i, j) in itertools.combinations(self.aristas, 2):
-            # revisamos exista conexion
-            if not i[0] in j and not i[1] in j:
-                continue
-                
-            v1 = estado_dic[i[0]] if i[0] in j else estado_dic[i[1]]
-            v2 = estado_dic[i[0]] if i[0] not in j else estado_dic[i[1]]
-            v3 = estado_dic[j[0]] if j[0] not in i else estado_dic[j[1]]
+                if(angulo < 30):
+                    costo += 1
 
-            angulo = calcularAngulo(v1, v2, v3)
-
-            if angulo < angulo_min:
-                cruces += 1 - angulo/angulo_min
-
-        return cruces
+        return costo
 
 
     def criterio_propio(self, estado_dic):
