@@ -19,7 +19,7 @@ $pip install pillow
 
 """
 
-__author__ = 'Escribe aquí tu nombre'
+__author__ = 'Fco Javier Vicente Tequida'
 
 import blocales
 import random
@@ -93,12 +93,6 @@ class problema_grafica_grafo(blocales.Problema):
         @return: Una tupla con un estado vecino al estado de entrada.
 
         """
-        vecino = list(estado)
-        i = random.randint(0, len(vecino) - 1)
-        vecino[i] = max(10,
-                        min(self.dim - 10,
-                            vecino[i] + random.randint(-dmax,  dmax)))
-        return tuple(vecino)
 
         #######################################################################
         #                          20 PUNTOS
@@ -107,6 +101,37 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # Propon una manera alternativa de vecino_aleatorio y muestra que
         # con tu propuesta se obtienen resultados mejores o en menor tiempo
+        #
+        # El método para encontrar vecinos es más violento que el inicial, esto en el sentido
+        # que los cambios en el estado se hacen para las coordenadas x, y de un nodo en lugar
+        # de sólo una.
+        # Además permite explorar el espacio de una manera más rápida pues el nodo
+        # no está ligado a la posición donde se encontraba en el principio.
+
+        """
+        vecino = list(estado)
+        i = random.randint(0, len(vecino) - 1)
+        vecino[i] = max(10,
+                        min(self.dim - 10,
+                            vecino[i] + random.randint(-dmax,  dmax)))
+        return tuple(vecino)
+        """
+        vecino = list(estado)
+
+        auxiliar = random.randint(0, len(vecino) - 2)
+        posición_x = 0
+        posición_y = 0
+        if auxiliar % 2 == 0:
+            posición_x = auxiliar # auxiliar está en las x
+            posición_y = posición_x + 1
+        else:
+            posición_y = auxiliar # auxiliar está en las y
+            posición_x = posición_y - 1
+
+        vecino[posición_x] = random.randint(10, self.dim - 10)
+        vecino[posición_y] = random.randint(10, self.dim - 10)
+
+        return tuple(vecino)
 
     def costo(self, estado):
         """
@@ -326,7 +351,7 @@ class problema_grafica_grafo(blocales.Problema):
         dibujar = ImageDraw.ImageDraw(imagen)
 
         for (v1, v2) in self.aristas:
-            dibujar.line((lugar[v1], lugar[v2]), fill=(255, 0, 0))
+            dibujar.line((lugar[v1], lugar[v2]), fill=(0, 0, 255))
         for v in self.vertices:
             dibujar.text(lugar[v], v, (0, 0, 0))
 
