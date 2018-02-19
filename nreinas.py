@@ -12,6 +12,7 @@ __author__ = 'juliowaissman'
 
 
 import blocales
+import time
 from random import shuffle
 from random import sample
 from itertools import combinations
@@ -87,17 +88,23 @@ class ProblemaNreinas(blocales.Problema):
                     if abs(estado[i] - estado[j]) == abs(i - j)))
 
 
-def prueba_descenso_colinas(problema=ProblemaNreinas(8), repeticiones=10):
+def prueba_descenso_colinas(problema=ProblemaNreinas(8), repeticiones=10, tiempo_aceptable = 10):
     """ Prueba el algoritmo de descenso de colinas con n repeticiones """
 
     print("\n\n" + "intento".center(10) +
           "estado".center(60) + "costo".center(10))
+
+    tiempo_inicial = time.time()
     for intento in range(repeticiones):
-        solucion = blocales.descenso_colinas(problema)
+        solucion = blocales.descenso_colinas(ProblemaNreinas(x))
         print(str(intento).center(10) +
               str(solucion).center(60) +
               str(problema.costo(solucion)).center(10))
-
+    tiempo_final = time.time()
+    if (tiempo_final - tiempo_inicial) < tiempo_aceptable:
+        print('El resultado ha sido satisfactorio para {} reinas en {:.8f} segundos'.format(x,tiempo_final - tiempo_inicial))
+    else:
+        print('Los resultados no son satisfactorios para {} reinas pues demora {:.8f} segundos'.format(x,tiempo_final - tiempo_inicial))
 
 def prueba_temple_simulado(problema=ProblemaNreinas(8)):
     """ Prueba el algoritmo de temple simulado """
@@ -108,10 +115,12 @@ def prueba_temple_simulado(problema=ProblemaNreinas(8)):
     print("Y la solución es: ")
     print(solucion)
 
-
 if __name__ == "__main__":
 
-    prueba_descenso_colinas(ProblemaNreinas(32), 10)
+    tiempo_aceptable = 40
+    intentos = 10
+    for x in [8,16,32,40]: # Diferentes cantidades de reinas
+        prueba_descenso_colinas(ProblemaNreinas(x),intentos,tiempo_aceptable)
     prueba_temple_simulado(ProblemaNreinas(32))
 
     ##########################################################################
@@ -120,6 +129,8 @@ if __name__ == "__main__":
     #
     # ¿Cual es el máximo número de reinas que se puede resolver en
     # tiempo aceptable con el método de 10 reinicios aleatorios?
+    #
+    # R. Considerando 'aceptable' como 40 segundos funciona bien para 40 reinas
     #
     # ¿Que valores para ajustar el temple simulado son los que mejor
     # resultado dan? ¿Cual es el mejor ajuste para el temple simulado
