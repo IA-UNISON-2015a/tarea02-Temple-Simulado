@@ -19,7 +19,7 @@ $pip install pillow
 
 """
 
-__author__ = 'Escribe aquí tu nombre'
+__author__ = 'Adrian Emilio Vazquez Icedo'
 
 import blocales
 import random
@@ -101,8 +101,18 @@ class problema_grafica_grafo(blocales.Problema):
                             vecino[i] + random.randint(-dmax,  dmax)))
         return tuple(vecino)
         """
+                
+        
+        #######################################################################
+        #                          20 PUNTOS
+        #######################################################################
+        # Por supuesto que esta no es la mejor manera de generar vecinos.
+        #
+        # Propon una manera alternativa de vecino_aleatorio y muestra que
+        # con tu propuesta se obtienen resultados mejores o en menor tiempo
+        
         vecino = list(estado)
-        #Para darle un poco de cambio se generara un valor que significara si se recorre en 1 o en 2 el 
+        #Para darle un poco de cambio se generara un valor que significara si se recorre en 1 o en 2
         t = random.randint(1, 2)
         
         if t==1:
@@ -116,15 +126,7 @@ class problema_grafica_grafo(blocales.Problema):
                       min(self.dim - 10,
                           vecino[i] + random.randint(-dmax,  dmax)))
         return tuple(vecino)
-        
-        
-        #######################################################################
-        #                          20 PUNTOS
-        #######################################################################
-        # Por supuesto que esta no es la mejor manera de generar vecinos.
-        #
-        # Propon una manera alternativa de vecino_aleatorio y muestra que
-        # con tu propuesta se obtienen resultados mejores o en menor tiempo
+
 
     def costo(self, estado):
         """
@@ -145,7 +147,7 @@ class problema_grafica_grafo(blocales.Problema):
         K1 = 3.0
         K2 = 2.0
         K3 = 1.0
-        K4 = 0.0
+        K4 = 2.0
 
         # Genera un diccionario con el estado y la posición
         estado_dic = self.estado2dic(estado)
@@ -266,10 +268,30 @@ class problema_grafica_grafo(blocales.Problema):
         @return: Un número.
 
         """
+                
+        #######################################################################
+        #                          20 PUNTOS
+        #######################################################################
+        # Agrega el método que considere el angulo entre aristas de
+        # cada vertice. Dale diferente peso a cada criterio hasta
+        # lograr que el sistema realice gráficas "bonitas"
+        #
+        # ¿Que valores de diste a K1, K2 y K3 respectivamente?
+        #
+        # 3--Cruces, para mi es lo que se ve mas feo
+        # 2--separacion de vertices, me gusta que no esten tan cerca
+        # 1--angulo mayor de 30 grados, para mi es lo menos importante
+        # 2 por lado desperdiciado, puede ser hasta 8 de costo
+        #
+        # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
+        #
         
+        
+        #Me base en esto:https://www.varsitytutors.com/hotmath/hotmath_help/spanish/topics/law-of-cosines
         costo=0
         for v1 in self.vertices:
             for a1,a2 in itertools.combinations(self.aristas,2):
+                #reviso si se genera un angulo entre las aristas
                 if(v1 in a1 and v1 in a2):
                     if a1[0]==v1:
                         v2=a1[1]
@@ -281,36 +303,27 @@ class problema_grafica_grafo(blocales.Problema):
                         v3=a2[0]
                     
                     c1,c2,c3 = estado_dic[v1], estado_dic[v2], estado_dic[v3]
+                    #reviso que no se repita las coordenadas de un vertice
                     if c1!=c2 and c1!=c3 and c2!=c3:
+                        #Calcula la distancia de los 3 lados
                         lc1=math.sqrt(((c2[0]-c3[0])**2)+((c2[1]-c3[1])**2))
                         lc2=math.sqrt(((c1[0]-c3[0])**2)+((c1[1]-c3[1])**2))
                         lc3=math.sqrt(((c1[0]-c2[0])**2)+((c1[1]-c2[1])**2))
 
                         a=(lc1**2-lc2**2-lc3**2)/(-2*lc2*lc3)
+                        #Puse esto ya que el resultado de a me salia 1.0000000000002 y -1.0000000000002 y me daba un error al utilizarlo en math.acos
                         if a>1:
                             a=1
                         elif a<-1:
                             a=-1
+                        #calcular angulo en radianes
                         ac1=math.acos(a)
+                        #calcular angulo en grados
                         angulo=math.degrees(ac1)
                         if angulo<30:
                             costo+=1
                              
-        return costo       
-                
-        #######################################################################
-        #                          20 PUNTOS
-        #######################################################################
-        # Agrega el método que considere el angulo entre aristas de
-        # cada vertice. Dale diferente peso a cada criterio hasta
-        # lograr que el sistema realice gráficas "bonitas"
-        #
-        # ¿Que valores de diste a K1, K2 y K3 respectivamente?
-        #
-        #
-        # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
-        #
-        return 0
+        return costo     
 
     def criterio_propio(self, estado_dic):
         """
@@ -330,14 +343,49 @@ class problema_grafica_grafo(blocales.Problema):
         #######################################################################
         # ¿Crees que hubiera sido bueno incluir otro criterio? ¿Cual?
         #
+        # Despues de ver varios grafos me doy cuenta que muchas veces no se aprovecha 
+        # el tamaño de la imagen ya que normalmente los se agrupan a la derecha, izquierda,
+        # abajo, arriba o dos de estas. En este criterio se revisara que se aprobeche la medida
+        # de la imagen, aunque el valor del costo no sera tan grande como otros aspectos que 
+        # dejan de pero manera el grafo.
+        #
         # Desarrolla un criterio propio y ajusta su importancia en el
         # costo total con K4 ¿Mejora el resultado? ¿En que mejora el
         # resultado final?
-        #
+        # 
+        # Con mi criterio el grafo se extienda lo mas posible lo que permite una mejor
+        # visualizacion del grafo.
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
-        #
-        return 0
+
+    
+        costo=0
+        x_menor=1000;
+        x_mayor=0;
+        y_menor=1000;
+        y_mayor=0;
+        for v1 in self.vertices:
+            c=estado_dic[v1]
+            if c[0]<x_menor:
+                x_menor=c[0]
+            if c[0]>x_mayor:
+                x_mayor=c[0]
+            if c[1]<y_menor:
+                y_menor=c[0]
+            if c[1]>y_mayor:
+                y_mayor=c[0]
+                
+        if x_mayor<(self.dim*.8):
+            costo+=1
+        if x_menor>(self.dim-(self.dim*.8)):
+            costo+=1
+        if y_mayor<(self.dim*.8):
+            costo+=1
+        if y_menor>(self.dim-(self.dim*.8)):
+            costo+=1
+        
+        return costo
+
 
     def estado2dic(self, estado):
         """
@@ -412,16 +460,18 @@ def main():
 
     estado_aleatorio = grafo_sencillo.estado_aleatorio()
     costo_inicial = grafo_sencillo.costo(estado_aleatorio)
-    grafo_sencillo.dibuja_grafo(estado_aleatorio, "prueba_inicial1.gif")
+    grafo_sencillo.dibuja_grafo(estado_aleatorio, "prueba_inicial5.gif")
     print("Costo del estado aleatorio: {}".format(costo_inicial))
 
     # Ahora vamos a encontrar donde deben de estar los puntos
     t_inicial = time.time()
+    
     solucion = blocales.temple_simulado(grafo_sencillo, None, 0.01)
+    #solucion = blocales.temple_simulado(grafo_sencillo, calendarizacion1(grafo_sencillo), 0.01)
     t_final = time.time()
     costo_final = grafo_sencillo.costo(solucion)
 
-    grafo_sencillo.dibuja_grafo(solucion, "prueba_final1.gif")
+    grafo_sencillo.dibuja_grafo(solucion, "prueba_final5.gif")
     print("\nUtilizando la calendarización por default")
     print("Costo de la solución encontrada: {}".format(costo_final))
     print("Tiempo de ejecución en segundos: {}".format(t_final - t_inicial))
@@ -434,6 +484,11 @@ def main():
     #
     # ¿Que encuentras en los resultados?, ¿Cual es el criterio mas importante?
     #
+    # la tolerancia en 0.01 ya que me ofrece un tiempo muy bueno y la solucion 
+    # me parece muy buena en relacion al tiempo del proceso. Al tener una tolerancia
+    # de 0.001 o menor, el tiempo aumento considerablemente y a mi parecer las 
+    # mejoras no merecen la pena.
+    #
     # En general para obtener mejores resultados del temple simulado,
     # es necesario utilizar una función de calendarización acorde con
     # el metodo en que se genera el vecino aleatorio.  Existen en la
@@ -445,9 +500,19 @@ def main():
     #
     # Escribe aqui tus conclusiones
     #
+    # comparacion: default(3.43s,3.35s, 3.8s)   calendarizacion1(2.82s, 2.77s, 3.35s)
+    #
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
     #
-
+def calendarizacion1(problema, enfriador=0.999):
+    
+    costos = [problema.costo(problema.estado_aleatorio())
+        for _ in range(10 * len(problema.estado_aleatorio()))]
+    minimo,  maximo = min(costos), max(costos)
+    T_ini = 2 * (maximo - minimo)
+    for i in range (0, int(1e10)):
+        T_ini = T_ini*enfriador
+        yield T_ini
 
 if __name__ == '__main__':
     main()
