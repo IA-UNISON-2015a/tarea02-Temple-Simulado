@@ -26,9 +26,24 @@ import random
 import itertools
 import math
 import time
+import os
 from PIL import Image, ImageDraw
 
 from math import cos, sin
+
+"""
+Inicializa el valor de las k aleatoriamente para ver que combinaciones dan
+costos decentes y las graficas se ven mejores.
+"""
+def inicializaKAleatorio():
+    total = 10
+    ks = [0,0,0,0,0]
+    while total > 0:
+        i = random.randrange(0, len(ks))
+        ks[i] += 0.1
+        total -= 0.1
+
+    return ks
 
 class problema_grafica_grafo(blocales.Problema):
 
@@ -501,10 +516,170 @@ def calcularAngulo(punto1, punto2, punto3):
     prodPunto = vector12[0]*vector13[0] + vector12[1]*vector13[1]
     magnitud12 = math.sqrt(vector12[0]**2 + vector12[1]**2)
     magnitud13 = math.sqrt(vector13[0]**2 + vector13[1]**2)
-    val = prodPunto/(magnitud12+magnitud13)
-    return math.acos(prodPunto/(magnitud12*magnitud13))
+    val = prodPunto/(magnitud12*magnitud13)
+    #Arregla errores de punto flotante para que acos siempre tenga valor
+    if val < -1:
+        val = -1
+    if val > 1:
+        val = 1
 
+    return math.acos(val)
+
+"""
+Funcion que asigna un nombre al archivo de prueba final asegurandose que no sobreescriba
+uno pasado.
+
+@return El nombre del archivo con extension gif y el numero de prueba que es.
+"""
+def asignaNombre():
+    nombreFinal = "prueba_final"
+    numero = 0
+    extension = ".gif"
+    nombre = nombreFinal+str(numero)+extension
+    while os.path.isfile(nombre):
+        numero += 1
+        nombre = nombreFinal+str(numero)+extension
+
+    return nombre, numero
+
+"""
+Dado un numero de [0,4] regresa un calendarizador para el problema de
+dibujar grafos.
+
+@param n: Indicador de que calendarizador se quiere
+
+@return Calendarizador
+"""
+def calendarizarGrafo(problema, n):
+    costos = [problema.costo(problema.estado_aleatorio())
+              for _ in range(10 * len(problema.estado_aleatorio()))]
+    minimo,  maximo = min(costos), max(costos)
+    T_ini = 2 * (maximo - minimo)
+
+    if n == 1:
+        #Tipo 1, exponencial multiplicativa. .8 <= a <= .9
+        a = 0.85
+        calendarizador = (T_ini*a**i for i in range(1, int(1e5)))
+
+    elif n == 2:
+        #Tipo 2, logaritmica multiplicativa. a > 1
+        a = 2
+        calendarizador = (T_ini / (1+a*math.log(1+i)) for i in range(1, int(1e5)))
+
+    elif n == 3:
+        #Tipo 3, lineal multiplicativa. a > 0
+        a = 1
+        calendarizador = (T_ini / (1 + a*i) for i in range(1, int(1e5)))
+    
+    elif n == 4:
+        #Tipo 4, cuadratica multiplicativa. a > 0
+        a = 1
+        calendarizador = (T_ini / (1 + a*i**2) for i in range(1, int(1e5)))
+
+    else:
+        #Calendarizador por default
+        calendarizador = None
+
+    return calendarizador
+
+"""
+Es casi una copia de main
+"""
+def pruebaMain(kaleatorio = True):
+    vertices_sencillo = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+    aristas_sencillo = [('B', 'G'),
+                        ('E', 'F'),
+                        ('H', 'E'),
+                        ('D', 'B'),
+                        ('H', 'G'),
+                        ('A', 'E'),
+                        ('C', 'F'),
+                        ('H', 'B'),
+                        ('F', 'A'),
+                        ('C', 'B'),
+                        ('H', 'F')]
+    dimension = 400
+
+    #mejores k encontradas a prueba y error
+    K1 = 1.6
+    K2 = 2.1
+    K3 = 2.1
+    K4 = 2.1
+    K5 = 2.2
+
+    grafoCalendarizador = problema_grafica_grafo(vertices_sencillo,
+                                                 aristas_sencillo,
+                                                 dimension)
+
+    def prueba(calendarizador = None):
+
+        if kaleatorio:
+            K1, K2, K3, K4, K5 = inicializaKAleatorio()
+
+        grafo_sencillo = problema_grafica_grafo(vertices_sencillo,
+                                                aristas_sencillo,
+                                                dimension)
+
+        estado_aleatorio = grafo_sencillo.estado_aleatorio()
+        costo_inicial = grafo_sencillo.costo(estado_aleatorio)
+        grafo_sencillo.dibuja_grafo(estado_aleatorio, "prueba_inicial.gif")
+        print("Costo del estado aleatorio: {}".format(costo_inicial))
+
+
+        # Ahora vamos a encontrar donde deben de estar los puntos
+        t_inicial = time.time()
+        solucion = blocales.temple_simulado(grafo_sencillo, calendarizador)
+        t_final = time.time()
+        costo_final = grafo_sencillo.costo(solucion)
+
+        nombreFinal, numeroPrueba = asignaNombre()
+        grafo_sencillo.dibuja_grafo(solucion, nombreFinal)
+        print("\nPrueba numero: {}".format(numeroPrueba))
+        if calendarizador is None:
+            print("Utilizando la calendarización por default")
+        else:
+            print("Utilizando un calendarizador que no es default")
+
+        print("Los valores de K son:")
+        print("K1: {}\nK2: {}\nK3: {}\nK4: {}\nK5: {}".format(K1, K2, K3, K4, K5))
+
+        print("Costo de la solución encontrada: {}".format(costo_final))
+        print("Tiempo de ejecución en segundos: {}".format(t_final - t_inicial))
+
+    for i in range(2):
+        print("\nCalendarizador default")
+        prueba(calendarizarGrafo(grafoCalendarizador, 0))
+        print("\nCalendarizador 1, exponencial multiplicativo")
+        prueba(calendarizarGrafo(grafoCalendarizador, 1))
+        print("\nCalendarizador 2, logaritmico multiplicativo")
+        prueba(calendarizarGrafo(grafoCalendarizador, 2))
+        print("\nCalendarizador 3, lineal multiplicativo")
+        prueba(calendarizarGrafo(grafoCalendarizador, 3))
+        print("\nCalendarizador 4, cuadratico multiplicativo")
+        prueba(calendarizarGrafo(grafoCalendarizador, 4))
 
 if __name__ == '__main__':
+    #main()
     main()
+
+"""
+Conclusiones:
+El temple simulado lo deje casi exacto como fue codificado. La unica diferencia es
+que utilice otro calendarizador (con trampa). Hice pruebas con varios calendarizadores
+simples y los que mejor costo daban eran el default y el que utilice al final, asi que
+decidi usar el que no era default.
+
+La manera en que encontre que pesos lineales deberia darle a los criterios fue hechando
+a correr muchos diferentes, ver cuales daban costos mas bajos y volver a correrlos para
+ver si era coincidencia. Asi llegue a los pesos finales y sorprendentemente son bastante
+equilibrados. Personalmente creo que el criterio con el que los vertices deben estar con
+el mismo numero en la parter izquierda, derecha, superior e inferior es la que hace mas
+bonito el grafo, o que asi se puede parchar mas facilmente uno feo.
+
+En general las graficas generadas no son hermosas pero tampoco son horriblemente feas. Son
+en su mayoria aceptables pero de seguro utilizando otra combinacion de calendarizacion,
+diferentes criterios y pesos lineales para criterios se podrian conseguir graficas mas
+bonitas, pero una vez mas, creo que las que se generan con esta combinacion de parametros
+son aceptables.
+"""
 
