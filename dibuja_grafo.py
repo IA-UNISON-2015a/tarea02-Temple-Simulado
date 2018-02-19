@@ -539,7 +539,7 @@ def main():
 
     # Ahora vamos a encontrar donde deben de estar los puntos
     t_inicial = time.time()
-    solucion = blocales.temple_simulado(grafo_sencillo)
+    solucion = blocales.temple_simulado(grafo_sencillo,crear_calendario(grafo_sencillo))
     t_final = time.time()
     costo_final = grafo_sencillo.costo(solucion)
 
@@ -556,6 +556,11 @@ def main():
     #
     # ¿Que encuentras en los resultados?, ¿Cual es el criterio mas importante?
     #
+    # R.- En general un enfriamiento lento es un buen criterio para el temple simulado
+    # aunque debe ser factible contrario a técnicas que usan logaritmos y se espera
+    # llegen al optimo en una infinidad de tiempo. Además debe ser 'tranquilo' en
+    # comparación a técnicas que usan exponenciales
+    #
     # En general para obtener mejores resultados del temple simulado,
     # es necesario utilizar una función de calendarización acorde con
     # el metodo en que se genera el vecino aleatorio.  Existen en la
@@ -566,9 +571,42 @@ def main():
     # menor tiempo posible.
     #
     # Escribe aqui tus conclusiones
+    """
+    El método de temple simulado resultó ser muy bueno, en comparasión a los algoritmos
+    genéticos, al menos para los problemas que se vieron, tuvo un mejor desempeño y no
+    fue necesario de tantear tantos valores para obtener los resultados esperados.
+    Durante el desarollo de este trabajo se estudiaron cosas muy importantes como el concepto
+    de la energia presente en el entorno donde se desarrolla el temple simulado y también se
+    estudio la diferencia entre los diversos calanderizadores que se tenian a la mano, sin duda
+    el temple simulado resulta ser de gran útilidad y en este caso ya sea para las reinas o para
+    un gráfico 'bonito' tuvo increibles resultados.
+    Muy padre +10
+    """
     #
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
-    #
+    # Retomé el calendarizador que mejores resultados generaba en el ejercicio anterior
+    # pues no encontré datos sobre calendarización - generación de vecinos en literatura. 
+
+# ##############################################################################################
+def crear_calendario(problema = problema_grafica_grafo, n = 4):
+    costos = [problema.costo(problema.estado_aleatorio()) for _ in range(10 * len(problema.estado_aleatorio()))]
+    minimo,  maximo = min(costos), max(costos)
+    T_ini = 2 * (maximo - minimo)
+
+    if n == 0:
+        calendarizador = (T_ini * math.sqrt(0.9**i) for i in range(1,int(1e10)))
+    elif n == 1:
+        calendarizador = (T_ini * (math.sqrt(0.9**i)/(0.9)) for i in range(1,int(1e10)))
+    elif n == 2:
+        calendarizador = (T_ini * (0.96**i / 2*(math.log(i) + 1)) for i in range(1,int(1e10)))
+    elif n == 3:
+        calendarizador = (T_ini*(0.9**i) for i in range(1,int(1e10)))
+    elif n == 4:
+        # Mejor opción por mucho
+        calendarizador = (T_ini*math.exp(0.99**i)/(0.5 * i) for i in range(1,int(1e10)))
+    else:
+        calendarizador = (T_ini/(1 + i) for i in range(int(1e10),4)) # default
+    return calendarizador
 
 
 if __name__ == '__main__':
