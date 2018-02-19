@@ -95,9 +95,11 @@ class problema_grafica_grafo(blocales.Problema):
         """
         vecino = list(estado)
         i = random.randint(0, len(vecino) - 1)
-        vecino[i] = max(10,
-                        min(self.dim - 10,
-                            vecino[i] + random.randint(-dmax,  dmax)))
+        vecino[i] = max(10, min(self.dim - 10, vecino[i] + int(random.randint(-1, 1)*dmax) if dmax else int(random.randint(-1, 1))))
+        if i%2 == 0:
+            vecino[i+1] = max(10, min(self.dim - 10, vecino[i+1] + int(random.randint(-1, 1)*dmax) if dmax else int(random.randint(-1, 1))))
+        else:
+            vecino[i-1] = max(10, min(self.dim - 10, vecino[i-1] + int(random.randint(-1, 1)*dmax) if dmax else int(random.randint(-1, 1))))
         return tuple(vecino)
 
         #######################################################################
@@ -124,10 +126,10 @@ class problema_grafica_grafo(blocales.Problema):
 
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
-        K1 = 1.0
-        K2 = 0.0
-        K3 = 0.0
-        K4 = 0.0
+        K1 = 2.0
+        K2 = 1.0
+        K3 = 1.0
+        K4 = 2.0
 
         # Genera un diccionario con el estado y la posición
         estado_dic = self.estado2dic(estado)
@@ -257,6 +259,9 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ¿Que valores de diste a K1, K2 y K3 respectivamente?
         #
+        # K1 = 2.0
+        # K2 = 1.0
+        # K3 = 1.0
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
