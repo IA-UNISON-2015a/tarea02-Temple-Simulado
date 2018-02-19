@@ -281,11 +281,12 @@ class problema_grafica_grafo(blocales.Problema):
                 p2 = (estado_dic[aristaA[1]])
                 p3 = (estado_dic[aristaB[0]])
                 p4 = (estado_dic[aristaB[1]])
-
-                m1=(p2[1]-p1[1])/(p2[0]-p1[0])
-                m2=(p4[1]-p3[1])/(p4[0]-p3[0]))
-                angulo=(math.degrees(abs(math.atan(((m2-m1)/(1+(m1*m2)))))))
-
+                try:
+                    m1=(p2[1]-p1[1])/(p2[0]-p1[0])
+                    m2=(p4[1]-p3[1])/(p4[0]-p3[0])
+                    angulo=(math.degrees(abs(math.atan(((m2-m1)/(1+(m1*m2)))))))
+                except ZeroDivisionError:
+                    continue
                 if(angulo < 30):
                     costo += 1
 
@@ -316,7 +317,6 @@ class problema_grafica_grafo(blocales.Problema):
         #
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
-        #
         return 0
 
     def estado2dic(self, estado):
