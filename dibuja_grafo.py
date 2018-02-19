@@ -149,9 +149,9 @@ class problema_grafica_grafo(blocales.Problema):
 
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
-        K1 = 1.0
-        K2 = 0.0
-        K3 = 0.0
+        K1 = 5.0
+        K2 = 4.0
+        K3 = 5.0
         K4 = 0.0
 
         # Genera un diccionario con el estado y la posición
@@ -282,10 +282,72 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ¿Que valores de diste a K1, K2 y K3 respectivamente?
         #
+        # K1 = 5, K2 = 4, K3 = 5
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+        
+        costo = 0
+        for vértice in self.vertices:
+            aristas_nodo = [x for x in self.aristas if vértice in x]
+            
+            if len(aristas_nodo) == 1:
+                continue
+            
+            costo += self.crear_vectores(aristas_nodo, estado_dic, vértice)     
+           
+        return costo
+
+# ########################################################################################################
+    def crear_vectores(self, aristas, diccionario_aristas, vértice):
+        vectores = []
+
+        for i,j in aristas:
+            if vértice is i:
+                x1, y1 = diccionario_aristas[i][0], diccionario_aristas[i][1]
+                x2, y2 = diccionario_aristas[j][0], diccionario_aristas[j][1]
+            else:
+                x1, y1 = diccionario_aristas[j][0], diccionario_aristas[j][1]
+                x2, y2 = diccionario_aristas[i][0], diccionario_aristas[i][1]
+            vectores.append((x2 - x1, y2 - y1))
+
+        costo = 0
+        costo = self.calcular_angulo(vectores)
+        return costo
+
+# ########################################################################################################
+    def calcular_angulo(self, vectores = None, costo = 0):
+        if len(vectores) <= 1 or vectores is None:
+            return costo
+        else:
+            vector = vectores[0]
+            del vectores[0]
+            for vector_i in vectores:
+                numerador = vector[0] * vector_i[0] + vector[1] * vector_i[1]
+                denominador = math.sqrt(vector[0]**2 + vector[1]**2) * math.sqrt(vector_i[0]**2 + vector_i[1]**2)
+                
+                if denominador == 0:
+                    denominador = 1
+                pre_angulo = numerador / denominador
+                if pre_angulo > 1 or pre_angulo < -1:
+                    pre_angulo = pre_angulo % 2
+                    # En ocasiones se sale del domino de acos pero son números del estilo 1.0000000000000002
+                    if pre_angulo > 0:
+                        pre_angulo = 1
+                    else:
+                        pre_angulo = -1
+                    
+                angulo = math.acos(pre_angulo)
+
+                if angulo <= math.pi / 12:
+                    costo += 1.5
+                elif angulo <= math.pi / 9:
+                    costo += 1
+                elif angulo <= math.pi / 6:
+                    costo += 0.5
+                else:
+                    costo += 0
+            return self.calcular_angulo(vectores, costo)
 
     def criterio_propio(self, estado_dic):
         """
