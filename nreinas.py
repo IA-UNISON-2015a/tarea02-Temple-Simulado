@@ -156,8 +156,8 @@ if __name__ == "__main__":
 
     tiempo_aceptable = 40
     intentos = 10
-    #for x in [8,16,32,40]: # Diferentes cantidades de reinas
-    #    prueba_descenso_colinas(ProblemaNreinas(x),intentos,tiempo_aceptable)
+    for x in [8,16,32,40]: # Diferentes cantidades de reinas
+        prueba_descenso_colinas(ProblemaNreinas(x),intentos,tiempo_aceptable)
 
     for x in [8,16,32,64,128]:
         prueba_temple_simulado(ProblemaNreinas(x),x)
