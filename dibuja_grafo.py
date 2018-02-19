@@ -144,6 +144,7 @@ class problema_grafica_grafo(blocales.Problema):
         K2 = 2.0
         K3 = 3.0
         K4 = 4.0
+        K5 = 4.0
 
         # Genera un diccionario con el estado y la posición
         estado_dic = self.estado2dic(estado)
@@ -151,7 +152,8 @@ class problema_grafica_grafo(blocales.Problema):
         return (K1 * self.numero_de_cruces(estado_dic) +
                 K2 * self.separacion_vertices(estado_dic) +
                 K3 * self.angulo_aristas(estado_dic) +
-                K4 * self.criterio_propio(estado_dic))
+                K4 * self.criterio_propio1(estado_dic)+
+                K5 * self.criterio_propio2(estado_dic))
 
         # Como podras ver en los resultados, el costo inicial
         # propuesto no hace figuras particularmente bonitas, y esto es
@@ -303,29 +305,17 @@ class problema_grafica_grafo(blocales.Problema):
                     v3 = a2[abs(a2.index(v1)-1)]
                     p1,p2,p3 = estado_dic[v1], estado_dic[v2], estado_dic[v3]
                     
-                    if(p1 != p2 and p1 != p3 and p2!=p3):
-                        
-                        if p2[0] == p1[0]:
-                            m1=100
-                        else:
-                            m1 = ((float)(p2[1]-p1[1])/(p2[0]-p1[0]))
-                        
-                        if p3[0] == p1[0]:
-                            m2=100
-                        else:
-                            m2 =  ((float)(p3[1]-p1[1])/(p3[0]-p1[0]))
-                        
-                        if(1+m2*m1 == 0):
-                            continue
-                        
-                        angulo = math.degrees( math.atan( abs( (m1-m2)/(1+m2*m1) ) ) )
-                        
-                        
-                        if(angulo < 30):
-                            costo= costo + math.ceil(5 - (angulo / 6))#5 y 6 son multiplos de 30
+                    m1 = ((p2[1]-p1[1])/(p2[0]-p1[0]) if p2[0] != p1[0] else 100)
+                    m2 = ((p3[1]-p1[1])/(p3[0]-p1[0])if p3[0] != p1[0] else 100)
+                    
+                    angulo = (math.degrees(math.atan(abs((m1-m2)/(1+m2*m1)))) if m2*m1 != -1 else 90)
+                    
+                    
+                    if(angulo < 30):
+                        costo= costo + math.ceil(5 - (angulo / 6)) #5 y 6 son multiplos de 30
         return costo
 
-    def criterio_propio(self, estado_dic):
+    def criterio_propio1(self, estado_dic):
         """
         Implementa y comenta correctamente un criterio de costo que sea
         conveniente para que un grafo luzca bien.
@@ -388,6 +378,38 @@ class problema_grafica_grafo(blocales.Problema):
         #Y aumenta el costo con la desigualdad
         return 1-(izquierda/derecha if izquierda<derecha else derecha/izquierda)
         
+    
+    def criterio_propio2(self, estado_dic):
+        """
+        Implementa y comenta correctamente un criterio de costo que sea
+        conveniente para que un grafo luzca bien.
+
+        @param estado_dic: Diccionario cuyas llaves son los vértices
+                           del grafo y cuyos valores es una tupla con
+                           la posición (x, y) de ese vértice en el
+                           dibujo.
+
+        @return: Un número.
+        
+        Complemento del criterio propio 1
+
+        """
+        
+        minimo = 10
+        maximo = self.dim - 10
+        mitad = (minimo + maximo)/2
+        
+        arriba,abajo = 0,0
+        for v in self.vertices:
+            _,y= estado_dic[v]
+            if y > mitad:
+                arriba+=1
+            elif y < mitad:
+                abajo+=1
+
+        return 1-(abajo/arriba if abajo<arriba else arriba/abajo)
+    
+    
     def estado2dic(self, estado):
         """
         Convierte el estado en forma de tupla a un estado en forma
