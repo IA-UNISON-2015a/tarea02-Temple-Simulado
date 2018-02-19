@@ -115,7 +115,7 @@ class problema_grafica_grafo(blocales.Problema):
         #   disminucion del tiempo y un mejor costo al final 
         #
 
-        #"""
+        """
         vecino = list(estado)    
         i = random.randint(0, len(vecino) - 1)
         vecino[i] = max(10,
@@ -130,7 +130,7 @@ class problema_grafica_grafo(blocales.Problema):
         # mueve el vertice elegido en 'x' y en 'y'
         vecino[i] = max(10, min(self.dim-10, vecino[i] + random.randint(-dmax, dmax)))
         vecino[j] = max(10, min(self.dim-10, vecino[j] + random.randint(-dmax, dmax)))
-        """
+        #"""
         return tuple(vecino)
 
     def costo(self, estado):
@@ -414,7 +414,7 @@ def main():
                         ('C', 'B'),
                         ('H', 'F')]
     #"""
-    vertices_sencillo = [vertice for vertice in "ABCDEFG"]
+    vertices_sencillo = [vertice for vertice in "ABCDE"]
     aristas_sencillo = [(v1, v2) for (v1, v2) in itertools.combinations(vertices_sencillo, 2)]
     dimension = 400
 
@@ -446,7 +446,18 @@ def main():
     # ¿Que valores para ajustar el temple simulado son los que mejor
     # resultado dan?
     #
+    #  Cambiando el calendarizador por default por el nuevo, los resultados son mucho   
+    #  mas rapidos incluso utilizando una tolerancia menor. 
+    #  Cambiando la tolerancia por una mayor, los resultados son mas rapidos pero pierde
+    #  belleza en el grafo ya que el costo incrementa bastante.
+    #
     # ¿Que encuentras en los resultados?, ¿Cual es el criterio mas importante?
+    #
+    #  Los criterios a los cuales les di mas importantancia fueron el propio, la distancia
+    #  entre los vertices y el del angulo, y en menor medida el de cruce.  
+    #  Los resultados obtenidos son bastante buenos para grafos completos menores a 7, 
+    #  ya con uno mayor se empiezan a ver los vertices mas juntos.
+    #
     #
     # En general para obtener mejores resultados del temple simulado,
     # es necesario utilizar una función de calendarización acorde con
@@ -457,7 +468,14 @@ def main():
     # parámetros para que obtenga la mejor solución posible en el
     # menor tiempo posible.
     #
-    # Escribe aqui tus conclusiones
+    # Escribe aqui tus conclusiones:
+    #
+    #  Los grafos quedan bien en general, solo varian en la posicion de los vertices
+    #  en la pantalla en el caso de grafos completos.
+    #  Utilizando un nuevo calendarizados los tiempos disminuyeron bastante a comparacion
+    #  del default. Los resultados en cuanto a la 'belleza' del grafo utilizando los dos 
+    #  calendarizadores fueron practicamente iguales. Utilizando una tolerancia menor
+    #  se obtienen resultados muy rapidos pero dando grafos mas 'feos'.
     #
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
     #
