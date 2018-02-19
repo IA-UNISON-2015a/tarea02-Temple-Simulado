@@ -91,15 +91,16 @@ class problema_grafica_grafo(blocales.Problema):
                            vertice seleccionado
 
         @return: Una tupla con un estado vecino al estado de entrada.
-
         """
+        
+        '''     
         vecino = list(estado)
         i = random.randint(0, len(vecino) - 1)
-        vecino[i] = max(10,
-                        min(self.dim - 10,
-                            vecino[i] + random.randint(-dmax,  dmax)))
+        vecino[i] = max(10,min(self.dim - 10,vecino[i] + random.randint(-dmax,  dmax)))
         return tuple(vecino)
-
+        
+       
+        '''
         #######################################################################
         #                          20 PUNTOS
         #######################################################################
@@ -107,7 +108,22 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # Propon una manera alternativa de vecino_aleatorio y muestra que
         # con tu propuesta se obtienen resultados mejores o en menor tiempo
-
+        '''
+        Debemos crear un vecino aleatorio que de un paso, relativamente, mas
+        grande o mas variado para poder explorar mejor el espacio.
+        '''
+        #una primera idea es mover las dos coordenadas
+        
+        vecino = list(estado)
+        #seleccionamos el vertice
+        i = random.randint(0, len(self.vertices)-1)*2
+        
+        vecino[i] = max(10,min(self.dim - 10,vecino[i] + random.randint(-dmax,  dmax)))
+        vecino[i+1] = max(10,min(self.dim - 10,vecino[i+1] + random.randint(-dmax,  dmax)))
+        
+        return tuple(vecino)
+        
+        
     def costo(self, estado):
         """
         Encuentra el costo de un estado. En principio el costo de un estado
@@ -124,10 +140,11 @@ class problema_grafica_grafo(blocales.Problema):
 
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
-        K1 = 1.0
-        K2 = 0.0
-        K3 = 0.0
-        K4 = 0.0
+        K1 = 7.0
+        K2 = 2.0
+        K3 = 3.0
+        K4 = 4.0
+        K5 = 4.0
 
         # Genera un diccionario con el estado y la posición
         estado_dic = self.estado2dic(estado)
@@ -135,7 +152,8 @@ class problema_grafica_grafo(blocales.Problema):
         return (K1 * self.numero_de_cruces(estado_dic) +
                 K2 * self.separacion_vertices(estado_dic) +
                 K3 * self.angulo_aristas(estado_dic) +
-                K4 * self.criterio_propio(estado_dic))
+                K4 * self.criterio_propio1(estado_dic)+
+                K5 * self.criterio_propio2(estado_dic))
 
         # Como podras ver en los resultados, el costo inicial
         # propuesto no hace figuras particularmente bonitas, y esto es
@@ -260,9 +278,44 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+        '''
+        1.
+        Usaremos el metodo clasico para encontrar angulos internos de un triangulo
+        dados sus puntos
+        
+        fuente: https://www.algebra.com/algebra/homework/Points-lines-and-rays/Points-lines-and-rays.faq.question.725621.html
+        
+        
+        con parametros de 
+        K1 = 7.0
+        K2 = 3.0
+        K3 = 2.0
+        K4 = 0.0
+        
+        y calendarizador estandar y tolerancia de 0.01
+        
+        obtenemos algo decente en 11 s
+        '''
+        
+        costo = 0
+        for v1 in self.vertices:
+            for (a1,a2) in itertools.combinations(self.aristas,2):
+                if(v1 in a1 and v1 in a2):
+                    v2 = a1[abs(a1.index(v1)-1)]
+                    v3 = a2[abs(a2.index(v1)-1)]
+                    p1,p2,p3 = estado_dic[v1], estado_dic[v2], estado_dic[v3]
+                    
+                    m1 = ((p2[1]-p1[1])/(p2[0]-p1[0]) if p2[0] != p1[0] else 100)
+                    m2 = ((p3[1]-p1[1])/(p3[0]-p1[0])if p3[0] != p1[0] else 100)
+                    
+                    angulo = (math.degrees(math.atan(abs((m1-m2)/(1+m2*m1)))) if m2*m1 != -1 else 90)
+                    
+                    
+                    if(angulo < 30):
+                        costo= costo + math.ceil(5 - (angulo / 6)) #5 y 6 son multiplos de 30
+        return costo
 
-    def criterio_propio(self, estado_dic):
+    def criterio_propio1(self, estado_dic):
         """
         Implementa y comenta correctamente un criterio de costo que sea
         conveniente para que un grafo luzca bien.
@@ -287,8 +340,76 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+        
+        '''
+        De los criterios que tenemos hasta el momento ninguno toma en cuenta el
+        area usada o su proporcion.
+        
+        Particualrmente en la imagen final cuando usamos 3 parametros podemos ver
+        que casi no hay aristas presentes a la derecha y que la mayoria de las 
+        aristas esta en la parte inferior izquierda.
+        
+        Inspiracion del primer criterio propio es el problema de particionamiento 
+        de grafos. 
+        
+        El grafo se nota mas disperso, se debe manejar un equilibrio entre la
+        separacion de los grafos.
+        
+        K1 = 6.0
+        K2 = 2.0
+        K3 = 3.0
+        K4 = 4.0
+        
+        '''
+        
+        minimo = 10
+        maximo = self.dim - 10
+        mitad = (minimo + maximo)/2
+        
+        #Contamos el numero de vertices por lado
+        derecha,izquierda = 0,0
+        for v in self.vertices:
+            x,_ = estado_dic[v]
+            if x > mitad:
+                derecha+=1
+            elif x < mitad:
+                izquierda+=1
+        #Este vale cero cuando izquierda == derecha
+        #Y aumenta el costo con la desigualdad
+        return 1-(izquierda/derecha if izquierda<derecha else derecha/izquierda)
+        
+    
+    def criterio_propio2(self, estado_dic):
+        """
+        Implementa y comenta correctamente un criterio de costo que sea
+        conveniente para que un grafo luzca bien.
 
+        @param estado_dic: Diccionario cuyas llaves son los vértices
+                           del grafo y cuyos valores es una tupla con
+                           la posición (x, y) de ese vértice en el
+                           dibujo.
+
+        @return: Un número.
+        
+        Complemento del criterio propio 1
+
+        """
+        
+        minimo = 10
+        maximo = self.dim - 10
+        mitad = (minimo + maximo)/2
+        
+        arriba,abajo = 0,0
+        for v in self.vertices:
+            _,y= estado_dic[v]
+            if y > mitad:
+                arriba+=1
+            elif y < mitad:
+                abajo+=1
+
+        return 1-(abajo/arriba if abajo<arriba else arriba/abajo)
+    
+    
     def estado2dic(self, estado):
         """
         Convierte el estado en forma de tupla a un estado en forma
@@ -367,7 +488,7 @@ def main():
 
     # Ahora vamos a encontrar donde deben de estar los puntos
     t_inicial = time.time()
-    solucion = blocales.temple_simulado(grafo_sencillo)
+    solucion = blocales.temple_simulado(grafo_sencillo,calendarizador2(600,0.999))
     t_final = time.time()
     costo_final = grafo_sencillo.costo(solucion)
 
@@ -397,7 +518,38 @@ def main():
     #
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
     #
+'''
+El que modifica mas el los factores es la tolerancia, y esta depende a su vez del
+calendarizador y del tipo de funcion que se evalue.
 
+Con el calenderizador 1 con t0 de 1000 y k = 0.001 tardamos un poco (de 20 s a 40s)
+mas pero el resultado es mejor
+
+Podemos ver que con los nuevos calendarizadores es posible modificar al vecino
+para que tome decisiones mas arriesgadas
+
+con el calendirzador 2  con t0 de 500 y k = 0.999 pasa lo contrario en cuanto al
+tiempo (de 20s a 4s ), extrañamente aunque los costos son mejores numericamente 
+visualmente no son mejores que con el calendarizador estandar
+
+'''
+
+
+def calendarizador1(t0,k=0.05):
+    #Descenso exponencial.
+    t = t0
+    i = 0
+    while True:
+        t = t0*math.exp(-k*i)
+        i+=1
+        yield t
+        
+def calendarizador2(t0,alpha=0.95):
+    #Descenso lineal
+    'incluso se podria modificar alpha con cada iteracion'
+    while True:
+        t0 *= alpha
+        yield t0
 
 if __name__ == '__main__':
     main()
