@@ -8,7 +8,7 @@ Ejemplo de las n_reinas con búsquedas locales
 
 """
 
-__author__ = 'juliowaissman'
+__author__ = 'Ricardo Holguin Esquer'
 
 
 import blocales
