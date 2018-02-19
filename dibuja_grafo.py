@@ -153,6 +153,7 @@ class problema_grafica_grafo(blocales.Problema):
         K2 = 4.0
         K3 = 5.0
         K4 = 5.0
+        K5 = 5.0
 
         # Genera un diccionario con el estado y la posición
         estado_dic = self.estado2dic(estado)
@@ -160,7 +161,8 @@ class problema_grafica_grafo(blocales.Problema):
         return (K1 * self.numero_de_cruces(estado_dic) +
                 K2 * self.separacion_vertices(estado_dic) +
                 K3 * self.angulo_aristas(estado_dic) +
-                K4 * self.criterio_propio(estado_dic))
+                K4 * self.criterio_propio(estado_dic) +
+                K5 * self.criterio_propio_2(estado_dic))
 
         # Como podras ver en los resultados, el costo inicial
         # propuesto no hace figuras particularmente bonitas, y esto es
@@ -425,6 +427,35 @@ class problema_grafica_grafo(blocales.Problema):
         magnitud_general = sum(magnitudes) / len(vectores)
 
         if any(x > magnitud_general + tol for x in magnitudes):
+            costo += 1
+
+        return costo
+# ########################################################################################################
+    """
+    En este segundo criterio se busca que los cuadrantes tengan cierta cantiadd de nodos
+    que no tengan muchos pero que tampoco estén vacios.
+    """
+    def criterio_propio_2(self, estado_dic):
+        cuadrante_1 = 0
+        cuadrante_2 = 0
+        cuadrante_3 = 0
+        cuadrante_4 = 0
+
+        costo = 0
+
+        for vértice in self.vertices:
+            x1, y1 = estado_dic[vértice][0], estado_dic[vértice][1]
+            if x1 >= self.dim / 2 and y1 <= self.dim / 2:
+                cuadrante_1 += 1
+            elif x1 < self.dim / 2 and y1 <= self.dim / 2:
+                cuadrante_2 += 1
+            elif x1 < self.dim / 2 and y1 > self.dim / 2:
+                cuadrante_3 += 1
+            else:
+                cuadrante_4 += 1
+        if any(x > 3 for x in [cuadrante_1,cuadrante_2,cuadrante_3,cuadrante_4]):
+            costo += 1
+        if any(x < 1 for x in [cuadrante_1,cuadrante_2,cuadrante_3,cuadrante_4]):
             costo += 1
 
         return costo
