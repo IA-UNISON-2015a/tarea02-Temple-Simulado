@@ -8,13 +8,16 @@ Ejemplo de las n_reinas con búsquedas locales
 
 """
 
-__author__ = 'juliowaissman'
+__author__ = 'Ricardo Holguin Esquer'
 
 
 import blocales
 from random import shuffle
 from random import sample
 from itertools import combinations
+from math import log
+from math import exp
+from time import time
 
 
 class ProblemaNreinas(blocales.Problema):
@@ -99,20 +102,15 @@ def prueba_descenso_colinas(problema=ProblemaNreinas(8), repeticiones=10):
               str(problema.costo(solucion)).center(10))
 
 
-def prueba_temple_simulado(problema=ProblemaNreinas(8)):
+def prueba_temple_simulado(problema=ProblemaNreinas(8), calendarizador=None, cadCal="To/(1 + i)"):
     """ Prueba el algoritmo de temple simulado """
 
-    solucion = blocales.temple_simulado(problema)
-    print("\n\nTemple simulado con calendarización To/(1 + i).")
+    solucion = blocales.temple_simulado(problema, calendarizador)
+    print("\n\nTemple simulado con calendarización " + cadCal+ ".")
     print("Costo de la solución: ", problema.costo(solucion))
     print("Y la solución es: ")
     print(solucion)
 
-
-if __name__ == "__main__":
-
-    prueba_descenso_colinas(ProblemaNreinas(32), 10)
-    prueba_temple_simulado(ProblemaNreinas(32))
 
     ##########################################################################
     #                          20 PUNTOS
@@ -125,13 +123,64 @@ if __name__ == "__main__":
     # resultado dan? ¿Cual es el mejor ajuste para el temple simulado
     # y hasta cuantas reinas puede resolver en un tiempo aceptable?
     #
+    # Escribe aqui tus conclusiones
+    #
+    # Después de 65 reinas considero que el tiempo que transcurre  por cada
+    # iteración es mucho para llamarla aceptable, donde cada intento tardaba 16
+    # segundos mientras que un recocido simulado tardaba casi 3 segundos.
+    #
     # En general para obtener mejores resultados del temple simulado,
-    # es necesario probar diferentes metdos de
+    # es necesario probar diferentes metodos de
     # calendarización, prueba al menos otros dos métodos sencillos de
     # calendarización y ajusta los parámetros para que funcionen de la
     # mejor manera
     #
-    # Escribe aqui tus conclusiones
+    # Mover la temperatura inicial a algo más pequeño hara que generalmente se
+    # llegue a un resultado más rápido pero también hara que el resultado no sea
+    # uno deseado. También se puede cambiar la cantidad de temperatura a la que
+    # se esta cambiando con cada iteración, si esta se hace más pequeña con cada
+    # iteración entonces se llegara a un resultado más rápido, pero igual que con
+    # la temperatura, si ocurre esto entonces es muy probable que el resultado
+    # no sea uno muy deseado.
     #
+    # Con los cambios que he hecho en la calendarización he logrado hacer que
+    # el recocido simulado lograra resolver el problema de las reinas de hasta
+    # 150 reinas en un tiempo más aceptable que el método que ya venía el
+    # calendarizador por defecto, pero es también es más probable tener costos
+    # de 1.
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
     #
+def genCalendarizadorLog(problema):
+    costos = [problema.costo(problema.estado_aleatorio())
+              for _ in range(len(problema.estado_aleatorio()))]
+    minimo,  maximo = min(costos), max(costos)
+    T_ini = 3*(maximo - minimo)
+    return  (T_ini/(1 + i*log(i)) for i in range(1,int(1e10)+1))
+
+def genCalendarizadorExp(problema):
+    costos = [problema.costo(problema.estado_aleatorio())
+              for _ in range(10 * len(problema.estado_aleatorio()))]
+    minimo,  maximo = min(costos), max(costos)
+    T_ini = 3*(maximo - minimo)
+    return (T_ini*exp(-0.0015*i) for i in range(1,int(1e10)+1))
+
+if __name__ == "__main__":
+
+    start = time()
+    prueba_descenso_colinas(ProblemaNreinas(65), 10)
+    end = time()
+    print(end-start)
+    #start = time()
+    #prueba_temple_simulado(ProblemaNreinas(150))
+    #end = time()
+    #print(end-start)
+
+    start = time()
+    prueba_temple_simulado(ProblemaNreinas(50), genCalendarizadorLog(ProblemaNreinas(50)), "To/(1+i*log(i))")
+    end = time()
+    print(end-start)
+
+    start = time()
+    prueba_temple_simulado(ProblemaNreinas(50), genCalendarizadorExp(ProblemaNreinas(50)), "To*exp(-0.0015*i)")
+    end = time()
+    print(end-start)

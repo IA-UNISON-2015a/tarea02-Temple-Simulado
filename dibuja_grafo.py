@@ -19,13 +19,15 @@ $pip install pillow
 
 """
 
-__author__ = 'Escribe aquí tu nombre'
+__author__ = 'Ricardo Holguin Esquer'
 
 import blocales
 import random
 import itertools
 import math
 import time
+from math import log
+from math import exp
 from PIL import Image, ImageDraw
 
 
@@ -76,7 +78,7 @@ class problema_grafica_grafo(blocales.Problema):
         return tuple(random.randint(10, self.dim - 10) for _ in
                      range(2 * len(self.vertices)))
 
-    def vecino_aleatorio(self, estado, dmax=10):
+    def vecino_aleatorio(self, estado, dmax=50):
         """
         Encuentra un vecino en forma aleatoria. En estea primera
         versión lo que hacemos es tomar un valor aleatorio, y
@@ -95,9 +97,18 @@ class problema_grafica_grafo(blocales.Problema):
         """
         vecino = list(estado)
         i = random.randint(0, len(vecino) - 1)
-        vecino[i] = max(10,
-                        min(self.dim - 10,
-                            vecino[i] + random.randint(-dmax,  dmax)))
+
+        #Se trata de escoger un vecino que este a una distancia mas considerablemente
+        #lejos y no varia mucho la distancia con cada que se calcula.
+        vecino[i] = max(10, min(self.dim - 10, vecino[i] + random.choice([-1,  1])*dmax))
+        #vecino[i] = max(10, min(self.dim - 10, vecino[i] + random.randint(-dmax,  dmax)))
+
+        #Se hace lo mismo para la otra componente (dependiendo si se movio la
+        # componente y o x en el paso anterior)
+        if i%2 == 0:    #Si es par
+            vecino[i+1] = max(10, min(self.dim - 10, vecino[i] + random.choice([-1,  1])*dmax))
+        else:   #Si es impar
+            vecino[i-1] = max(10, min(self.dim - 10, vecino[i] + random.choice([-1,  1])*dmax))
         return tuple(vecino)
 
         #######################################################################
@@ -124,10 +135,11 @@ class problema_grafica_grafo(blocales.Problema):
 
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
-        K1 = 1.0
-        K2 = 0.0
-        K3 = 0.0
-        K4 = 0.0
+
+        K1 = 1.3 #No. de cruces
+        K2 = 2.5 #Separacion de vertices
+        K3 = 1.0 #Angulo de aristas
+        K4 = 0.4 #Criterio propio
 
         # Genera un diccionario con el estado y la posición
         estado_dic = self.estado2dic(estado)
@@ -257,10 +269,35 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ¿Que valores de diste a K1, K2 y K3 respectivamente?
         #
+        # K1 = 1.3
+        # K2 = 2.5
+        # K3 = 1.0
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+
+        anguloMin = 30
+        total = 0
+        for v in self.vertices:
+            #Se seleccionan las aristas que estan en el vertice
+            aristas = [a for a in self.aristas if v in a]
+            for aristaA, aristaB in itertools.combinations(aristas,2):
+                xA1, yA1 = estado_dic[aristaA[0]]
+                xB1, yB1 = estado_dic[aristaA[1]]
+                xA2, yA2 = estado_dic[aristaB[0]]
+                xB2, yB2 = estado_dic[aristaB[1]]
+                try:
+                    m1 = (yB1 - yA1)/(xB1 - xA1)
+                    m2 = (yB2 - yA2)/(xB2 - xA2)
+                    angulo = (math.degrees(abs(math.atan(((m2-m1)/(1+(m1*m2)))))))
+                    if angulo < anguloMin:
+                        total+= 1-(angulo/anguloMin)
+
+                except ZeroDivisionError:
+                    #Si hay división entre cero simplemente se ignora
+                    pass
+
+        return total
 
     def criterio_propio(self, estado_dic):
         """
@@ -284,10 +321,53 @@ class problema_grafica_grafo(blocales.Problema):
         # costo total con K4 ¿Mejora el resultado? ¿En que mejora el
         # resultado final?
         #
+        # Imagine que es más natural ver una gráfica cuando el vertice que
+        # tiene más aristas esta en el medio de la imagen. Se podrían haber
+        # hecho otros criterios como tratar de hacer que la distancia entre
+        # cada vertice sea igual o lo más igual posible para que no haya partes
+        # de la gráfica dodne estan todos los vertices y haya un vertice hasta
+        # el otro lado del plano.
+        #
+        # Mejora un poco el resultado para que la gráfica normalmente se dibuje
+        # en medio del plano. Pero no mejora significativamente la gráfica. Pero
+        # moviendo los parámetros Kn la gráfica mejora considerablemente.
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+
+        # Mi criterio es tratar de hacer que el vertice que esta en mas aristas
+        # se encuentre por el medio de la imagen
+
+        total = 0
+        noVertices = {}
+        #cunta las veces que un vertice esta en una arista
+        for i in self.aristas:
+            for j in i:
+                if j in noVertices:
+                    noVertices[j] += 1
+                else:
+                    noVertices[j] = 1
+
+        #Escoge al inicio el primer elemento que haya en las llaves del dict
+        #si encuentra un vertice que tiene mas aristas entonces cambiara el valor
+        mayorVertice = list(noVertices.keys())[0]
+        for i in noVertices.keys():
+            if noVertices[i] > noVertices[mayorVertice]:
+                mayorVertice = i
+
+        # Se escogen los margenes de errores que puede tener la localizacion del
+        # vertice que se tratara de poner en el medio (+- 50)
+        minX, minY = (self.dim/2)-50, (self.dim/2)-50
+        maxX, maxY = (self.dim/2)+50, (self.dim/2)+50
+
+        x = estado_dic[mayorVertice][0]
+        y = estado_dic[mayorVertice][1]
+
+        if x < minX or x > maxX: total+=1
+        if y < minY or y > maxY: total+=1
+
+
+        return total
 
     def estado2dic(self, estado):
         """
@@ -332,6 +412,33 @@ class problema_grafica_grafo(blocales.Problema):
 
         imagen.save(filename)
 
+def genCalendarizadorLog(problema):
+    costos = [problema.costo(problema.estado_aleatorio())
+              for _ in range(len(problema.estado_aleatorio()))]
+    minimo,  maximo = min(costos), max(costos)
+    T_ini = 3*(maximo - minimo)
+    return  (T_ini/(1 + i*log(i)) for i in range(1,int(1e10)+1))
+
+def genCalendarizadorExp(problema):
+    costos = [problema.costo(problema.estado_aleatorio())
+              for _ in range(10 * len(problema.estado_aleatorio()))]
+    minimo,  maximo = min(costos), max(costos)
+    T_ini = 3*(maximo - minimo)
+    return (T_ini*exp(-0.0015*i) for i in range(1,int(1e10)+1))
+
+def genCalendarizadorExpMult(problema):
+    costos = [problema.costo(problema.estado_aleatorio())
+              for _ in range(10 * len(problema.estado_aleatorio()))]
+    minimo,  maximo = min(costos), max(costos)
+    T_ini = 3*(maximo - minimo)
+    return (T_ini*0.9**i for i in range(1,int(1e10)+1))
+
+def genCalendarizadorCuadraticaMult(problema):
+    costos = [problema.costo(problema.estado_aleatorio())
+              for _ in range(10 * len(problema.estado_aleatorio()))]
+    minimo,  maximo = min(costos), max(costos)
+    T_ini = 3*(maximo - minimo)
+    return (T_ini/(1+i**2) for i in range(1,int(1e10)+1))
 
 def main():
     """
@@ -362,16 +469,51 @@ def main():
 
     estado_aleatorio = grafo_sencillo.estado_aleatorio()
     costo_inicial = grafo_sencillo.costo(estado_aleatorio)
-    grafo_sencillo.dibuja_grafo(estado_aleatorio, "prueba_inicial.gif")
+    grafo_sencillo.dibuja_grafo(estado_aleatorio, "prueba_inicial3.gif")
     print("Costo del estado aleatorio: {}".format(costo_inicial))
 
     # Ahora vamos a encontrar donde deben de estar los puntos
+
+    #Usando el enfriamiento de logaritmo
     t_inicial = time.time()
-    solucion = blocales.temple_simulado(grafo_sencillo)
+    solucion = blocales.temple_simulado(grafo_sencillo,genCalendarizadorLog(grafo_sencillo))
     t_final = time.time()
     costo_final = grafo_sencillo.costo(solucion)
 
-    grafo_sencillo.dibuja_grafo(solucion, "prueba_final.gif")
+    grafo_sencillo.dibuja_grafo(solucion, "prueba_final_Log.gif")
+    print("\nUtilizando la calendarización por default")
+    print("Costo de la solución encontrada: {}".format(costo_final))
+    print("Tiempo de ejecución en segundos: {}".format(t_final - t_inicial))
+
+    #Usando el enfriamiento de exponencial
+    t_inicial = time.time()
+    solucion = blocales.temple_simulado(grafo_sencillo,genCalendarizadorExp(grafo_sencillo))
+    t_final = time.time()
+    costo_final = grafo_sencillo.costo(solucion)
+
+    grafo_sencillo.dibuja_grafo(solucion, "prueba_final_Exp.gif")
+    print("\nUtilizando la calendarización por default")
+    print("Costo de la solución encontrada: {}".format(costo_final))
+    print("Tiempo de ejecución en segundos: {}".format(t_final - t_inicial))
+
+    #Usando el enfrimiento de Exponencial mult.
+    t_inicial = time.time()
+    solucion = blocales.temple_simulado(grafo_sencillo,genCalendarizadorExpMult(grafo_sencillo))
+    t_final = time.time()
+    costo_final = grafo_sencillo.costo(solucion)
+
+    grafo_sencillo.dibuja_grafo(solucion, "prueba_final_expMult.gif")
+    print("\nUtilizando la calendarización por default")
+    print("Costo de la solución encontrada: {}".format(costo_final))
+    print("Tiempo de ejecución en segundos: {}".format(t_final - t_inicial))
+
+    #Usando el enfriamiento Cuadratica Multiplicativa
+    t_inicial = time.time()
+    solucion = blocales.temple_simulado(grafo_sencillo,genCalendarizadorCuadraticaMult(grafo_sencillo))
+    t_final = time.time()
+    costo_final = grafo_sencillo.costo(solucion)
+
+    grafo_sencillo.dibuja_grafo(solucion, "prueba_final_CuadMul.gif")
     print("\nUtilizando la calendarización por default")
     print("Costo de la solución encontrada: {}".format(costo_final))
     print("Tiempo de ejecución en segundos: {}".format(t_final - t_inicial))
@@ -395,6 +537,29 @@ def main():
     #
     # Escribe aqui tus conclusiones
     #
+    # Usando una calendarización con logaritmos o exponencial hacen que el algoritmo
+    # converja a un resultado más deseable. Moviendo la distancia maxima (dmax) en
+    # la función de escoger vecinos aleatorios, se puede encontrar también un mejor
+    # resultado.
+    #
+    # Diria que todos son igual de importantes pero encontre mas importancia en
+    # la distanca que hay entre vertices, siento que ese parámetro hace que la
+    # gráfica sea más legible.
+    #
+    # Un método de calendarización pueden ser:
+    #    Tk = To/(1+Log(1+k))
+    #    Tk = To*a^k donde (0.8 <= a <= 0.9)        Propuesto por Kirkpatrick, Gelatt
+    #                                               y Vecchi (1983)
+    #    Tk = To/(1+a*Log(1+k)) donde a>1           Aarts, E.H.L & Korst, J., 1989)
+    #    Tk = To/(1+a*k) donde a>0
+    #    Tk = To/(1+a*k^2) donde a>
+    #
+    #    Fuente: http://what-when-how.com/artificial-intelligence/a-comparison-of-cooling-schedules-for-simulated-annealing-artificial-intelligence/
+    #
+    # Estos son algunos de los métodos para enfriar en recocido simulado. Había
+    # más pero no los considere.
+    # Antes de ver cualquier método use el método que vimos en clase que es Logaritmo
+    # y después mientras hacia esta tarea se me ocurrio usar exponencial.
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
     #
 
