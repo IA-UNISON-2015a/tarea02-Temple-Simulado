@@ -111,8 +111,8 @@ def prueba_temple_simulado(problema=ProblemaNreinas(8)):
 
 if __name__ == "__main__":
 
-    prueba_descenso_colinas(ProblemaNreinas(32), 10)
-    prueba_temple_simulado(ProblemaNreinas(32))
+    #prueba_descenso_colinas(ProblemaNreinas(8), 10)
+    prueba_temple_simulado(ProblemaNreinas(100))
 
     ##########################################################################
     #                          20 PUNTOS
@@ -121,15 +121,28 @@ if __name__ == "__main__":
     # ¿Cual es el máximo número de reinas que se puede resolver en
     # tiempo aceptable con el método de 10 reinicios aleatorios?
     #
+    # prueba con 100 reinas:
+    # tardó aproximadamente 26 minutos lo que es un tiempo muy aceptable, no quise
+    # probarlo con más porque no quiero que pase de 30 minutos, ya que para mí no es
+    # aceptable
+    #
     # ¿Que valores para ajustar el temple simulado son los que mejor
     # resultado dan? ¿Cual es el mejor ajuste para el temple simulado
     # y hasta cuantas reinas puede resolver en un tiempo aceptable?
+    #
+    # la tolerancia que se esta utilizando está bien, al menos eso paso en mi caso
+    # ya  que probé con diferentes valores para la tolerancia con 32 reinas y siempre obtenia
+    # costo 0 con tol=0.001 y de manera rapido.
+    # El mejor calendarizador resulto ser el exp y tardo aproximadamente 23 minutos con
+    # 100 reinas.
     #
     # En general para obtener mejores resultados del temple simulado,
     # es necesario probar diferentes metdos de
     # calendarización, prueba al menos otros dos métodos sencillos de
     # calendarización y ajusta los parámetros para que funcionen de la
     # mejor manera
+    #
+    # implementé uno lineal y el exp. de la manera más tonta que pude pero ahi están.
     #
     # Escribe aqui tus conclusiones
     #
