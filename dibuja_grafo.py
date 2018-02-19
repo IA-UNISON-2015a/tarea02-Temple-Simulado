@@ -152,7 +152,7 @@ class problema_grafica_grafo(blocales.Problema):
         K1 = 5.0
         K2 = 4.0
         K3 = 5.0
-        K4 = 0.0
+        K4 = 5.0
 
         # Genera un diccionario con el estado y la posición
         estado_dic = self.estado2dic(estado)
@@ -349,6 +349,8 @@ class problema_grafica_grafo(blocales.Problema):
                     costo += 0
             return self.calcular_angulo(vectores, costo)
 
+# ########################################################################################################
+
     def criterio_propio(self, estado_dic):
         """
         Implementa y comenta correctamente un criterio de costo que sea
@@ -367,14 +369,66 @@ class problema_grafica_grafo(blocales.Problema):
         #######################################################################
         # ¿Crees que hubiera sido bueno incluir otro criterio? ¿Cual?
         #
+        """
+        En este criterio se trata que todas las aristas que salen de un nodo
+        tengan más o menos la misma longitud. Sé que las aristas son compartidas
+        por diversos nodos por lo que hay cierto criterio de tolerancia para dicha
+        diferencia de longitudes
+        """
+        #
         # Desarrolla un criterio propio y ajusta su importancia en el
         # costo total con K4 ¿Mejora el resultado? ¿En que mejora el
         # resultado final?
         #
+        # Lo mejora estéticamente pero aumenta el tiempo de ejecución
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+        costo = 0
+        # Obtener los vectores de cada nodo
+        for vértice in self.vertices:
+            aristas_nodo = [x for x in self.aristas if vértice in x]
+            
+            if len(aristas_nodo) == 1:
+                continue
+            
+            costo += self.crear_vectores_2(aristas_nodo, estado_dic, vértice)     
+           
+        return costo
+
+# ########################################################################################################
+    def crear_vectores_2(self, aristas, diccionario_aristas, vértice):
+        vectores = []
+
+        for i,j in aristas:
+            if vértice is i:
+                x1, y1 = diccionario_aristas[i][0], diccionario_aristas[i][1]
+                x2, y2 = diccionario_aristas[j][0], diccionario_aristas[j][1]
+            else:
+                x1, y1 = diccionario_aristas[j][0], diccionario_aristas[j][1]
+                x2, y2 = diccionario_aristas[i][0], diccionario_aristas[i][1]
+            vectores.append((x2 - x1, y2 - y1))
+
+        costo = 0
+        costo = self.calcular_distancia(vectores)
+        return costo
+# ########################################################################################################
+    def calcular_distancia(self, vectores, costo = 0, tol = 20):
+        if len(vectores) == 1 or vectores is None:
+            return 0
+
+        diferencia = 0
+        magnitudes = []
+        for vector_i in vectores:
+            magnitudes.append(math.sqrt(vector_i[0]**2 + vector_i[1]**2))
+
+        magnitud_general = sum(magnitudes) / len(vectores)
+
+        if any(x > magnitud_general + tol for x in magnitudes):
+            costo += 1
+
+        return costo
+# ########################################################################################################
 
     def estado2dic(self, estado):
         """
