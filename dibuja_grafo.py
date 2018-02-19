@@ -19,7 +19,7 @@ $pip install pillow
 
 """
 
-__author__ = 'Adrian Emilio Vazquez Icedo'
+__author__ = 'Escribe aquí tu nombre'
 
 import blocales
 import random
@@ -93,13 +93,31 @@ class problema_grafica_grafo(blocales.Problema):
         @return: Una tupla con un estado vecino al estado de entrada.
 
         """
+        """
         vecino = list(estado)
         i = random.randint(0, len(vecino) - 1)
         vecino[i] = max(10,
                         min(self.dim - 10,
                             vecino[i] + random.randint(-dmax,  dmax)))
         return tuple(vecino)
-
+        """
+        vecino = list(estado)
+        #Para darle un poco de cambio se generara un valor que significara si se recorre en 1 o en 2 el 
+        t = random.randint(1, 2)
+        
+        if t==1:
+            for i in range(0, len(vecino), 1):           
+                vecino[i]=max(10,
+                      min(self.dim - 10,
+                          vecino[i] + random.randint(-dmax,  dmax)))
+        else:
+            for i in range(0, len(vecino), 2):           
+                vecino[i]=max(10,
+                      min(self.dim - 10,
+                          vecino[i] + random.randint(-dmax,  dmax)))
+        return tuple(vecino)
+        
+        
         #######################################################################
         #                          20 PUNTOS
         #######################################################################
@@ -362,7 +380,7 @@ def main():
 
     estado_aleatorio = grafo_sencillo.estado_aleatorio()
     costo_inicial = grafo_sencillo.costo(estado_aleatorio)
-    grafo_sencillo.dibuja_grafo(estado_aleatorio, "prueba_inicial.gif")
+    grafo_sencillo.dibuja_grafo(estado_aleatorio, "prueba_inicial1.gif")
     print("Costo del estado aleatorio: {}".format(costo_inicial))
 
     # Ahora vamos a encontrar donde deben de estar los puntos
@@ -371,7 +389,7 @@ def main():
     t_final = time.time()
     costo_final = grafo_sencillo.costo(solucion)
 
-    grafo_sencillo.dibuja_grafo(solucion, "prueba_final.gif")
+    grafo_sencillo.dibuja_grafo(solucion, "prueba_final1.gif")
     print("\nUtilizando la calendarización por default")
     print("Costo de la solución encontrada: {}".format(costo_final))
     print("Tiempo de ejecución en segundos: {}".format(t_final - t_inicial))
