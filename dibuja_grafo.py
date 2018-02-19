@@ -303,7 +303,7 @@ class problema_grafica_grafo(blocales.Problema):
                         v3=a2[0]
                     
                     c1,c2,c3 = estado_dic[v1], estado_dic[v2], estado_dic[v3]
-                    #reviso que no se repita las coordenadas de un vertice
+                    #reviso que no se repita las coordenadas de un vertice, ya que en caso de repetirse produciria division entre 0
                     if c1!=c2 and c1!=c3 and c2!=c3:
                         #Calcula la distancia de los 3 lados
                         lc1=math.sqrt(((c2[0]-c3[0])**2)+((c2[1]-c3[1])**2))
