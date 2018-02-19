@@ -127,6 +127,8 @@ class problema_grafica_grafo(blocales.Problema):
         # Propon una manera alternativa de vecino_aleatorio y muestra que
         # con tu propuesta se obtienen resultados mejores o en menor tiempo
 
+        #Creo que las graficas que me salen son mas bonitas usando estos vecinos. QED.
+
         """
         Nueva idea: Tomar un vertice del grafo y moverlo aleatoriamente a otra
         posicion que este limitada por una circunferencia del radio de la
@@ -163,12 +165,11 @@ class problema_grafica_grafo(blocales.Problema):
         """
 
         # Inicializa fáctores lineales para los criterios más importantes
-        # (default solo cuanta el criterio 1)
-        K1 = 0.5
-        K2 = 3
-        K3 = 2.0
-        K4 = 0.5
-        K5 = 4
+        K1 = 1.6
+        K2 = 2.1
+        K3 = 2.1
+        K4 = 2.1
+        K5 = 2.2
 
         # Genera un diccionario con el estado y la posición
         estado_dic = self.estado2dic(estado)
@@ -297,7 +298,7 @@ class problema_grafica_grafo(blocales.Problema):
         # lograr que el sistema realice gráficas "bonitas"
         #
         # ¿Que valores le diste a K1, K2 y K3 respectivamente?
-        #
+        # 1.6, 2.1, 2.1
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
@@ -306,7 +307,7 @@ class problema_grafica_grafo(blocales.Problema):
         penalizacion = 0
 
         for (a1, a2) in itertools.combinations(self.aristas, 2):
-            #si las aristas no comparten un vertice
+            #si las aristas no comparten un vertice se ignoran
             if not a1[0] in a2 and not a1[1] in a2:
                 continue
 
@@ -342,7 +343,10 @@ class problema_grafica_grafo(blocales.Problema):
         # Desarrolla un criterio propio y ajusta su importancia en el
         # costo total con K4 ¿Mejora el resultado? ¿En que mejora el
         # resultado final?
-        #
+
+        # Yo creo que si porque hay mas simetria teniendo el mismo numero de
+        # vertices en cada cuadrante y creo que se ve mejor cuando un grafo
+        # se asemeja a un circulo.
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
@@ -371,19 +375,23 @@ class problema_grafica_grafo(blocales.Problema):
     grafica.
     """
     def criterioPropio2(self, estado_dic):
-        verticesIzq = 0
-        verticesInf = 0
+        vizq = 0
+        vinf = 0
+        total = len(self.vertices)
         mitadHorizontal = self.dim/2
         mitadVertical = self.dim/2
 
         for i in estado_dic:
             if estado_dic[i][0] < mitadHorizontal:
-                verticesIzq += 1
+                vizq += 1
             if estado_dic[i][1] < mitadVertical:
-                verticesInf += 1
+                vinf += 1
 
-        penalizacion1 = 1 - 2*abs(len(self.vertices)-verticesIzq)/len(self.vertices)
-        penalizacion2 = 1 - 2*abs(len(self.vertices)-verticesInf)/len(self.vertices)
+        vder = total - vizq
+        vsup = total - vinf
+
+        penalizacion1 = 1 - vder / vizq if vder < vizq else 1 - vizq / vder
+        penalizacion2 = 1 - vsup / vinf if vsup < vinf else 1 - vinf / vsup
 
         return (penalizacion1+penalizacion2)/2
 
@@ -465,12 +473,13 @@ def main():
 
     # Ahora vamos a encontrar donde deben de estar los puntos
     t_inicial = time.time()
-    solucion = blocales.temple_simulado(grafo_sencillo)
+    solucion = blocales.temple_simulado(grafo_sencillo, calendarizarGrafo(grafo_sencillo, 3))
     t_final = time.time()
     costo_final = grafo_sencillo.costo(solucion)
 
     grafo_sencillo.dibuja_grafo(solucion, "prueba_final.gif")
-    print("\nUtilizando la calendarización por default")
+    #es la calendarizacion default pero asi suena mejor
+    print("\nUtilizando la calendarizacion lineal multiplicativa")
     print("Costo de la solución encontrada: {}".format(costo_final))
     print("Tiempo de ejecución en segundos: {}".format(t_final - t_inicial))
 
