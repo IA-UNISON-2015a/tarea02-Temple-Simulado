@@ -19,7 +19,7 @@ $pip install pillow
 
 """
 
-__author__ = 'Escribe aquí tu nombre'
+__author__ = 'gilbertoespinoza'
 
 import blocales
 import random
@@ -93,13 +93,14 @@ class problema_grafica_grafo(blocales.Problema):
         @return: Una tupla con un estado vecino al estado de entrada.
 
         """
+        """ PROFE VERSION
         vecino = list(estado)
         i = random.randint(0, len(vecino) - 1)
         vecino[i] = max(10,
                         min(self.dim - 10,
                             vecino[i] + random.randint(-dmax,  dmax)))
         return tuple(vecino)
-
+        """
         #######################################################################
         #                          20 PUNTOS
         #######################################################################
@@ -107,6 +108,16 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # Propon una manera alternativa de vecino_aleatorio y muestra que
         # con tu propuesta se obtienen resultados mejores o en menor tiempo
+
+        vecino = list(estado)
+        i = random.randint(0, len(vecino) - 1)
+
+        # modificamos exepto el que tomamos
+        for j in range(len(vecino)):
+            if j != i:
+                vecino[j] = max(10, min(self.dim-10, vecino[j] + random.randint(-dmax,  dmax)))
+        return tuple(vecino)
+
 
     def costo(self, estado):
         """
@@ -124,10 +135,10 @@ class problema_grafica_grafo(blocales.Problema):
 
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
-        K1 = 1.0
-        K2 = 0.0
-        K3 = 0.0
-        K4 = 0.0
+        K1 = 0.0
+        K2 = 1.0
+        K3 = 1.0
+        K4 = 1.0
 
         # Genera un diccionario con el estado y la posición
         estado_dic = self.estado2dic(estado)
@@ -260,7 +271,43 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+        def calcularAngulo(punto1, punto2, punto3):
+            #crea 2 vectores que van de p1 a p2 y de p1 a p3
+            if punto1 == punto2 or punto1 == punto3 or punto2 == punto3:
+                return 0
+            vector12 = (punto1[0] - punto2[0], punto1[1] - punto2[1])
+            vector13 = (punto1[0] - punto3[0], punto1[1] - punto3[1])
+
+            prodPunto = vector12[0]*vector13[0] + vector12[1]*vector13[1]
+            magnitud12 = math.sqrt(vector12[0]**2 + vector12[1]**2)
+            magnitud13 = math.sqrt(vector13[0]**2 + vector13[1]**2)
+            val = prodPunto/(magnitud12*magnitud13)
+            #Arregla errores de punto flotante para que acos siempre tenga valor
+            if val < -1:
+                val = -1
+            if val > 1:
+                val = 1
+
+            return math.acos(val)
+
+        angulo_min = math.pi/6
+        cruces = 0
+        for (i, j) in itertools.combinations(self.aristas, 2):
+            # revisamos exista conexion
+            if not i[0] in j and not i[1] in j:
+                continue
+                
+            v1 = estado_dic[i[0]] if i[0] in j else estado_dic[i[1]]
+            v2 = estado_dic[i[0]] if i[0] not in j else estado_dic[i[1]]
+            v3 = estado_dic[j[0]] if j[0] not in i else estado_dic[j[1]]
+
+            angulo = calcularAngulo(v1, v2, v3)
+
+            if angulo < angulo_min:
+                cruces += 1 - angulo/angulo_min
+
+        return cruces
+
 
     def criterio_propio(self, estado_dic):
         """
