@@ -11,7 +11,9 @@ Algoritmos generales para búsquedas locales
 __author__ = 'juliowaissman'
 
 from itertools import takewhile
+from sys import maxsize
 from math import exp
+from math import log
 from random import random
 
 
@@ -112,8 +114,9 @@ def temple_simulado(problema, calendarizador=None, tol=0.001):
     estado = problema.estado_aleatorio()
     costo = problema.costo(estado)
 
-    for T in takewhile(lambda i: i > tol, calendarizador):
-
+    costo_vecino = maxsize
+    # Criterio de paro añadido, costo del vecino es 0
+    for T in takewhile(lambda i: i > tol and costo_vecino != 0, calendarizador):
         vecino = problema.vecino_aleatorio(estado)
         costo_vecino = problema.costo(vecino)
         incremento_costo = costo_vecino - costo
