@@ -136,15 +136,18 @@ if __name__ == "__main__":
     #
     # Escribe aqui tus conclusiones
     #
-    # Asumiendo que maximo es aceptable esperar un minuto para encontrar una
-    # solucion, entonces entre 50 y 60 reinas son aceptables en la computadora
-    # donde corro los algoritmos, ya que cada corrida del descenso de colinas
-    # dura al rededor de 6 segundos.
     #
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
     #
 
 """
+Descenso de colinas:
+Asumiendo que maximo es aceptable esperar un minuto para encontrar una
+solucion, entonces entre 50 y 60 reinas son aceptables en la computadora
+donde corro los algoritmos, ya que cada corrida del descenso de colinas
+dura al rededor de 6 segundos.
+
+
 Otros calendarizadores:
 Obtienen la misma temperatura inicial que el calendarizador originalmente propuesto, los cambios son solo de algunas operaciones en el generador.
 
