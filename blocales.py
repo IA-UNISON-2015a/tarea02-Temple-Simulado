@@ -107,7 +107,21 @@ def temple_simulado(problema, calendarizador=None, tol=0.001):
                   for _ in range(10 * len(problema.estado_aleatorio()))]
         minimo,  maximo = min(costos), max(costos)
         T_ini = 2 * (maximo - minimo)
-        calendarizador = (T_ini/(1 + i) for i in range(int(1e10)))
+        k = 0.001
+        #default
+        #calendarizador = (T_ini/(1 + i) for i in range(int(1e10)))
+
+        #lineal
+        #calendarizador = ((k-T_ini*i) for i in range(int(1e10)))
+
+        #exp
+        calendarizador = ((T_ini * exp(-k*i)) for i in range(int(1e10)))
+
+        #No supe como hacerle así que lo implementé así, muy cochino pero estoy muy corto
+        #de tiempo, le ruego me disculpe ;(.
+
+
+
 
     estado = problema.estado_aleatorio()
     costo = problema.costo(estado)
