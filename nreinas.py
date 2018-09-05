@@ -99,11 +99,11 @@ def prueba_descenso_colinas(problema=ProblemaNreinas(8), repeticiones=10):
               str(problema.costo(solucion)).center(10))
 
 
-def prueba_temple_simulado(problema=ProblemaNreinas(8)):
+def prueba_temple_simulado(problema=ProblemaNreinas(8),calendarizador=None):
     """ Prueba el algoritmo de temple simulado """
 
-    solucion = blocales.temple_simulado(problema)
-    print("\n\nTemple simulado con calendarización To/(1 + i).")
+    solucion = blocales.temple_simulado(problema,calendarizador)
+    print("\n\nTemple simulado con calendarización Ti/i.")
     print("Costo de la solución: ", problema.costo(solucion))
     print("Y la solución es: ")
     print(solucion)
@@ -111,8 +111,8 @@ def prueba_temple_simulado(problema=ProblemaNreinas(8)):
 
 if __name__ == "__main__":
 
-    prueba_descenso_colinas(ProblemaNreinas(32), 10)
-    prueba_temple_simulado(ProblemaNreinas(32))
+    #prueba_descenso_colinas(ProblemaNreinas(32), 10)
+    #prueba_temple_simulado(ProblemaNreinas(32))
 
     ##########################################################################
     #                          20 PUNTOS
@@ -135,3 +135,27 @@ if __name__ == "__main__":
     #
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
     #
+   
+    #calendarizador = (T_i/i for i in range(1, 1e6)) #generador de una lista desde 1 a un millon
+    #probaremos con 8 reinas 
+    
+    def calendarizar(problema):
+        costos =[problema.costo(problema.estado_aleatorio())
+            for _ in range( 10*len(problema.estado_aleatorio()) )]
+        minimo= min(costos)
+        maximo= max(costos)
+        reinas = 8
+        repeticiones= 10
+
+        
+        Ti = 2*(maximo-minimo)
+        calendarizador = (Ti/i for i in range(1, int(1e6))) #generador de una lista desde 1 a un millon
+
+
+        return calendarizador
+    
+    for i in range(1,10-1):
+        prueba_temple_simulado(ProblemaNreinas(16),calendarizar(ProblemaNreinas(16)))
+    
+
+    
