@@ -1,4 +1,5 @@
 ![](ia.png)
+
 Algoritmos de búsquedas directas
 =========================================
 
