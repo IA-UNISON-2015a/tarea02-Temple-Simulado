@@ -1,12 +1,10 @@
 ![](ia.png)
 
-Algoritmos de búsquedas directas
-=========================================
+# Algoritmos de búsquedas directas
 
 **Evaluación de competencias 2**
 
-Descripción
-------------
+## Descripción
 
 Para esta tarea, vamos a entrenarnos primero en el uso y análisis del
 algoritmo de temple simulado, en un problema de juguete como es el
@@ -49,7 +47,7 @@ La tarea consta de 3 archivos:
 1. El archivo ´blocales.py´ contiene la clase Problema y los métodos
    de busqueda local vistos en clase.
 
-2. El archivo ¨nreinas.py´ contiene el ejemplo de las n-reinas, a
+2. El archivo ´nreinas.py´ contiene el ejemplo de las n-reinas, a
    desarrollar.
 
 3. El archivo ´dibuja_grafo.py´ contiene el problema de dibujar un
