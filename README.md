@@ -1,6 +1,7 @@
-Tarea 2: Algoritmos de búsquedas directas
+Algoritmos de búsquedas directas
 =========================================
 
+**Evaluación de competencias 2**
 
 Descripción
 ------------
