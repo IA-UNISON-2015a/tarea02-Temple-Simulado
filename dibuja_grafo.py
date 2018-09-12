@@ -27,6 +27,7 @@ import itertools
 import math
 import time
 from PIL import Image, ImageDraw
+import numpy as np
 
 
 class problema_grafica_grafo(blocales.Problema):
@@ -290,6 +291,28 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
+
+
+        # las variables a0,a1 y a2 representan los vertices
+        # mientras que las variables v1,v2,v3 las coordenadas y los
+        # l1,l2,l3 las dimensiones de aristas
+        for i,(a0,a1) in enumerate(self.aristas):
+            a2 = ""
+            for a,b in self.aristas:
+                if b is a1 and a is not a0:
+                    # Incompleto: solo busca uno de todos los siguientes vertices
+                    a2 = a
+                    break
+            # En este punto tengo tres vertices conectados a traves de aristas.
+            if a2 is not "":
+                v0, v1, v2 = estado_dic.get(a0), estado_dic.get(a1), estado_dic.get(a2)
+                lado0 = np.sqrt(np.power((v1[0]-v0[0]),2) + np.power((v1[1] - v0[1]),2))
+                lado1 = np.sqrt(np.power((v2[0]-v1[0]),2) + np.power((v2[1] - v1[1]),2))
+                lado2 = np.sqrt(np.power((v2[0]-v0[0]),2) + np.power((v2[1] - v0[1]),2))
+
+                angulo = np.rad2deg(np.arccos((np.power(lado0,2) + np.power(lado1,2) - np.power(lado2,2))/(2*lado0*lado1)))
+
+
         return 0
 
     def criterio_propio(self, estado_dic):
