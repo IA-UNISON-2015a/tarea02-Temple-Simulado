@@ -13,6 +13,7 @@ __author__ = 'juliowaissman'
 from itertools import takewhile
 from math import exp
 from random import random
+import numpy as np
 
 
 class Problema(object):
@@ -91,7 +92,7 @@ def descenso_colinas(problema, maxit=1e6):
     return estado
 
 
-def temple_simulado(problema, calendarizador=None, tol=0.001):
+def temple_simulado(problema, calendarizador=None, tol=0.01):
     """
     Busqueda local por temple simulado
 
@@ -104,10 +105,60 @@ def temple_simulado(problema, calendarizador=None, tol=0.001):
     """
     if calendarizador is None:
         costos = [problema.costo(problema.estado_aleatorio())
-                  for _ in range(10 * len(problema.estado_aleatorio()))]
+                  for _ in range(2 * len(problema.estado_aleatorio()))]
         minimo,  maximo = min(costos), max(costos)
         T_ini = 2 * (maximo - minimo)
         calendarizador = (T_ini/(1 + i) for i in range(int(1e10)))
+
+    elif calendarizador is "1":
+        costos = [problema.costo(problema.estado_aleatorio())
+                  for _ in range(10 * len(problema.estado_aleatorio()))]
+        minimo,  maximo = min(costos), max(costos)
+        T_ini = 10 * (maximo - minimo)
+        calendarizador = (T_ini/(np.power(i,2)+1) for i in range(int(1e10)))
+        """
+        Mi calendarizador "1": muy rapido, poco efectivo, pues incluso con
+        pocas reinas, suele no encontrar el optimo global
+        """
+    elif calendarizador is "2":
+        costos = [problema.costo(problema.estado_aleatorio())
+                  for _ in range(10 * len(problema.estado_aleatorio()))]
+        minimo,  maximo = min(costos), max(costos)
+        T_ini = 10 * (maximo - minimo)
+        calendarizador = (T_ini/(np.log(i)+1) for i in range(int(1e10)))
+        """
+        Calendarizador "2": Horrible. Da costos altisimos con pocas reinas.
+        """
+    elif calendarizador is "3":
+        costos = [problema.costo(problema.estado_aleatorio())
+                  for _ in range(10 * len(problema.estado_aleatorio()))]
+        minimo,  maximo = min(costos), max(costos)
+        T_ini =  10 * (maximo - minimo)
+        calendarizador = (T_ini/(np.log2(i)+1) for i in range(int(1e10)))
+        """
+        Calendarizador "3": Te arroja costos altisimos mas rapido que los demas.
+        """
+    elif calendarizador is "4":
+        costos = [problema.costo(problema.estado_aleatorio())
+                  for _ in range(2 * len(problema.estado_aleatorio()))]
+        minimo,  maximo = min(costos), max(costos)
+        T_ini =  2 * (maximo - minimo)
+        calendarizador = (T_ini/(2*i+1) for i in range(int(1e10)))
+        """
+        Calendarizador "4": Probe con varios coeficientes; con 2 es un poco mas
+        rapido que 1, pero no me asegura tanto el optimo (1 de cada 8 no lo
+        hace)
+        """
+
+    """
+    Los parametros no son suficientes para arreglar significativamente
+    los pesimos resultados que dan. por mas que aumentemos la t_ini
+    parece que no hay resultados. En cambio cuando es un lineal sencillo
+    parece que funciona de maravilla al moverle un poco a los parametros.
+    que pasaria si agregamos un coeficiente distinto a 1 en el lineal?
+    """
+
+
 
     estado = problema.estado_aleatorio()
     costo = problema.costo(estado)

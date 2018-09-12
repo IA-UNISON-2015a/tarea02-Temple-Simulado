@@ -15,6 +15,7 @@ import blocales
 from random import shuffle
 from random import sample
 from itertools import combinations
+import time
 
 
 class ProblemaNreinas(blocales.Problema):
@@ -110,9 +111,13 @@ def prueba_temple_simulado(problema=ProblemaNreinas(8)):
 
 
 if __name__ == "__main__":
+    #start_time = time.time()
+    #prueba_descenso_colinas(ProblemaNreinas(25), 10)
+    #print("--- %s seconds ---" % (time.time() - start_time))
+    start_time = time.time()
+    prueba_temple_simulado(ProblemaNreinas(50))
+    print("--- %s seconds ---" % (time.time() - start_time))
 
-    prueba_descenso_colinas(ProblemaNreinas(32), 10)
-    prueba_temple_simulado(ProblemaNreinas(32))
 
     ##########################################################################
     #                          20 PUNTOS
@@ -135,3 +140,39 @@ if __name__ == "__main__":
     #
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
     #
+
+    """
+    T. Inicial Reinicios aleatorios (15 rep)
+    6.1566
+    T. Inicial temple simulado(15 rep)
+    7.859
+
+    10 Reinicios aleatorios con 50 reinas: 54s
+    10 reinicios aleatorios con 100 reinas: aprox 20 min
+    Es aceptable? puede que para mi no. Pero es muestra de que ira creciendo
+    muy muy rapido
+
+    Reinas  25      32       50     100
+    Tiempo  2s      6s      54s     20min
+
+    Temple simulado base(el que viene en el github del curso): 8s
+    Temple simulado con 10 * (max-min) :40s
+    Con 3 * (max-min): 15s
+    con 4: 19
+    Con tolerancia 0.0001: un chingo
+    con tolerancia 0.01: 1.5s y encontrando la solucion siempre
+    Con tol 0.1: 0.2s; casi nunca encuentra la solucion
+
+    2*len(estado_aleatorio()): <1s siempre encuentra sol
+
+    Reinas 100   200    250     300
+    Tiempo 14s   81s    156s    307s
+
+    Para llegar a los 20 min que llegamos de reinicios aleatorios, deberiamos
+    meter 400 reinas
+
+    El codigo de los calendarizadores los agregue en blocales.py para hacer
+    las pruebas mas comodamente
+
+
+    """

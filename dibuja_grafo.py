@@ -19,7 +19,7 @@ $pip install pillow
 
 """
 
-__author__ = 'Escribe aquí tu nombre'
+__author__ = 'Víctor Noriega'
 
 import blocales
 import random
@@ -92,13 +92,34 @@ class problema_grafica_grafo(blocales.Problema):
 
         @return: Una tupla con un estado vecino al estado de entrada.
 
-        """
+
         vecino = list(estado)
         i = random.randint(0, len(vecino) - 1)
         vecino[i] = max(10,
                         min(self.dim - 10,
                             vecino[i] + random.randint(-dmax,  dmax)))
+
         return tuple(vecino)
+        """
+
+        vecino = list(estado)
+        i = random.randint(0, len(vecino) - 1)
+         #Vamos a hacer que un estado vecino sea cambiar toda la dupla de un
+        #punto aleatorio.
+
+
+        if i % 2 is 0:
+            vecino[i] = max(10,
+                            min(self.dim -10, vecino[i] + random.randint(-dmax, dmax)))
+            vecino[i+1] = max(10,
+                            min(self.dim -10, vecino[i+1] + random.randint(-dmax, dmax)))
+        else:
+            vecino[i-1] = max(10,
+                            min(self.dim -10, vecino[i-1] + random.randint(-dmax, dmax)))
+            vecino[i] = max(10,
+                            min(self.dim -10, vecino[i] + random.randint(-dmax, dmax)))
+
+        return(tuple(vecino))
 
         #######################################################################
         #                          20 PUNTOS
@@ -107,6 +128,15 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # Propon una manera alternativa de vecino_aleatorio y muestra que
         # con tu propuesta se obtienen resultados mejores o en menor tiempo
+
+        """
+        Creo que al moverlo tanto en X como en Y a un punto en particular
+        explorara el area de manera mas rapida (o al menos eso coincide con
+        los tiempos que he obtenido). Ademas, le da mucha mas naturalidad
+        que sea un punto el que se mueva, en vez de una coordenada aleatoria
+        de un punto aleatorio. Es tan intuitivo que pense que asi estaba hecho
+        durante unos 2 minutos.
+        """
 
     def costo(self, estado):
         """
@@ -125,7 +155,7 @@ class problema_grafica_grafo(blocales.Problema):
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
         K1 = 1.0
-        K2 = 0.0
+        K2 = 1.0
         K3 = 0.0
         K4 = 0.0
 
