@@ -156,8 +156,8 @@ class problema_grafica_grafo(blocales.Problema):
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
         K1 = 1.0
-        K2 = 1.0
-        K3 = 0.0
+        K2 = 2.0
+        K3 = 1.5
         K4 = 0.0
 
         # Genera un diccionario con el estado y la posición
@@ -287,7 +287,7 @@ class problema_grafica_grafo(blocales.Problema):
         # lograr que el sistema realice gráficas "bonitas"
         #
         # ¿Que valores de diste a K1, K2 y K3 respectivamente?
-        #
+        # 1,2,1.5
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
@@ -296,24 +296,27 @@ class problema_grafica_grafo(blocales.Problema):
         # las variables a0,a1 y a2 representan los vertices
         # mientras que las variables v1,v2,v3 las coordenadas y los
         # l1,l2,l3 las dimensiones de aristas
+        penalizacion = 0
+
         for i,(a0,a1) in enumerate(self.aristas):
-            a2 = ""
+            a2lista = []
             for a,b in self.aristas:
                 if b is a1 and a is not a0:
-                    # Incompleto: solo busca uno de todos los siguientes vertices
-                    a2 = a
-                    break
+                    a2lista.append(a)
             # En este punto tengo tres vertices conectados a traves de aristas.
-            if a2 is not "":
-                v0, v1, v2 = estado_dic.get(a0), estado_dic.get(a1), estado_dic.get(a2)
-                lado0 = np.sqrt(np.power((v1[0]-v0[0]),2) + np.power((v1[1] - v0[1]),2))
-                lado1 = np.sqrt(np.power((v2[0]-v1[0]),2) + np.power((v2[1] - v1[1]),2))
-                lado2 = np.sqrt(np.power((v2[0]-v0[0]),2) + np.power((v2[1] - v0[1]),2))
+            if len(a2lista) != 0:
 
-                angulo = np.rad2deg(np.arccos((np.power(lado0,2) + np.power(lado1,2) - np.power(lado2,2))/(2*lado0*lado1)))
+                for a2 in a2lista:
+                    v0, v1, v2 = estado_dic.get(a0), estado_dic.get(a1), estado_dic.get(a2)
+                    lado0 = np.sqrt(np.power((v1[0]-v0[0]),2) + np.power((v1[1] - v0[1]),2))
+                    lado1 = np.sqrt(np.power((v2[0]-v1[0]),2) + np.power((v2[1] - v1[1]),2))
+                    lado2 = np.sqrt(np.power((v2[0]-v0[0]),2) + np.power((v2[1] - v0[1]),2))
 
+                    angulo = np.rad2deg(np.arccos((np.power(lado0,2) + np.power(lado1,2) - np.power(lado2,2))/(2*lado0*lado1)))
+                    if angulo <= 30:
+                        penalizacion += (1 / (angulo/10))
 
-        return 0
+        return penalizacion
 
     def criterio_propio(self, estado_dic):
         """
