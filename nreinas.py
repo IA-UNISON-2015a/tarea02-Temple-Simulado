@@ -111,9 +111,6 @@ def prueba_temple_simulado(problema=ProblemaNreinas(8)):
 
 if __name__ == "__main__":
 
-    prueba_descenso_colinas(ProblemaNreinas(32), 10)
-    prueba_temple_simulado(ProblemaNreinas(32))
-
     ##########################################################################
     #                          20 PUNTOS
     ##########################################################################
@@ -135,3 +132,9 @@ if __name__ == "__main__":
     #
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
     #
+    # Pruebas originales propuesta por Julio Waissman
+    #prueba_descenso_colinas(ProblemaNreinas(32), 10)
+    #prueba_temple_simulado(ProblemaNreinas(32))
+
+    calendarizador_1 = 1
+    calendarizador_2 = 0.1
