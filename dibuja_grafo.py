@@ -19,13 +19,15 @@ $pip install pillow
 
 """
 
-__author__ = 'Escribe aquí tu nombre'
+__author__ = 'Fabian Encinas Silvas'
 
 import blocales
 import random
 import itertools
 import math
 import time
+from math import log
+from math import exp
 from PIL import Image, ImageDraw
 
 
@@ -93,12 +95,13 @@ class problema_grafica_grafo(blocales.Problema):
         @return: Una tupla con un estado vecino al estado de entrada.
 
         """
-        vecino = list(estado)
-        i = random.randint(0, len(vecino) - 1)
-        vecino[i] = max(10,
-                        min(self.dim - 10,
-                            vecino[i] + random.randint(-dmax,  dmax)))
-        return tuple(vecino)
+        # vecino = list(estado)
+        # i = random.randint(0, len(vecino) - 1)
+        # vecino[i] = max(10,
+        #                 min(self.dim - 10,
+        #                     vecino[i] + random.randint(-dmax,  dmax)))
+
+        
 
         #######################################################################
         #                          20 PUNTOS
@@ -107,6 +110,19 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # Propon una manera alternativa de vecino_aleatorio y muestra que
         # con tu propuesta se obtienen resultados mejores o en menor tiempo
+        
+        vecino = list(estado)
+        i = random.randint(0, len(vecino) - 1)
+        vecino[i] = max(10, min(self.dim - 10, vecino[i] + 
+                                    int(random.randint(-1, 1)*dmax) if dmax else int(random.randint(-1, 1))))
+        if i%2 == 0:
+            vecino[i+1] = max(10, min(self.dim - 10, vecino[i+1] + 
+                                int(random.randint(-1, 1)*dmax) if dmax else int(random.randint(-1, 1))))
+        else:
+            vecino[i-1] = max(10, min(self.dim - 10, vecino[i-1] +
+                             int(random.randint(-1, 1)*dmax) if dmax else int(random.randint(-1, 1))))
+        
+        return tuple(vecino)
 
     def costo(self, estado):
         """
@@ -124,10 +140,11 @@ class problema_grafica_grafo(blocales.Problema):
 
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
-        K1 = 1.0
-        K2 = 0.0
-        K3 = 0.0
-        K4 = 0.0
+        
+        K1 = 1.0 
+        K2 = 2.0 
+        K3 = 3.0 
+        K4 = 2.5 
 
         # Genera un diccionario con el estado y la posición
         estado_dic = self.estado2dic(estado)
@@ -256,11 +273,37 @@ class problema_grafica_grafo(blocales.Problema):
         # lograr que el sistema realice gráficas "bonitas"
         #
         # ¿Que valores de diste a K1, K2 y K3 respectivamente?
-        #
+        #K1 = 1.0 K2 = 2.0 k3=3.0  
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+        
+        total = 0
+        anguloMininmo = 25
+        for x in self.vertices:
+            #Aqui se encuentran las aristas del vertice
+            aristas = [a for a in self.aristas if x in a]
+
+            for arista1, arista2 in itertools.combinations(aristas,2):
+                XA1, YA1 = estado_dic[arista1[0]]
+                XB1, YB1 = estado_dic[arista1[1]]
+                XA2, YA2 = estado_dic[arista2[0]]
+                XB2, YB2 = estado_dic[arista2[1]]
+
+                try:
+
+                    m1 = (YB1 - YA1)/(XB1 - XA1)
+                    m2 = (YB2 - YA2)/(XB2 - XA2)
+                    angulo = (math.degrees(abs(math.atan(((m2-m1)/(1+(m1*m2)))))))
+
+                    if angulo < anguloMininmo: total+= 1-(angulo/anguloMininmo)
+
+                except ZeroDivisionError: #opcion de cambiar
+                    pass
+
+        return total
+        
+
 
     def criterio_propio(self, estado_dic):
         """
@@ -286,8 +329,35 @@ class problema_grafica_grafo(blocales.Problema):
         #
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
-        #
-        return 0
+        #Con este criterio, se trata de que el grafo se "abra" lo mas que pueda para que asi
+        #sus aristas ni sus nodos esten juntos 
+        costo=0
+        x1=700 # menor
+        x2=0 # mayor
+        y1=700
+        y2=0
+        for v1 in self.vertices:
+            c=estado_dic[v1]
+            if c[0]<x1:
+                x1=c[0]
+            elif c[0]>x2:
+                x2=c[0]
+            elif c[1]<y1:
+                y1=c[0]
+            elif c[1]>y2:
+                y2=c[0]
+                
+        if x2<(self.dim*.8):
+            costo = costo+1
+        elif x1>(self.dim-(self.dim*.8)):
+            costo = costo+1
+        elif y2<(self.dim*.8):
+            costo = costo+1
+        elif y1>(self.dim-(self.dim*.8)):
+            costo = costo + 1
+        
+        return costo
+        
 
     def estado2dic(self, estado):
         """
@@ -332,6 +402,23 @@ class problema_grafica_grafo(blocales.Problema):
 
         imagen.save(filename)
 
+def calendarizadorLogarit(problema):
+
+    costo = [problema.costo(problema.estado_aleatorio()) for _ in range(len(problema.estado_aleatorio()))]
+    costo_minimo = min(costo)
+    costo_maximo = max(costo)
+    T_inicial = 3*(costo_maximo - costo_minimo)
+    return (T_inicial/(1 + i*log(i)) for i in range(1,int(1e16)+1))
+
+
+def calendarizadorExponencial(problema):
+
+    costo = [problema.costo(problema.estado_aleatorio()) for _ in range(10 * len(problema.estado_aleatorio()))]
+    costo_minimo= min(costo)
+    costo_maximo = max(costo)
+    T_inicial = 3*(costo_maximo - costo_minimo)
+
+    return (T_inicial*exp(-0.0010*i) for i in range(1,int(1e16)+1))
 
 def main():
     """
@@ -376,6 +463,9 @@ def main():
     print("Costo de la solución encontrada: {}".format(costo_final))
     print("Tiempo de ejecución en segundos: {}".format(t_final - t_inicial))
 
+   
+
+
     ##########################################################################
     #                          20 PUNTOS
     ##########################################################################
@@ -397,7 +487,28 @@ def main():
     #
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
     #
+ #usando el logaritmico
 
+    t_inicial = time.time()
+    solucion = blocales.temple_simulado(grafo_sencillo,calendarizadorLogarit(grafo_sencillo))
+    t_final = time.time()
+    costo_final = grafo_sencillo.costo(solucion)
+    
+    grafo_sencillo.dibuja_grafo(solucion, "prueba_logarit.gif")
+    print("\nUtilizando la calendarización por default")
+    print("Costo de la solución encontrada: {}".format(costo_final))
+
+    #usando el exponencial
+
+    t_inicial = time.time()
+    solucion = blocales.temple_simulado(grafo_sencillo,calendarizadorExponencial(grafo_sencillo))
+    t_final = time.time()
+    costo_final = grafo_sencillo.costo(solucion)
+    grafo_sencillo.dibuja_grafo(solucion, "prueba_exp.gif")
+
+    print("\nUtilizando la calendarización por default")
+    print("Costo de la solución encontrada: {}".format(costo_final))
+    print("Tiempo de ejecución en segundos: {}".format(t_final - t_inicial))
 
 if __name__ == '__main__':
     main()

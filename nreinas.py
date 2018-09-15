@@ -14,6 +14,7 @@ __author__ = 'juliowaissman'
 import blocales
 from random import shuffle
 from random import sample
+import time
 from itertools import combinations
 
 
@@ -120,11 +121,15 @@ if __name__ == "__main__":
     #
     # ¿Cual es el máximo número de reinas que se puede resolver en
     # tiempo aceptable con el método de 10 reinicios aleatorios?
+    # en mi caso el numero que resuelve en tiempo aceptable es de 64
+    #  con 100 reinas me tarda mas de 2 minutos
     #
     # ¿Que valores para ajustar el temple simulado son los que mejor
     # resultado dan? ¿Cual es el mejor ajuste para el temple simulado
     # y hasta cuantas reinas puede resolver en un tiempo aceptable?
     #
+
+    # 
     # En general para obtener mejores resultados del temple simulado,
     # es necesario probar diferentes metdos de
     # calendarización, prueba al menos otros dos métodos sencillos de
@@ -133,6 +138,8 @@ if __name__ == "__main__":
     #
     # Escribe aqui tus conclusiones
     #
+    # En mi funcion de calendarizar 10 la variable i avanza 28 unidades y con este ajuste encuentra la solucion 
+    # mas rapido y con menos costo(ataques).
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
     #
    
@@ -153,9 +160,114 @@ if __name__ == "__main__":
 
 
         return calendarizador
-    
-    for i in range(1,10-1):
-        prueba_temple_simulado(ProblemaNreinas(16),calendarizar(ProblemaNreinas(16)))
+        
+    def calendarizar2(problema):
+        costos =[problema.costo(problema.estado_aleatorio())
+            for _ in range( 10*len(problema.estado_aleatorio()) )]
+        minimo= min(costos)
+        maximo= max(costos)
+        
+        
+        Ti = 2*(maximo-minimo)
+        calendarizador = (Ti/i for i in range(1, int(1e6), 2)) #generador de una lista desde 1 a un millon
+        return calendarizador
+
+    def calendarizar3(problema):
+        costos =[problema.costo(problema.estado_aleatorio())
+            for _ in range( 10*len(problema.estado_aleatorio()) )]
+        minimo= min(costos)
+        maximo= max(costos)
+        
+        
+        Ti = 2*(maximo-minimo)
+        calendarizador = (Ti/i for i in range(1, int(1e6), 5)) #generador de una lista desde 1 a un millon
+        return calendarizador
+        
+    def calendarizar4(problema):
+        costos =[problema.costo(problema.estado_aleatorio())
+            for _ in range( 10*len(problema.estado_aleatorio()) )]
+        minimo= min(costos)
+        maximo= max(costos)
+        
+        
+        Ti = 2*(maximo-minimo)
+        calendarizador = (Ti/i for i in range(1, int(1e6), 7)) #generador de una lista desde 1 a un millon
+        return calendarizador
+
+    def calendarizar5(problema):
+        costos =[problema.costo(problema.estado_aleatorio())
+            for _ in range( 10*len(problema.estado_aleatorio()) )]
+        minimo= min(costos)
+        maximo= max(costos)
+        
+        
+        Ti = 2*(maximo-minimo)
+        calendarizador = (Ti/i for i in range(1, int(1e6), 10)) #generador de una lista desde 1 a un millon
+        return calendarizador
+
+    def calendarizar6(problema):
+        costos =[problema.costo(problema.estado_aleatorio())
+            for _ in range( 10*len(problema.estado_aleatorio()) )]
+        minimo= min(costos)
+        maximo= max(costos)
+        
+        
+        Ti = 2*(maximo-minimo)
+        calendarizador = (Ti/i for i in range(1, int(1e6), 13)) #generador de una lista desde 1 a un millon
+        return calendarizador
+
     
 
+    def calendarizar7(problema):
+        costos =[problema.costo(problema.estado_aleatorio())
+            for _ in range( 10*len(problema.estado_aleatorio()) )]
+        minimo= min(costos)
+        maximo= max(costos)
+        
+        
+        Ti = 2*(maximo-minimo)
+        calendarizador = (Ti/i for i in range(1, int(1e6), 18)) #generador de una lista desde 1 a un millon
+        return calendarizador
+
+    def calendarizar8(problema):
+        costos =[problema.costo(problema.estado_aleatorio())
+            for _ in range( 10*len(problema.estado_aleatorio()) )]
+        minimo= min(costos)
+        maximo= max(costos)
+        
+        
+        Ti = 2*(maximo-minimo)
+        calendarizador = (Ti/i for i in range(1, int(1e6), 20)) #generador de una lista desde 1 a un millon
+        return calendarizador
+
+    def calendarizar9(problema):
+        costos =[problema.costo(problema.estado_aleatorio())
+            for _ in range( 10*len(problema.estado_aleatorio()) )]
+        minimo= min(costos)
+        maximo= max(costos)
+        
+        
+        Ti = 2*(maximo-minimo)
+        calendarizador = (Ti/i for i in range(1, int(1e6), 25)) #generador de una lista desde 1 a un millon
+        return calendarizador
+
+    def calendarizar10(problema):
+        costos =[problema.costo(problema.estado_aleatorio())
+            for _ in range( 10*len(problema.estado_aleatorio()) )]
+        minimo= min(costos)
+        maximo= max(costos)
+        
+        
+        Ti = 2*(maximo-minimo)
+        calendarizador = (Ti/i for i in range(1, int(1e6), 28)) #generador de una lista desde 1 a un millon
+        return calendarizador
+
+
+    for i in range(1,10-1):
+        prueba_temple_simulado(ProblemaNreinas(16),calendarizar10(ProblemaNreinas(16)))
+    
+
+    # prueba_descenso_colinas(ProblemaNreinas(64), 10)
+
+    
     
