@@ -93,12 +93,13 @@ class problema_grafica_grafo(blocales.Problema):
         @return: Una tupla con un estado vecino al estado de entrada.
 
         """
-        """ Mal vecino aleatorio """
+        """ Mal vecino aleatorio
         vecino = list(estado)
         i = random.randint(0, len(vecino) - 1)
         vecino[i] = max(10,
                         min(self.dim - 10,
                             vecino[i] + random.randint(-dmax,  dmax)))
+        #print(tuple(vecino))
         return tuple(vecino)
         """
         #######################################################################
@@ -108,11 +109,28 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # Propon una manera alternativa de vecino_aleatorio y muestra que
         # con tu propuesta se obtienen resultados mejores o en menor tiempo
+        """
+        Con el nuevo vecino implementado veeo que el grafo es mas legible, mas bonito, pero
+        las aristas llegan a ser muy largas deformandolo
+        """
 
         # VECINO ALEATORIO
+
         vecino = list(estado)
-        i = random.randint(0)
-        """
+        #   volvemos a generar un vecino aleatorio en x,y
+        i = random.randint(0, len(vecino) - 1)
+        #
+        if i%2 == 0:
+            # cayo en un vertice en la componente x el valor de i
+            vecino[i]=random.randint(10, self.dim - 10)
+            vecino[i+1]=random.randint(10, self.dim - 10)
+        else:
+            # cayo en la componente y
+            vecino[i]=random.randint(10, self.dim - 10)
+            vecino[i-1]=random.randint(10, self.dim - 10)
+
+        return tuple(vecino)
+
     def costo(self, estado):
         """
         Encuentra el costo de un estado. En principio el costo de un estado
@@ -129,10 +147,10 @@ class problema_grafica_grafo(blocales.Problema):
 
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
-        K1 = 1.0
-        K2 = 0.0
-        K3 = 0.0
-        K4 = 0.0
+        K1 = 1.0    # cruce de lineas
+        K2 = 3.0    # separacion de vertices
+        K3 = 2.0    # angulo
+        K4 = 0.0    # crierio propio ( * )
 
         # Genera un diccionario con el estado y la posición
         estado_dic = self.estado2dic(estado)
@@ -217,12 +235,12 @@ class problema_grafica_grafo(blocales.Problema):
         min_dist, entonces calcula una penalización proporcional a
         esta.
 
-        @param estado_dic: Diccionario cuyas llaves son los vértices
-                           del grafo y cuyos valores es una tupla con
-                           la posición (x, y) de ese vértice en el
-                           dibujo.  @param min_dist: Mínima distancia
-                           aceptable en pixeles entre dos vértices en
-                           el dibujo.
+        @param estado_dic:  Diccionario cuyas llaves son los vértices
+                            del grafo y cuyos valores es una tupla con
+                            la posición (x, y) de ese vértice en el
+                            dibujo.
+        @param min_dist:    Mínima distancia aceptable en pixeles entre
+                            dos vértices en el dibujo.
 
         @return: Un número.
 
