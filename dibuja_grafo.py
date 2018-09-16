@@ -339,6 +339,9 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
+        def longitud(puntoA, puntoB):
+            print(estado_dic)
+
         return 0
 
     def estado2dic(self, estado):
