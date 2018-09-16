@@ -19,7 +19,7 @@ $pip install pillow
 
 """
 
-__author__ = 'Escribe aquí tu nombre'
+__author__ = 'Gilberto Espinoza'
 
 import blocales
 import random
@@ -93,13 +93,14 @@ class problema_grafica_grafo(blocales.Problema):
         @return: Una tupla con un estado vecino al estado de entrada.
 
         """
+        """ Mal vecino aleatorio """
         vecino = list(estado)
         i = random.randint(0, len(vecino) - 1)
         vecino[i] = max(10,
                         min(self.dim - 10,
                             vecino[i] + random.randint(-dmax,  dmax)))
         return tuple(vecino)
-
+        """
         #######################################################################
         #                          20 PUNTOS
         #######################################################################
@@ -108,6 +109,10 @@ class problema_grafica_grafo(blocales.Problema):
         # Propon una manera alternativa de vecino_aleatorio y muestra que
         # con tu propuesta se obtienen resultados mejores o en menor tiempo
 
+        # VECINO ALEATORIO
+        vecino = list(estado)
+        i = random.randint(0)
+        """
     def costo(self, estado):
         """
         Encuentra el costo de un estado. En principio el costo de un estado
@@ -187,6 +192,7 @@ class problema_grafica_grafo(blocales.Problema):
             # asegurarse que las lineas no son paralelas (para evitar
             # la división por cero)
             den = (xFA - x0A) * (yFB - y0B) - (xFB - x0B) * (yFA - y0A)
+            #print("den: {}".format(den))
             if den == 0:
                 continue
 
@@ -260,7 +266,35 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+        total = 0
+
+        # Por cada arista en relacion a las otras (todas las combinaciones de
+        # aristas)
+        for (aristaA, aristaB) in itertools.combinations(self.aristas, 2):
+
+            # Encuentra los valores de (x0A,y0A), (xFA, yFA) para los
+            # vertices de una arista y los valores (x0B,y0B), (x0B,
+            # y0B) para los vertices de la otra arista
+            (x0A, y0A) = estado_dic[aristaA[0]]
+            (xFA, yFA) = estado_dic[aristaA[1]]
+            (x0B, y0B) = estado_dic[aristaB[0]]
+            (xFB, yFB) = estado_dic[aristaB[1]]
+
+            try:
+                m1=(yFA-y0A)/(xFA-x0A)
+                m2=(yFB-y0B)/(xFB-x0B)
+                # calculamos el angulo dadas las pendientes
+                # https://www.geogebra.org/m/XZTG9k65
+                angulo=(math.degrees(abs(math.atan(((m2-m1)/(1+(m1*m2)))))))
+                #print(angulo)
+                if(angulo < 30):
+                    # entre mas cercano a 1 mayor el costo
+                    total += 1-((angulo)/30)
+            # buena practica encontrada en internet
+            except ZeroDivisionError:
+                pass
+
+        return total
 
     def criterio_propio(self, estado_dic):
         """
