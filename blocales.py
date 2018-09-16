@@ -149,6 +149,14 @@ def temple_simulado(problema, calendarizador=None, tol=0.01):
         rapido que 1, pero no me asegura tanto el optimo (1 de cada 8 no lo
         hace)
         """
+    elif calendarizador is "5":
+        costos = [problema.costo(problema.estado_aleatorio())
+                  for _ in range(2 * len(problema.estado_aleatorio()))]
+        minimo,  maximo = min(costos), max(costos)
+        T_ini =  2 * (maximo - minimo)
+        calendarizador = (T_ini*np.exp(0.99**i)/(0.5 * i) for i in range(1,int(1e10)))
+
+        
 
     """
     Los parametros no son suficientes para arreglar significativamente

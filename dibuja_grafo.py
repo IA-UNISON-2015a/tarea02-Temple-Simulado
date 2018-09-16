@@ -237,7 +237,7 @@ class problema_grafica_grafo(blocales.Problema):
                 total += 1
         return total
 
-    def separacion_vertices(self, estado_dic, min_dist=150):
+    def separacion_vertices(self, estado_dic, min_dist=120):
         """
         A partir de una posicion "estado" devuelve una penalización
         proporcional a cada par de vertices que se encuentren menos
@@ -349,8 +349,9 @@ class problema_grafica_grafo(blocales.Problema):
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
         """
-        El criterio sera que las pendientes de las rectas
-        de aristas que no compartan vertices sean lo mas parecidas posibles
+        El criterio sera que las pendientes de las rectas que se forman
+        de un vertice de una arista al vertice de otra
+        arista que no compartan vertices sean lo mas parecidas posibles
         """
 
         total = 0
@@ -489,7 +490,7 @@ def main():
 
     # Ahora vamos a encontrar donde deben de estar los puntos
     t_inicial = time.time()
-    solucion = blocales.temple_simulado(grafo_sencillo)
+    solucion = blocales.temple_simulado(grafo_sencillo, "5")
     t_final = time.time()
     costo_final = grafo_sencillo.costo(solucion)
 
@@ -519,6 +520,27 @@ def main():
     #
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
     #
+    """
+    Creo que el mejor temple simulado va a ser el que tenga el mismo calenda-
+    rizador lineal original pero con un coeficiente mas grande.
+    Esto con las nreinas disminuia la proporcion de las veces en las que
+    se llegaba a un optimo global. Pero en este caso los tiempos suelen ser
+    muy altos, asi que preferiria reducir los tiempos tanto posible. Esto
+    me ha dado buenos resultados.
+
+
+    AGREGADO EL 5TO CALENDARIZADOR. Igual de rapido que el 4to, quiza a veces
+    mas lento, pero definitivamente el mejor para mi caso en encontrar
+    muy buenas soluciones. No siempre encuentro un costo 0, pero encuentro
+    graficas muy bonitas :)
+
+    NO ENCONTRE NINGUN CALENDARIZADOR O "CONFIGURATION" EN LA LITERATURA
+    ADECUADOS PARA ESTA MADRE, EL MAS CERCANO ES EL 5TO PERO NO ESTA MUY BIEN
+    EXPLICADO
+    """
+
+
+
 
 
 if __name__ == '__main__':
