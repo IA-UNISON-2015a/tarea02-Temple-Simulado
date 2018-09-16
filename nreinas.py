@@ -123,7 +123,7 @@ if __name__ == "__main__":
     #   8 reinas 8.93ms
     #   32 reinas 5.02
     #   64 reinas 3m 17s
-    #   100 reinas
+    #   100 reinas 1 loop, best of 3: 26min 3s per loop
     #
     # ¿Que valores para ajustar el temple simulado son los que mejor
     # resultado dan? ¿Cual es el mejor ajuste para el temple simulado
@@ -131,7 +131,7 @@ if __name__ == "__main__":
     #   Los valores del temple simulado cambian con los calendizadores propuestos,
     #   se manejo dos bastantes sencillos con los que se nota una mayor respuesta
     #   Algunos proponen calendizadores exponenciales, pero estos deben ser configurados
-    #   
+    #
     #
     # En general para obtener mejores resultados del temple simulado,
     # es necesario probar diferentes metdos de
