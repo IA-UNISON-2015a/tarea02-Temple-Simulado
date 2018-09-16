@@ -482,23 +482,35 @@ def main():
     # menor tiempo posible.
     #
     # Escribe aqui tus conclusiones
+    """ Salidad de la calendarización
+    Costo del estado aleatorio: 29.9707733174632
+
+    Utilizando la calendarización por default
+    Costo de la solución encontrada: 1.6522095809127912
+    Tiempo de ejecución en segundos: 11.915760278701782
+    Calendarizacion propia
+
+    Utilizando la calendarización propia
+    Costo de la solución encontrada: 0.0
+    Tiempo de ejecución en segundos: 1634.9749228954315
+
+    El resultado sigue siendo estetico, la calendarización por default funciona bien. 
+    """
     #
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
     #
     # Ahora vamos a encontrar donde deben de estar los puntos
     print("Calendarizacion propia")
 
-    def calendarizadorExp(K=100,delta=.001):
-        calendarizador = (K*(math.exp(-delta*i)) for i in range(10)
-        return calendarizador
-
     def calendarizador():
         costos = [grafo_sencillo.costo(grafo_sencillo.estado_aleatorio())
-                  for _ in range(10 * len(grafo_sencillo.estado_aleatorio()))]
-        minimo,  maximo = min(costos), max(costos)
+                    for _ in range(10 * len(grafo_sencillo.estado_aleatorio()))]
+                    # aumentamos la cantidad de costos generados
+        minimo, maximo = min(costos), max(costos)
         t_inicial = 2 * (maximo - minimo)
-        #return (t_inicial * (0.9 * i) for i in range(1, int(1e10)))
-        return (t_inicial * (0.9 * i) for i in range(1, 100))
+
+        # generadores
+        return (t_inicial / (0.01 * i) for i in range(1, int(1e10)))
 
     t_inicial = time.time()
     solucion = blocales.temple_simulado(grafo_sencillo,calendarizador())
