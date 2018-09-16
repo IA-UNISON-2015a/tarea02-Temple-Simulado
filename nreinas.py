@@ -117,16 +117,31 @@ if __name__ == "__main__":
     #
     # ¿Cual es el máximo número de reinas que se puede resolver en
     # tiempo aceptable con el método de 10 reinicios aleatorios?
+    #   Se realizaron varias pruebas con este metodo, personalmente escojo una cantidad de 64
+    #   64 reinas, cuyo resultado 1 loop, best of 3: 3min 17s per loop. Este tiempo lo considero
+    #   alto para una cantidad moderada de reinas. Descenso de colinas es lento, pero funciona
+    #   8 reinas 8.93ms
+    #   32 reinas 5.02
+    #   64 reinas 3m 17s
+    #   100 reinas
     #
     # ¿Que valores para ajustar el temple simulado son los que mejor
     # resultado dan? ¿Cual es el mejor ajuste para el temple simulado
     # y hasta cuantas reinas puede resolver en un tiempo aceptable?
+    #   Los valores del temple simulado cambian con los calendizadores propuestos,
+    #   se manejo dos bastantes sencillos con los que se nota una mayor respuesta
+    #   Algunos proponen calendizadores exponenciales, pero estos deben ser configurados
+    #   
     #
     # En general para obtener mejores resultados del temple simulado,
     # es necesario probar diferentes metdos de
     # calendarización, prueba al menos otros dos métodos sencillos de
     # calendarización y ajusta los parámetros para que funcionen de la
     # mejor manera
+    #   Propusimos dos calendarizaciones dado que un tiende a 1 y la otra 0, la que tiende a
+    #   uno funciona de forma mas rapida, llegando al resultado en una visible diferencia de los
+    #   tiempos.
+    #
     #
     # Escribe aqui tus conclusiones
     #
@@ -136,5 +151,24 @@ if __name__ == "__main__":
     #prueba_descenso_colinas(ProblemaNreinas(32), 10)
     #prueba_temple_simulado(ProblemaNreinas(32))
 
-    calendarizador_1 = 1
-    calendarizador_2 = 0.1
+    n = 64 # cantidad de reinas a resolver
+
+    problema_reinas = ProblemaNreinas(n)
+
+    prueba_temple_simulado(problema_reinas)
+
+    costos = [problema_reinas.costo(problema_reinas.estado_aleatorio())
+                for _ in range(10 * len(problema_reinas.estado_aleatorio()))]
+                # aumentamos la cantidad de costos generados
+    minimo, maximo = min(costos), max(costos)
+    t_inicial = 2 * (maximo - minimo)
+
+    # generadores
+    cal_1 = (t_inicial / (0.01 * i) for i in range(1, int(1e10)))
+    cal_2 = (t_inicial * (0.9 * i) for i in range(1, int(1e10)))
+
+    for cal in (cal_1, cal_2):
+        resultado = blocales.temple_simulado(problema_reinas, cal)
+        print("Costo del resultado: ", problema_reinas.costo(resultado))
+        print("Resultado: ")
+        print(resultado)
