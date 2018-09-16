@@ -150,11 +150,11 @@ class problema_grafica_grafo(blocales.Problema):
         K1 = 1.0    # cruce de lineas
         K2 = 3.0    # separacion de vertices
         K3 = 2.0    # angulo
-        K4 = 0.0    # crierio propio ( * )
+        K4 = 1.0    # crierio propio ( longitud aristas )
 
         # Genera un diccionario con el estado y la posición
         estado_dic = self.estado2dic(estado)
-
+        #print(estado_dic)
         return (K1 * self.numero_de_cruces(estado_dic) +
                 K2 * self.separacion_vertices(estado_dic) +
                 K3 * self.angulo_aristas(estado_dic) +
@@ -280,7 +280,10 @@ class problema_grafica_grafo(blocales.Problema):
         # lograr que el sistema realice gráficas "bonitas"
         #
         # ¿Que valores de diste a K1, K2 y K3 respectivamente?
-        #
+        #   1, 3, 2. Considere estos pesos por que un cruce de lineas, si es uno o dos,
+        #   el grafo sigue siendo estetico. cada vertice debe tener su espacio, por eso
+        #   es el que tiene mayor peso. y por ultimo el angulo, porque angulos abajo de 30
+        #    llegan a ser dificl de apreciar, no son esteticos
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
@@ -331,18 +334,41 @@ class problema_grafica_grafo(blocales.Problema):
         #                          20 PUNTOS
         #######################################################################
         # ¿Crees que hubiera sido bueno incluir otro criterio? ¿Cual?
-        #
+        #   Considere que las aristas no tenian control, algunas veces el algoritmo
+        #   mandaba a las esquinas los vertices, deformando el grafo en algo muy amplio
+
         # Desarrolla un criterio propio y ajusta su importancia en el
         # costo total con K4 ¿Mejora el resultado? ¿En que mejora el
         # resultado final?
-        #
+        #   Distancia entre los puntos, mejora el resultado dado que el grafo es mas condesado,
+        #    entonces los demas parametros deben ser satisfacidos en un espacio mas pequeño
+        #   lo que da a lugar un mejor desempeño del temple simulado
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
+        total = 0
         def longitud(puntoA, puntoB):
-            print(estado_dic)
+            (x0A, y0A) = puntoA
+            (xFA, yFA) = puntoB
+            # pitagoras
+            return math.sqrt((xFA-x0A)**2+((yFA-y0A)**2))
 
-        return 0
+        for (arista) in self.aristas:
+            puntoA = estado_dic[arista[0]]
+            puntoB = estado_dic[arista[1]]
+            d = longitud(puntoA,puntoB)
+            # que es una arista larga?
+            # penalizamos tanto como una arista este larga o muy corta
+            #
+            # rango de longitudes "bonitas"
+            longitud_max, longitud_min = 150, 50
+
+            if(d < longitud_min):
+                total += 1 - d/longitud_min
+            elif(d > longitud_max):
+                total += 1 - longitud_max/d
+
+        return total
 
     def estado2dic(self, estado):
         """
@@ -436,8 +462,15 @@ def main():
     ##########################################################################
     # ¿Que valores para ajustar el temple simulado son los que mejor
     # resultado dan?
+    #   la celnderizacion por default me da buenos resultados, dado un grafo aceptable
+    #   en un tiempo bastante corot ~20 segundos, un buen manejo de las restricciones
+    #   da como resultado que el calendarizador no importe tanto
     #
     # ¿Que encuentras en los resultados?, ¿Cual es el criterio mas importante?
+    #   Considero que el criterio mas importante son los valores K1,K2,K3,K4 porque
+    #   la solucion consiste de ellos, los grafos son afectados seriamente por estos valores
+    #   y mas que su costo en si, importa la relacion entre ellos, que caracteristicas consideras
+    #   mas "bonita". El conjunto de belleza es mas bello que sus partes.
     #
     # En general para obtener mejores resultados del temple simulado,
     # es necesario utilizar una función de calendarización acorde con
@@ -452,7 +485,30 @@ def main():
     #
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
     #
+    # Ahora vamos a encontrar donde deben de estar los puntos
+    print("Calendarizacion propia")
 
+    def calendarizadorExp(K=100,delta=.001):
+        calendarizador = (K*(math.exp(-delta*i)) for i in range(10)
+        return calendarizador
+
+    def calendarizador():
+        costos = [grafo_sencillo.costo(grafo_sencillo.estado_aleatorio())
+                  for _ in range(10 * len(grafo_sencillo.estado_aleatorio()))]
+        minimo,  maximo = min(costos), max(costos)
+        t_inicial = 2 * (maximo - minimo)
+        #return (t_inicial * (0.9 * i) for i in range(1, int(1e10)))
+        return (t_inicial * (0.9 * i) for i in range(1, 100))
+
+    t_inicial = time.time()
+    solucion = blocales.temple_simulado(grafo_sencillo,calendarizador())
+    t_final = time.time()
+    costo_final = grafo_sencillo.costo(solucion)
+
+    grafo_sencillo.dibuja_grafo(solucion, "prueba_final_nuevoCal.gif")
+    print("\nUtilizando la calendarización propia")
+    print("Costo de la solución encontrada: {}".format(costo_final))
+    print("Tiempo de ejecución en segundos: {}".format(t_final - t_inicial))
 
 if __name__ == '__main__':
     main()
