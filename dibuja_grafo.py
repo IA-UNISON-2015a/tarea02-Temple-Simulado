@@ -155,18 +155,21 @@ class problema_grafica_grafo(blocales.Problema):
 
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
-        K1 = 1.0
+        K1 = 0.0
         K2 = 2.0
-        K3 = 1.5
-        K4 = 0.0
+        K3 = 1.0
+        K4 = 1.0
 
         # Genera un diccionario con el estado y la posición
         estado_dic = self.estado2dic(estado)
 
-        return (K1 * self.numero_de_cruces(estado_dic) +
-                K2 * self.separacion_vertices(estado_dic) +
+        #return (K1 * self.numero_de_cruces(estado_dic) +
+        #        K2 * self.separacion_vertices(estado_dic) +
+        #        K3 * self.angulo_aristas(estado_dic) +
+        #
+        return (K4 * self.criterio_propio(estado_dic) +
                 K3 * self.angulo_aristas(estado_dic) +
-                K4 * self.criterio_propio(estado_dic))
+                K2 * self.separacion_vertices(estado_dic))
 
         # Como podras ver en los resultados, el costo inicial
         # propuesto no hace figuras particularmente bonitas, y esto es
@@ -234,7 +237,7 @@ class problema_grafica_grafo(blocales.Problema):
                 total += 1
         return total
 
-    def separacion_vertices(self, estado_dic, min_dist=50):
+    def separacion_vertices(self, estado_dic, min_dist=150):
         """
         A partir de una posicion "estado" devuelve una penalización
         proporcional a cada par de vertices que se encuentren menos
@@ -287,7 +290,7 @@ class problema_grafica_grafo(blocales.Problema):
         # lograr que el sistema realice gráficas "bonitas"
         #
         # ¿Que valores de diste a K1, K2 y K3 respectivamente?
-        # 1,2,1.5
+        #
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
@@ -298,7 +301,7 @@ class problema_grafica_grafo(blocales.Problema):
         # l1,l2,l3 las dimensiones de aristas
         penalizacion = 0
 
-        for i,(a0,a1) in enumerate(self.aristas):
+        for (a0,a1) in self.aristas:
             a2lista = []
             for a,b in self.aristas:
                 if b is a1 and a is not a0:
@@ -313,9 +316,11 @@ class problema_grafica_grafo(blocales.Problema):
                     lado2 = np.sqrt(np.power((v2[0]-v0[0]),2) + np.power((v2[1] - v0[1]),2))
 
                     angulo = np.rad2deg(np.arccos((np.power(lado0,2) + np.power(lado1,2) - np.power(lado2,2))/(2*lado0*lado1)))
-                    if angulo <= 30:
+                    # Perdon pero 30 grados no cubre mi estandar de bonito
+                    if angulo <= 50 and angulo != 0:
                         penalizacion += (1 / (angulo/10))
-
+                    elif angulo == 0:
+                        penalizacion += 10
         return penalizacion
 
     def criterio_propio(self, estado_dic):
@@ -343,7 +348,68 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+        """
+        El criterio sera que las pendientes de las rectas
+        de aristas que no compartan vertices sean lo mas parecidas posibles
+        """
+
+        total = 0
+        for (aristaA, aristaB) in itertools.combinations(self.aristas, 2):
+            (x0A, y0A) = estado_dic[aristaA[0]]
+            (xFA, yFA) = estado_dic[aristaA[1]]
+            (x0B, y0B) = estado_dic[aristaB[0]]
+            (xFB, yFB) = estado_dic[aristaB[1]]
+
+
+            den = (xFA - x0A) * (yFB - y0B) - (xFB - x0B) * (yFA - y0A)
+            if den == 0:
+                continue
+
+            puntoA = ((xFB - x0B) * (y0A - y0B) -
+                      (yFB - y0B) * (x0A - x0B)) / den
+            puntoB = ((xFA - x0A) * (y0A - y0B) -
+                      (yFA - y0A) * (x0A - x0B)) / den
+            if 0 < puntoA < 1 and 0 < puntoB < 1:
+                total += 1
+            else:
+                if x0A == x0B or x0A == xFB or xFA == x0B or xFA == xFB:
+                    continue
+                # Calculemos primero que punto esta mas cerca de la otra arista
+                d1 = np.sqrt( np.power(xFA - xFB,2) +np.power(yFA - yFB,2))
+                d2 = np.sqrt( np.power(xFA - x0B,2) +np.power(yFA - y0B,2))
+                # Notese que de una manera u otra tambien se calculan
+                # las distancias de un vertice a otro, asi que
+                # en este metodo bien se podria tambien quitar la funcion
+                # de costo de separacion de vertices
+                if d1 < d2 and xFA - xFB != 0 and x0A - x0B != 0:
+                    m1 = (yFA-yFB)/(xFA-xFB)
+                    m2 = (y0A-y0B)/(x0A-x0B)
+                elif d1 < d2:
+                    m1 = (yFA-yFB)
+                    m2 = (y0A-y0B)
+                elif xFA - x0B !=0 and x0A - xFB !=0:
+                    m1 = (yFA - y0B)/(xFA - x0B)
+                    m2 = (y0A - yFB)/(x0A - xFB)
+                else:
+                    m1 = (yFA - y0B)
+                    m2 = (y0A - yFB)
+
+                    # Si las pendientes son muy distintas, entonces
+                    # el grafo esta F E O
+                    # No son pendientes ya que no se trata de funciones
+                    # son mas bien pseudopendientes, pues
+                    # al no ser funciones puedo tener
+                    #una recta vertical e indefinir la pendiente
+                    #del calculo
+                m1 = abs(float(m1))
+                m2 = abs(float(m2))
+
+                total+= (abs(m1-m2))/400
+                #if m2 != 0:
+                #    total += (m1/m2)/50
+                #else:
+                #    total +=
+        return total
 
     def estado2dic(self, estado):
         """
