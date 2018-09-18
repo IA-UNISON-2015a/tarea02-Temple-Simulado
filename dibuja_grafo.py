@@ -136,9 +136,9 @@ class problema_grafica_grafo(blocales.Problema):
 
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
-        K1 = 1.0
+        K1 = 0.5
         K2 = 2.0
-        K3 = 0.5
+        K3 = 2.0
         K4 = 3.0
 
         # Genera un diccionario con el estado y la posición
