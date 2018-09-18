@@ -95,9 +95,21 @@ class problema_grafica_grafo(blocales.Problema):
         """
         vecino = list(estado)
         i = random.randint(0, len(vecino) - 1)
-        vecino[i] = max(10,
+        if i % 2 is 0:
+            vecino[i] = max(10,
                         min(self.dim - 10,
                             vecino[i] + random.randint(-dmax,  dmax)))
+            vecino[i+1] = max(10,
+                        min(self.dim - 10,
+                            vecino[i+1] + random.randint(-dmax,  dmax)))
+        else:
+            vecino[i-1] = max(10,
+                        min(self.dim - 10,
+                            vecino[i-1] + random.randint(-dmax,  dmax)))
+            vecino[i] = max(10,
+                        min(self.dim - 10,
+                            vecino[i] + random.randint(-dmax,  dmax)))
+        
         return tuple(vecino)
 
         #######################################################################
@@ -125,9 +137,9 @@ class problema_grafica_grafo(blocales.Problema):
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
         K1 = 1.0
-        K2 = 0.0
-        K3 = 0.0
-        K4 = 0.0
+        K2 = 2.0
+        K3 = 0.5
+        K4 = 3.0
 
         # Genera un diccionario con el estado y la posición
         estado_dic = self.estado2dic(estado)
@@ -232,6 +244,9 @@ class problema_grafica_grafo(blocales.Problema):
                 total += (1.0 - (dist / min_dist))
         return total
 
+    
+    
+    
     def angulo_aristas(self, estado_dic):
         """
         A partir de una posicion "estado", devuelve una penalizacion
@@ -260,7 +275,23 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+        anguloMin = math.pi/7
+        castigo = 0
+        for (aristaA, aristaB) in itertools.combinations(self.aristas, 2):
+            if not aristaA[0] in aristaB and not aristaA[1] in aristaB:
+                continue
+            v1 = estado_dic[aristaA[0]] if aristaA[0] in aristaB else estado_dic[aristaA[1]]
+            v2 = estado_dic[aristaA[0]] if aristaA[0] not in aristaB else estado_dic[aristaA[1]]
+            v3 = estado_dic[aristaB[0]] if aristaB[0] not in aristaA else estado_dic[aristaB[1]]
+            
+            angulo = calcula_angulo(v1,v2,v3)
+            
+            if angulo < anguloMin:
+                castigo += 1 - angulo/anguloMin
+        return castigo
+    
+    
+    
 
     def criterio_propio(self, estado_dic):
         """
@@ -287,7 +318,21 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+        # Por lo menos mi idea de bonito tiene que ver con la simetria
+        # tambien se podria argumentar que una parte del arte tiene cierta
+        # necesidad por un balance asimetrico pero por ser criterio propio
+        # me concentro en la simetria
+        mitad = ((min(estado_dic[x][0] for x in self.vertices)) + (max(estado_dic[x][0] for x in self.vertices)))/2
+        numVerticesIzq,numVerticesDer = 0,0
+        
+        for v in self.vertices:
+            x,_ = estado_dic[v]
+            if x > mitad:
+                numVerticesIzq += 1
+            else:
+                numVerticesDer += 1
+        return 1 - (numVerticesIzq/numVerticesDer if numVerticesIzq < numVerticesDer else numVerticesDer/numVerticesIzq)
+        
 
     def estado2dic(self, estado):
         """
@@ -331,8 +376,27 @@ class problema_grafica_grafo(blocales.Problema):
             dibujar.text(lugar[v], v, (0, 0, 0))
 
         imagen.save(filename)
+        
+        
+def calcula_angulo(v1,v2,v3):
+        if v1 == v2 or v1 == v3 or v2 == v3:
+            return 0
+        vectorA = (v1[0] - v2[0], v1[1] - v2[1])
+        vectorB = (v1[0] - v3[0], v1[1] - v3[1])
 
-
+        productoPunto = vectorA[0]*vectorB[0] + vectorA[1]*vectorB[1]
+        
+        magnitudA = math.sqrt(vectorA[0]**2 + vectorA[1]**2)
+        magnitudB = math.sqrt(vectorB[0]**2 + vectorB[1]**2)
+        
+        val = productoPunto/(magnitudA*magnitudB)
+        #Arregla errores de punto flotante para que acos siempre tenga valor
+        if val < -1:
+            val = -1
+        if val > 1:
+            val = 1
+        return math.acos(val)
+    
 def main():
     """
     La función principal
