@@ -8,7 +8,7 @@
 
 Para esta tarea, vamos a entrenarnos primero en el uso y análisis del
 algoritmo de temple simulado, en un problema de juguete como es el
-clásico problema de las $n$ reinas.
+clásico problema de las N-reinas.
 
 Una vez entendido, vamos a usar el algoritmo para generar una
 representación visual de un grafo no dirigido, a partir de su
@@ -24,7 +24,7 @@ probar y ajustar un algoritmo de temple (recocido) simulado.
 El problema no es tan complicado pero requiere de un análisis con
 calma del código ya presentado.
 
-Los puntos importantes a desarrollar en la tarea son:
+Los puntos importantes a desarrollar en la actividad son:
 
 1. Probar y ajustar los métodos de reinicios aleatorios y recocido
    simulado con el problema de las N-reinas.
@@ -56,6 +56,6 @@ La tarea consta de 3 archivos:
 En principio todos los cambios se deben de realizar en los archivos
 ´nreinas.py´ y ´dibuja_grafo.py´.
 
-Para la calificación de la tarea es **muy importante** explicar bien
+Para la calificación de la actividad es **muy importante** explicar bien
 las conclusiones que se obtienen del uso de los algoritmos, así como
-la justificación de los criterios de coto seleccionados.
+la justificación de los criterios de costo seleccionados.
