@@ -340,7 +340,7 @@ def main():
     """
 
     # Vamos a definir un grafo sencillo
-    vertices_sencillo = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+    vertices_sencillo = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M']
     aristas_sencillo = [('B', 'G'),
                         ('E', 'F'),
                         ('H', 'E'),
@@ -351,7 +351,23 @@ def main():
                         ('H', 'B'),
                         ('F', 'A'),
                         ('C', 'B'),
-                        ('H', 'F')]
+                        ('H', 'F'),
+                        ('H', 'I'),
+                        ('H', 'J'),
+                        ('H', 'K'),
+                        ('H', 'L'),
+                        ('H', 'M'),
+                        ('I', 'J'),
+                        ('I', 'K'),
+                        ('I', 'L'),
+                        ('I', 'M'),
+                        ('J', 'K'),
+                        ('J', 'L'),
+                        ('J', 'M'),
+                        ('K', 'L'),
+                        ('K', 'M'),
+                        ('L', 'M'),
+                        ('M', 'A')]
     dimension = 400
 
     # Y vamos a hacer un dibujo del grafo sin decirle como hacer para
