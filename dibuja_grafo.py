@@ -19,7 +19,7 @@ $pip install pillow
 
 """
 
-__author__ = 'Escribe aquí tu nombre'
+__author__ = 'Irving Borboa'
 
 import blocales
 import random
@@ -95,9 +95,9 @@ class problema_grafica_grafo(blocales.Problema):
         """
         vecino = list(estado)
         i = random.randint(0, len(vecino) - 1)
-        vecino[i] = max(10,
-                        min(self.dim - 10,
-                            vecino[i] + random.randint(-dmax,  dmax)))
+        
+        x = random.randint(0, 8)
+        vecino[i] = max(x, self.dim-x)
         return tuple(vecino)
 
         #######################################################################
@@ -107,6 +107,11 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # Propon una manera alternativa de vecino_aleatorio y muestra que
         # con tu propuesta se obtienen resultados mejores o en menor tiempo
+        #
+        #Genere los vecinos de tal manera de que el primer numero es un random de 0-8
+        #y el segundo parametro es desde el numero que genero, que se almacena en la variabel x, hasta
+        #la dimension - x
+        
 
     def costo(self, estado):
         """
@@ -124,10 +129,10 @@ class problema_grafica_grafo(blocales.Problema):
 
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
-        K1 = 1.0
-        K2 = 0.0
-        K3 = 0.0
-        K4 = 0.0
+        K1 = 8.0
+        K2 = 6.0
+        K3 = 4.0
+        K4 = 2.0
 
         # Genera un diccionario con el estado y la posición
         estado_dic = self.estado2dic(estado)
@@ -259,6 +264,17 @@ class problema_grafica_grafo(blocales.Problema):
         #
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
+        costo = 0
+        for v1 in self.vertices:
+            for (a1,a2) in itertools.combinations(self.aristas,2):
+                if(v1 in a1 and v1 in a2):
+                    v2,v3 = a1[abs(a1.index(v1)-1)],a2[abs(a2.index(v1)-1)]
+                    (x1,y1),(x2,y2),(x3,y3) = estado_dic[v1], estado_dic[v2], estado_dic[v3]
+                    m1,m2 = -((float)(y2-y1)/(x2-x1)), -((float)(y3-y1)/(x3-x1))
+                    angulo = math.degrees( math.atan( abs( (m1-m2)/(1+m2*m1) ) ) )
+                    if(angulo < 40):
+                        costo= costo + math.ceil(5 - (angulo / 6))
+        return costo
         #
         return 0
 
