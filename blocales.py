@@ -91,7 +91,7 @@ def descenso_colinas(problema, maxit=1e6):
     return estado
 
 
-def temple_simulado(problema, calendarizador=None, tol=0.001):
+def temple_simulado(problema, calendarización=None, tol=0.001):
     """
     Busqueda local por temple simulado
 
@@ -102,13 +102,17 @@ def temple_simulado(problema, calendarizador=None, tol=0.001):
     @return: El estado con el menor costo encontrado
 
     """
-    if calendarizador is None:
-        costos = [problema.costo(problema.estado_aleatorio())
-                  for _ in range(10 * len(problema.estado_aleatorio()))]
-        minimo,  maximo = min(costos), max(costos)
-        T_ini = 2 * (maximo - minimo)
+    k = 0.001
+    costos = [problema.costo(problema.estado_aleatorio())
+    for _ in range(10 * len(problema.estado_aleatorio()))]
+    minimo,  maximo = min(costos), max(costos)
+    T_ini = 2 * (maximo - minimo)
+    if calendarización is None: 
         calendarizador = (T_ini/(1 + i) for i in range(int(1e10)))
-
+    elif calendarización is "lineal":
+        calendarizador = ((k-T_ini*i) for i in range(int(1e10)))
+    elif calendarización is "exponencial":
+        calendarizador = ((T_ini * exp(-k*i)) for i in range(int(1e10)))
     estado = problema.estado_aleatorio()
     costo = problema.costo(estado)
 

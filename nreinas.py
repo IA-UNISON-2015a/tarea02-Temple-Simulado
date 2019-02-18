@@ -108,11 +108,26 @@ def prueba_temple_simulado(problema=ProblemaNreinas(8)):
     print("Y la solución es: ")
     print(solucion)
 
+def prueba_temple_simulado_2(problema=ProblemaNreinas(8), calendarización=None):
+    """ Prueba el algoritmo de temple simulado """
+
+    solucion = blocales.temple_simulado(problema, calendarización)
+    if calendarización is None: 
+        print("\n\nTemple simulado con calendarización To/(1 + i).")
+    elif calendarización is "lineal":
+        print("\n\nTemple simulado con calendarización k-T_ini*i.")
+    elif calendarización is "exponencial":
+        print("\n\nTemple simulado con calendarización T_ini * exp(-k*i).")
+
+    print("Costo de la solución: ", problema.costo(solucion))
+    print("Y la solución es: ")
+    print(solucion)
 
 if __name__ == "__main__":
-
     prueba_descenso_colinas(ProblemaNreinas(32), 10)
-    prueba_temple_simulado(ProblemaNreinas(32))
+    prueba_temple_simulado(ProblemaNreinas(64))
+    prueba_temple_simulado_2(ProblemaNreinas(32), "lineal")
+    prueba_temple_simulado_2(ProblemaNreinas(32), "exponencial")
 
     ##########################################################################
     #                          20 PUNTOS
@@ -120,18 +135,25 @@ if __name__ == "__main__":
     #
     # ¿Cual es el máximo número de reinas que se puede resolver en
     # tiempo aceptable con el método de 10 reinicios aleatorios?
+    #   El máximo número de reinas que se puede resolver en un
+    #   tiempo aceptable (1 minuto con 55 segundos) es de n = 45.
     #
     # ¿Que valores para ajustar el temple simulado son los que mejor
     # resultado dan? ¿Cual es el mejor ajuste para el temple simulado
     # y hasta cuantas reinas puede resolver en un tiempo aceptable?
+    #   La tolerancia que se esta utilizando parece ser adecuada
+	#   ya que probando con diferentes valores para la tolerancia con 32 reinas y siempre se obtenia
+    #   costo 0 con tol=0.001 y de manera rapido.
+    #   
+    #   En general para obtener mejores resultados del temple simulado,
+    #   es necesario probar diferentes metdos de
+    #   calendarización, prueba al menos otros dos métodos sencillos de
+    #   calendarización y ajusta los parámetros para que funcionen de la
+    #   mejor manera
     #
-    # En general para obtener mejores resultados del temple simulado,
-    # es necesario probar diferentes metdos de
-    # calendarización, prueba al menos otros dos métodos sencillos de
-    # calendarización y ajusta los parámetros para que funcionen de la
-    # mejor manera
-    #
-    # Escribe aqui tus conclusiones
+    #   El mejor calendarizador resulto ser el exponencial y tardó aproximadamente 8 segundos con
+    #   64 reinas. El lineal obtuvo costos muy altos.
     #
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
-    #
+
+
