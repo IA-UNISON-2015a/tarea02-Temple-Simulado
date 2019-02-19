@@ -19,7 +19,7 @@ $pip install pillow
 
 """
 
-__author__ = 'Escribe aquí tu nombre'
+__author__ = 'Eduardo González Olea'
 
 import blocales
 import random
@@ -93,13 +93,25 @@ class problema_grafica_grafo(blocales.Problema):
         @return: Una tupla con un estado vecino al estado de entrada.
 
         """
+        
+        """
         vecino = list(estado)
         i = random.randint(0, len(vecino) - 1)
         vecino[i] = max(10,
                         min(self.dim - 10,
                             vecino[i] + random.randint(-dmax,  dmax)))
         return tuple(vecino)
-
+        """
+        vecino = list(estado)
+        indiceVecino = random.randint(0, (len(vecino)/2)-1)
+        vecino[indiceVecino*2] = max(10,
+                          min(self.dim - 10,vecino[indiceVecino*2] + random.randint(-dmax,  dmax)))
+        vecino[(indiceVecino*2)+1] = max(10,
+                          min(self.dim - 10,vecino[(indiceVecino*2)+1] + random.randint(-dmax,  dmax)))
+        return tuple(vecino)
+        
+        #vecino e indiceVecino porque me confundo con v de vecino y de valor
+        #
         #######################################################################
         #                          20 PUNTOS
         #######################################################################
@@ -124,18 +136,18 @@ class problema_grafica_grafo(blocales.Problema):
 
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
-        K1 = 1.0
-        K2 = 0.0
-        K3 = 0.0
-        K4 = 0.0
+        K1 = 5.0
+        K2 = 2.0
+        K3 = 1.0
+        #K4 = 1.0
 
         # Genera un diccionario con el estado y la posición
         estado_dic = self.estado2dic(estado)
 
         return (K1 * self.numero_de_cruces(estado_dic) +
                 K2 * self.separacion_vertices(estado_dic) +
-                K3 * self.angulo_aristas(estado_dic) +
-                K4 * self.criterio_propio(estado_dic))
+                K3 * self.angulo_aristas(estado_dic)) # +
+                #K4 * self.criterio_propio(estado_dic))
 
         # Como podras ver en los resultados, el costo inicial
         # propuesto no hace figuras particularmente bonitas, y esto es
@@ -255,12 +267,28 @@ class problema_grafica_grafo(blocales.Problema):
         # cada vertice. Dale diferente peso a cada criterio hasta
         # lograr que el sistema realice gráficas "bonitas"
         #
-        # ¿Que valores de diste a K1, K2 y K3 respectivamente?
         #
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+        costo = 0
+        for (aristaA, aristaB) in itertools.combinations(self.aristas, 2):
+            
+            (x0A, y0A) = estado_dic[aristaA[0]]
+            (xFA, yFA) = estado_dic[aristaA[1]]
+            (x0B, y0B) = estado_dic[aristaB[0]]
+            (xFB, yFB) = estado_dic[aristaB[1]]
+            try:
+                mA = (y0A - yFA)/(x0A - xFA)
+                mB = (y0B - yFB)/(x0B - xFB)
+                angulo = abs(math.degrees(math.atan((mB-mA)/(1+(mA*mB)))))
+            except Exception:
+                continue
+            if angulo < 30.0 and angulo != 0:
+                costo += .5*(30-angulo)
+
+        return costo
+        
 
     def criterio_propio(self, estado_dic):
         """
@@ -287,7 +315,6 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
 
     def estado2dic(self, estado):
         """
@@ -383,11 +410,11 @@ def main():
 
     # Ahora vamos a encontrar donde deben de estar los puntos
     t_inicial = time.time()
-    solucion = blocales.temple_simulado(grafo_sencillo)
+    solucion = blocales.temple_simulado(grafo_sencillo,"exponencial")
     t_final = time.time()
     costo_final = grafo_sencillo.costo(solucion)
 
-    grafo_sencillo.dibuja_grafo(solucion, "prueba_final_final.gif")
+    grafo_sencillo.dibuja_grafo(solucion, "prueba_final_finalprueba.gif")
     print("\nUtilizando la calendarización por default")
     print("Costo de la solución encontrada: {}".format(costo_final))
     print("Tiempo de ejecución en segundos: {}".format(t_final - t_inicial))
@@ -397,9 +424,17 @@ def main():
     ##########################################################################
     # ¿Que valores para ajustar el temple simulado son los que mejor
     # resultado dan?
+    #K1 = 5.0
+    # K2 = 2.0
+    # K3 = 1.0
+    # casi siempre sale una grafica que me gusta, no tiene cruces y esta
+    # lo suficientemente separada
     #
     # ¿Que encuentras en los resultados?, ¿Cual es el criterio mas importante?
-    #
+    # Creo que el separacion_vertices porque hace que no se vea todo pegado
+    # y eso hace mas legible el grafo
+    
+    
     # En general para obtener mejores resultados del temple simulado,
     # es necesario utilizar una función de calendarización acorde con
     # el metodo en que se genera el vecino aleatorio.  Existen en la
@@ -408,6 +443,11 @@ def main():
     # diferente al que se encuentra programado) y ajusta los
     # parámetros para que obtenga la mejor solución posible en el
     # menor tiempo posible.
+    #
+    # De nueva cuenta usar el metodo exponencial es el más rapido de todos
+    # Para hacer pruebas cambie que usara el exponencial y me reducia el tiempo
+    # muchisimo y fue más eficiente trabajar
+    #
     #
     # Escribe aqui tus conclusiones
     #
