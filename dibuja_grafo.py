@@ -133,7 +133,7 @@ class problema_grafica_grafo(blocales.Problema):
         K1 = 1.0
         K2 = 1.5
         K3 = 1.0
-        K4 = 1.0
+        K4 = 0.5 #1.0
 
         # Genera un diccionario con el estado y la posición
         estado_dic = self.estado2dic(estado)
@@ -311,7 +311,7 @@ class problema_grafica_grafo(blocales.Problema):
         
         total=0
         
-        #numero_aristas = len(self.aristas)
+        numero_aristas = len(self.aristas)
         for vertice in self.vertices:
             aristas = [a for a in self.aristas if vertice in a]
             for (a,b) in itertools.combinations(aristas, 2):
@@ -323,10 +323,13 @@ class problema_grafica_grafo(blocales.Problema):
                 d1=math.sqrt((ax2-ax1)**2+((ay2-ay1)**2))
                 d2=math.sqrt((bx2-bx1)**2+((by2-by1)**2))
                 
-            if(d1 > d2):               
-                total -= 0.5
+            if(d1 < d2):               
+                #total += 1 - (d1-d2)/numero_aristas
+                total += 1 - d1/numero_aristas
             else:
-                total += 0.5
+                
+                #total += 1 - (d2-d1)/numero_aristas
+                total += 1 - d2/numero_aristas
         
         return total
         
