@@ -279,8 +279,10 @@ class problema_grafica_grafo(blocales.Problema):
             (x0B, y0B) = estado_dic[aristaB[0]]
             (xFB, yFB) = estado_dic[aristaB[1]]
             try:
+                # pendientes de cada vertice
                 mA = (y0A - yFA)/(x0A - xFA)
                 mB = (y0B - yFB)/(x0B - xFB)
+                #se hace el try por si es división entre 0 
                 angulo = abs(math.degrees(math.atan((mB-mA)/(1+(mA*mB)))))
             except Exception:
                 continue
@@ -424,14 +426,14 @@ def main():
     ##########################################################################
     # ¿Que valores para ajustar el temple simulado son los que mejor
     # resultado dan?
-    #K1 = 5.0
+    # R=K1 = 5.0
     # K2 = 2.0
     # K3 = 1.0
     # casi siempre sale una grafica que me gusta, no tiene cruces y esta
     # lo suficientemente separada
     #
     # ¿Que encuentras en los resultados?, ¿Cual es el criterio mas importante?
-    # Creo que el separacion_vertices porque hace que no se vea todo pegado
+    # R= Creo que el separacion_vertices porque hace que no se vea todo pegado
     # y eso hace mas legible el grafo
     
     
@@ -444,7 +446,7 @@ def main():
     # parámetros para que obtenga la mejor solución posible en el
     # menor tiempo posible.
     #
-    # De nueva cuenta usar el metodo exponencial es el más rapido de todos
+    # R= De nueva cuenta usar el metodo exponencial es el más rapido de todos
     # Para hacer pruebas cambie que usara el exponencial y me reducia el tiempo
     # muchisimo y fue más eficiente trabajar
     #
