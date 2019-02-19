@@ -387,7 +387,7 @@ def main():
     t_final = time.time()
     costo_final = grafo_sencillo.costo(solucion)
 
-    grafo_sencillo.dibuja_grafo(solucion, "prueba_final.gif")
+    grafo_sencillo.dibuja_grafo(solucion, "prueba_final_final.gif")
     print("\nUtilizando la calendarización por default")
     print("Costo de la solución encontrada: {}".format(costo_final))
     print("Tiempo de ejecución en segundos: {}".format(t_final - t_inicial))

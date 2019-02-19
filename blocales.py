@@ -11,8 +11,9 @@ Algoritmos generales para búsquedas locales
 __author__ = 'juliowaissman'
 
 from itertools import takewhile
-from math import exp
+
 from random import random
+import math
 
 
 class Problema(object):
@@ -91,7 +92,7 @@ def descenso_colinas(problema, maxit=1e6):
     return estado
 
 
-def temple_simulado(problema, calendarizador=None, tol=0.001):
+def temple_simulado(problema, calendarizacion=None, tol=0.001):
     """
     Busqueda local por temple simulado
 
@@ -102,13 +103,22 @@ def temple_simulado(problema, calendarizador=None, tol=0.001):
     @return: El estado con el menor costo encontrado
 
     """
-    if calendarizador is None:
-        costos = [problema.costo(problema.estado_aleatorio())
-                  for _ in range(10 * len(problema.estado_aleatorio()))]
-        minimo,  maximo = min(costos), max(costos)
-        T_ini = 2 * (maximo - minimo)
-        calendarizador = (T_ini/(1 + i) for i in range(int(1e10)))
-
+    #∂ = 0.001
+    k=0.001
+    costos = [problema.costo(problema.estado_aleatorio())
+    for _ in range(10 * len(problema.estado_aleatorio()))]
+    minimo,  maximo = min(costos), max(costos)
+    t0 = 2 * (maximo - minimo)
+     
+    if calendarizacion is None:
+         calendarizador = (t0/(1 + i) for i in range(int(1e10)))
+         
+    elif calendarizacion is "exponencial":
+         calendarizador = (t0 * math.exp(-k*i)  for i in range(int(1e10)))
+    elif calendarizacion is "lineal" :
+        calendarizador = ((k-t0*i)  for i in range(int(1e10)))
+    
+        
     estado = problema.estado_aleatorio()
     costo = problema.costo(estado)
 
@@ -118,6 +128,11 @@ def temple_simulado(problema, calendarizador=None, tol=0.001):
         costo_vecino = problema.costo(vecino)
         incremento_costo = costo_vecino - costo
 
-        if incremento_costo <= 0 or random() < exp(-incremento_costo / T):
+        if incremento_costo <= 0 or random() < math.exp(-incremento_costo / T):
             estado, costo = vecino, costo_vecino
     return estado
+
+
+
+
+
