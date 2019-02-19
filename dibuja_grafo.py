@@ -26,6 +26,7 @@ import random
 import itertools
 import math
 import time
+import numpy as np
 from PIL import Image, ImageDraw
 
 
@@ -129,10 +130,10 @@ class problema_grafica_grafo(blocales.Problema):
 
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
-        K1 = 8.0
-        K2 = 6.0
-        K3 = 4.0
-        K4 = 2.0
+        K1 = 1.0
+        K2 = 1.5
+        K3 = 1.0
+        K4 = 1.0
 
         # Genera un diccionario con el estado y la posición
         estado_dic = self.estado2dic(estado)
@@ -264,19 +265,23 @@ class problema_grafica_grafo(blocales.Problema):
         #
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
-        costo = 0
-        for v1 in self.vertices:
-            for (a1,a2) in itertools.combinations(self.aristas,2):
-                if(v1 in a1 and v1 in a2):
-                    v2,v3 = a1[abs(a1.index(v1)-1)],a2[abs(a2.index(v1)-1)]
-                    (x1,y1),(x2,y2),(x3,y3) = estado_dic[v1], estado_dic[v2], estado_dic[v3]
-                    m1,m2 = -((float)(y2-y1)/(x2-x1)), -((float)(y3-y1)/(x3-x1))
-                    angulo = math.degrees( math.atan( abs( (m1-m2)/(1+m2*m1) ) ) )
-                    if(angulo < 40):
-                        costo= costo + math.ceil(5 - (angulo / 6))
-        return costo
-        #
-        return 0
+        
+        
+        angulomenor = 35
+        total = 0
+        for vertice in self.vertices:
+            aristas = [a for a in self.aristas if vertice in a]
+            for (a,b) in itertools.combinations(aristas, 2):
+                (ax1, ay1), (ax2, ay2), (bx1, by1), (bx2, by2) = estado_dic[a[0]], estado_dic[a[1]], estado_dic[b[0]], estado_dic[b[1]]
+                m1 = (ay2 - ay1)/((ax2 - ax1) if ax2-ax1 != 0 else 0.0000000001)
+                m2 = (by2 - by1)/((bx2 - bx1) if bx2-bx1 != 0 else 0.0000000001)
+                angulo = math.degrees(abs(math.atan((m2-m1)/((1+m2*m1) if m2*m1!=-1 else 0.00000001))))
+                if angulo < angulomenor:
+                    total += 1-(angulo/angulomenor)
+        return total
+        
+        
+        
 
     def criterio_propio(self, estado_dic):
         """
@@ -303,7 +308,30 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+        
+        total=0
+        
+        #numero_aristas = len(self.aristas)
+        for vertice in self.vertices:
+            aristas = [a for a in self.aristas if vertice in a]
+            for (a,b) in itertools.combinations(aristas, 2):
+                (ax1, ay1) = estado_dic[a[0]]
+                (ax2, ay2) = estado_dic[a[1]]
+                (bx1, by1) = estado_dic[b[0]]
+                (bx2, by2) = estado_dic[b[1]]
+                
+                d1=math.sqrt((ax2-ax1)**2+((ay2-ay1)**2))
+                d2=math.sqrt((bx2-bx1)**2+((by2-by1)**2))
+                
+            if(d1 < d2):               
+                total -= 0.5
+            else:
+                total += 0.5
+        
+        return total
+        
+       
+        
 
     def estado2dic(self, estado):
         """
@@ -347,6 +375,7 @@ class problema_grafica_grafo(blocales.Problema):
             dibujar.text(lugar[v], v, (0, 0, 0))
 
         imagen.save(filename)
+        
 
 
 def main():
