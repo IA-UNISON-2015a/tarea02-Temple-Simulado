@@ -323,7 +323,7 @@ class problema_grafica_grafo(blocales.Problema):
                 d1=math.sqrt((ax2-ax1)**2+((ay2-ay1)**2))
                 d2=math.sqrt((bx2-bx1)**2+((by2-by1)**2))
                 
-            if(d1 < d2):               
+            if(d1 > d2):               
                 total -= 0.5
             else:
                 total += 0.5
