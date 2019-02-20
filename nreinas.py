@@ -12,6 +12,7 @@ __author__ = 'juliowaissman'
 
 
 import blocales
+import time
 from random import shuffle
 from random import sample
 from itertools import combinations
@@ -114,20 +115,36 @@ def prueba_temple_simulado_2(problema=ProblemaNreinas(8), calendarización=None)
     solucion = blocales.temple_simulado(problema, calendarización)
     if calendarización is None: 
         print("\n\nTemple simulado con calendarización To/(1 + i).")
-    elif calendarización is "lineal":
-        print("\n\nTemple simulado con calendarización k-T_ini*i.")
-    elif calendarización is "exponencial":
-        print("\n\nTemple simulado con calendarización T_ini * exp(-k*i).")
+    elif calendarización is "Logaritmo":
+        print("\n\nTemple simulado con calendarización T_ini/(1 + i*log(i)).")
+    elif calendarización is "Exponencial":
+        print("\n\nTemple simulado con calendarización T_ini * exp(-tol*i).")
 
     print("Costo de la solución: ", problema.costo(solucion))
     print("Y la solución es: ")
     print(solucion)
 
 if __name__ == "__main__":
-    prueba_descenso_colinas(ProblemaNreinas(32), 10)
+    
+    t_inicial = time.time()
+    prueba_descenso_colinas(ProblemaNreinas(64), 10)
+    t_final = time.time()
+    print("Tiempo de ejecución en segundos: {}".format(t_final - t_inicial))
+
+    t_inicial = time.time()
     prueba_temple_simulado(ProblemaNreinas(64))
-    prueba_temple_simulado_2(ProblemaNreinas(32), "lineal")
-    prueba_temple_simulado_2(ProblemaNreinas(32), "exponencial")
+    t_final = time.time()
+    print("Tiempo de ejecución en segundos: {}".format(t_final - t_inicial))
+
+    t_inicial = time.time()
+    prueba_temple_simulado_2(ProblemaNreinas(64), "Logaritmo")
+    t_final = time.time()
+    print("Tiempo de ejecución en segundos: {}".format(t_final - t_inicial))
+
+    t_inicial = time.time()
+    prueba_temple_simulado_2(ProblemaNreinas(64), "Exponencial")
+    t_final = time.time()
+    print("Tiempo de ejecución en segundos: {}".format(t_final - t_inicial))
 
     ##########################################################################
     #                          20 PUNTOS
@@ -136,7 +153,7 @@ if __name__ == "__main__":
     # ¿Cual es el máximo número de reinas que se puede resolver en
     # tiempo aceptable con el método de 10 reinicios aleatorios?
     #   El máximo número de reinas que se puede resolver en un
-    #   tiempo aceptable (1 minuto con 55 segundos) es de n = 45.
+    #   tiempo aceptable (3 minuto con 40 segundos) es de n = 64.
     #
     # ¿Que valores para ajustar el temple simulado son los que mejor
     # resultado dan? ¿Cual es el mejor ajuste para el temple simulado
@@ -151,8 +168,8 @@ if __name__ == "__main__":
     #   calendarización y ajusta los parámetros para que funcionen de la
     #   mejor manera
     #
-    #   El mejor calendarizador resulto ser el exponencial y tardó aproximadamente 8 segundos con
-    #   64 reinas. El lineal obtuvo costos muy altos.
+    #   El mejor calendarizador resulto ser el logaritmico y tardó aproximadamente 6 segundos con
+    #   64 reinas. El exponencial tardó 8.6 segundos con 64 reinas.
     #
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
 

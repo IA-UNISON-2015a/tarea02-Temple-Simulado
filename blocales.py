@@ -11,6 +11,7 @@ Algoritmos generales para búsquedas locales
 __author__ = 'juliowaissman'
 
 from itertools import takewhile
+from math import log
 from math import exp
 from random import random
 
@@ -102,17 +103,16 @@ def temple_simulado(problema, calendarización=None, tol=0.001):
     @return: El estado con el menor costo encontrado
 
     """
-    k = 0.001
     costos = [problema.costo(problema.estado_aleatorio())
     for _ in range(10 * len(problema.estado_aleatorio()))]
     minimo,  maximo = min(costos), max(costos)
     T_ini = 2 * (maximo - minimo)
     if calendarización is None: 
         calendarizador = (T_ini/(1 + i) for i in range(int(1e10)))
-    elif calendarización is "lineal":
-        calendarizador = ((k-T_ini*i) for i in range(int(1e10)))
-    elif calendarización is "exponencial":
-        calendarizador = ((T_ini * exp(-k*i)) for i in range(int(1e10)))
+    elif calendarización is "Logaritmo":
+        calendarizador = ((T_ini/(1 + i*log(i))) for i in range(1,int(1e10)+1))
+    elif calendarización is "Exponencial":
+        calendarizador = ((T_ini * exp(-tol*i)) for i in range(int(1e10)))
     estado = problema.estado_aleatorio()
     costo = problema.costo(estado)
 

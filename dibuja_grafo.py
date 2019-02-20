@@ -19,7 +19,7 @@ $pip install pillow
 
 """
 
-__author__ = 'Escribe aquí tu nombre'
+__author__ = 'BrayanDurazo'
 
 import blocales
 import random
@@ -92,12 +92,32 @@ class problema_grafica_grafo(blocales.Problema):
 
         @return: Una tupla con un estado vecino al estado de entrada.
 
-        """
+        
         vecino = list(estado)
         i = random.randint(0, len(vecino) - 1)
         vecino[i] = max(10,
                         min(self.dim - 10,
                             vecino[i] + random.randint(-dmax,  dmax)))
+        return tuple(vecino)
+        """
+        #Manera propuesta
+        vecino = list(estado)
+        i = random.randint(0, len(vecino) - 2)
+        mas_cercano_x = 0
+        mas_cercano_y = 0
+        for x in range(0, len(vecino) - 1, 2):
+            if mas_cercano_x == 0 :
+                mas_cercano_x = abs(vecino[x] - vecino[i])
+            elif abs(vecino[x] - vecino[i]) < mas_cercano_x :
+                mas_cercano_x = abs(vecino[x] - vecino[i])
+        for y in range(1, len(vecino) - 1):
+            if mas_cercano_y == 0 :
+                mas_cercano_y = abs(vecino[y] - vecino[i])
+            elif abs(vecino[y] - vecino[i]) < mas_cercano_y :
+                mas_cercano_y = abs(vecino[y] - vecino[i])
+                
+        vecino[i] = max(10, min(self.dim - 10, vecino[i] + random.randint(-mas_cercano_x,  mas_cercano_x)))
+        vecino[i+1] = max(10, min(self.dim - 10, vecino[i] + random.randint(-mas_cercano_y,  mas_cercano_y)))
         return tuple(vecino)
 
         #######################################################################
@@ -107,6 +127,16 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # Propon una manera alternativa de vecino_aleatorio y muestra que
         # con tu propuesta se obtienen resultados mejores o en menor tiempo
+        #
+        # En la manera que propuse, en vez de solo mover entre 10 en una dirección
+        # tiene como rango la distancia con el vertice más cercano en x y tambien 
+        # mueve en y usando como rango la distancia con el vertice más cercano en y.
+        #
+        # El tiempo se reduce:
+        # Promedio vecino_aleatorio por default: 102.8 segundos
+        # Promedio vecino_aleatorio que se me ocurrió: 94.1 segundos
+        # (El tiempo fue el medido con la calendarización default y sin utilizar
+        # el criterio propio ni el de los ángulos).
 
     def costo(self, estado):
         """
@@ -124,14 +154,13 @@ class problema_grafica_grafo(blocales.Problema):
 
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
-        K1 = 1.0
-        K2 = 0.0
-        K3 = 0.0
-        K4 = 0.0
+        K1 = 3.0
+        K2 = 4.0
+        K3 = 2.0
+        K4 = 1.0
 
         # Genera un diccionario con el estado y la posición
         estado_dic = self.estado2dic(estado)
-
         return (K1 * self.numero_de_cruces(estado_dic) +
                 K2 * self.separacion_vertices(estado_dic) +
                 K3 * self.angulo_aristas(estado_dic) +
@@ -169,7 +198,7 @@ class problema_grafica_grafo(blocales.Problema):
 
         """
         total = 0
-
+        
         # Por cada arista en relacion a las otras (todas las combinaciones de
         # aristas)
         for (aristaA, aristaB) in itertools.combinations(self.aristas, 2):
@@ -201,6 +230,7 @@ class problema_grafica_grafo(blocales.Problema):
                       (yFA - y0A) * (x0A - x0B)) / den
             if 0 < puntoA < 1 and 0 < puntoB < 1:
                 total += 1
+        
         return total
 
     def separacion_vertices(self, estado_dic, min_dist=50):
@@ -256,12 +286,32 @@ class problema_grafica_grafo(blocales.Problema):
         # lograr que el sistema realice gráficas "bonitas"
         #
         # ¿Que valores de diste a K1, K2 y K3 respectivamente?
-        #
+        # 1,4,3
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
-
+        
+        total = 0
+        #'''
+        for v in self.vertices:
+            #Se seleccionan las aristas que estan en el vertice
+            aristas = [a for a in self.aristas if v in a]
+            for aristaA, aristaB in itertools.combinations(aristas, 2):
+                xA1, yA1 = estado_dic[aristaA[0]]
+                xB1, yB1 = estado_dic[aristaA[1]]
+                xA2, yA2 = estado_dic[aristaB[0]]
+                xB2, yB2 = estado_dic[aristaB[1]]
+                try:
+                    m1 = (float(yB1) - yA1)/(float(xB1) - xA1)
+                    m2 = (float(yB2) - yA2)/(float(xB2) - xA2)
+                    #Se calcula el ángulo
+                    angulo = (math.degrees(abs(math.atan(((m2-m1)/(1.0+(m1*m2)))))))
+                    if angulo < 36:
+	                        total += 1.0 - (angulo/36)
+                except ZeroDivisionError: "division 0"
+        #'''
+        return total
+    
     def criterio_propio(self, estado_dic):
         """
         Implementa y comenta correctamente un criterio de costo que sea
@@ -280,14 +330,46 @@ class problema_grafica_grafo(blocales.Problema):
         #######################################################################
         # ¿Crees que hubiera sido bueno incluir otro criterio? ¿Cual?
         #
+        # Tras haber implementado el criterio de los ángulos, al ver los grafos que 
+        # generaba el programa, me generaba ciertos problemas para identificar los aristas
+        # el hecho de que habia un vértice (el H con 8 artistas) que si quedaba muy separado
+        # de los demás, se veía muy abultado.
+        #
         # Desarrolla un criterio propio y ajusta su importancia en el
         # costo total con K4 ¿Mejora el resultado? ¿En que mejora el
         # resultado final?
-        #
-        #
+        # 
+        # Si mejora, al centrar el vértice con más aristas, se ve mejor repartido
+        # el grafo, por ende se ve mucho más claro.
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+        total = 0
+        noVertices = {}
+        #Cuentas las veces que se encuentra un vértice en un artista
+        for i in self.aristas:
+            for j in i:
+                if j in noVertices:
+                    noVertices[j] += 1
+                else:
+                    noVertices[j] = 1
+
+        #Escoge al inicio el primer elemento que haya en las llaves del diccionario
+        mayorVertice = list(noVertices.keys())[0]
+        for i in noVertices.keys():
+            #si encuentra un vertice que tiene mas aristas entonces cambiara el valor
+            if noVertices[i] > noVertices[mayorVertice]:
+                mayorVertice = i
+
+        # Se escogen los margenes de errores que puede tener la localizacion del
+        # vertice que se tratara de poner en el medio (+- 21)
+        minX, minY = (self.dim/2)-21, (self.dim/2)-21
+        maxX, maxY = (self.dim/2)+21, (self.dim/2)+21
+        x, y = estado_dic[mayorVertice][0], estado_dic[mayorVertice][1]
+
+        if x < minX or x > maxX: total+=1
+        if y < minY or y > maxY: total+=1
+
+        return total
 
     def estado2dic(self, estado):
         """
@@ -383,12 +465,13 @@ def main():
 
     # Ahora vamos a encontrar donde deben de estar los puntos
     t_inicial = time.time()
-    solucion = blocales.temple_simulado(grafo_sencillo)
+    #solucion = blocales.temple_simulado(grafo_sencillo)
+    solucion = blocales.temple_simulado(grafo_sencillo, "Logaritmo", 0.0001)
     t_final = time.time()
     costo_final = grafo_sencillo.costo(solucion)
 
     grafo_sencillo.dibuja_grafo(solucion, "prueba_final.gif")
-    print("\nUtilizando la calendarización por default")
+    print("\nUtilizando la calendarización por Exponencial")
     print("Costo de la solución encontrada: {}".format(costo_final))
     print("Tiempo de ejecución en segundos: {}".format(t_final - t_inicial))
 
@@ -397,8 +480,13 @@ def main():
     ##########################################################################
     # ¿Que valores para ajustar el temple simulado son los que mejor
     # resultado dan?
+    # Ajustando la tolerancia a 0.0001 arriesga un poco el tiempo, pero genera resultados
+    # mejores, grafos mas visulamente agredables, y usando la calendarización del
+    # logaritmo reduces mucho el tiempo.
     #
     # ¿Que encuentras en los resultados?, ¿Cual es el criterio mas importante?
+    # El hecho de que los vertices esten muy cerca entre si, hace confuso el grafo
+    # en cambio, si los vertices se encuetran muy separados, es mas sencillo leer.
     #
     # En general para obtener mejores resultados del temple simulado,
     # es necesario utilizar una función de calendarización acorde con
@@ -410,6 +498,8 @@ def main():
     # menor tiempo posible.
     #
     # Escribe aqui tus conclusiones
+    # Utilizando un mejor método de calendarización da oportunidad a disminuir la tolerancia
+    # por ende puedes realizar mejores grafos en el mismo tiempo o menor.
     #
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
     #
