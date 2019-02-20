@@ -111,7 +111,7 @@ def prueba_temple_simulado(problema=ProblemaNreinas(8)):
 
 if __name__ == "__main__":
 
-    prueba_descenso_colinas(ProblemaNreinas(32), 10)
+    prueba_descenso_colinas(ProblemaNreinas(32), 30)
     prueba_temple_simulado(ProblemaNreinas(32))
 
     ##########################################################################

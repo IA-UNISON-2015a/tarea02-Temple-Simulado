@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 """
@@ -19,7 +19,7 @@ $pip install pillow
 
 """
 
-__author__ = 'Ariana'
+__author__ = 'Ariana Sánchez'
 
 import blocales
 import random
@@ -95,9 +95,21 @@ class problema_grafica_grafo(blocales.Problema):
         """
         vecino = list(estado)
         i = random.randint(0, len(vecino) - 1)
-        vecino[i] = max(10,
+        if i % 2 is 0:
+            vecino[i] = max(10,
                         min(self.dim - 10,
                             vecino[i] + random.randint(-dmax,  dmax)))
+            vecino[i+1] = max(10,
+                        min(self.dim - 10,
+                            vecino[i+1] + random.randint(-dmax,  dmax)))
+        else:
+            vecino[i-1] = max(10,
+                        min(self.dim - 10,
+                            vecino[i-1] + random.randint(-dmax,  dmax)))
+            vecino[i] = max(10,
+                        min(self.dim - 10,
+                            vecino[i] + random.randint(-dmax,  dmax)))
+        
         return tuple(vecino)
 
         #######################################################################
@@ -124,10 +136,10 @@ class problema_grafica_grafo(blocales.Problema):
 
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
-        K1 = 1.0
-        K2 = 0.0
-        K3 = 0.0
-        K4 = 0.0
+        K1 = 2.0
+        K2 = 1.0
+        K3 = 1.0
+        K4 = 2.0
 
         # Genera un diccionario con el estado y la posición
         estado_dic = self.estado2dic(estado)
@@ -260,7 +272,18 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+        angulomenor=30
+        total = 0
+        for vertice in self.vertices:
+            aristas = [a for a in self.aristas if vertice in a]
+            for (a,b) in itertools.combinations(aristas, 2):
+                (ax1, ay1), (ax2, ay2), (bx1, by1), (bx2, by2) = estado_dic[a[0]], estado_dic[a[1]], estado_dic[b[0]], estado_dic[b[1]]
+                m1 = (ay2 - ay1)/((ax2 - ax1) if ax2-ax1 != 0 else 0.0000000001)
+                m2 = (by2 - by1)/((bx2 - bx1) if bx2-bx1 != 0 else 0.0000000001)
+                angulo = math.degrees(abs(math.atan((m2-m1)/((1+m2*m1) if m2*m1!=-1 else 0.00000001))))
+                if angulo < angulomenor:
+                    total += 1-(angulo/angulomenor)
+        return total
 
     def criterio_propio(self, estado_dic):
         """
@@ -287,8 +310,23 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
-
+        
+        total = 0
+        
+        minx, miny =  (self.dim/2)-100, (self.dim/2)-100 
+        maxx, maxy =  (self.dim/2)+100, (self.dim/2)+100
+        
+        
+        maxv = mas_comun(self.aristas)
+        
+        
+        x, y = estado_dic[maxv][0], estado_dic[maxv][1]
+        if x < minx or x > maxx:
+            total += 1
+        if y < miny or y > maxy:
+            total += 1
+        return total
+    
     def estado2dic(self, estado):
         """
         Convierte el estado en forma de tupla a un estado en forma
@@ -331,6 +369,19 @@ class problema_grafica_grafo(blocales.Problema):
             dibujar.text(lugar[v], v, (0, 0, 0))
 
         imagen.save(filename)
+        
+def mas_comun(lst):
+    lista = []
+    for x in lst:
+        lista.append(x[0])
+        lista.append(x[1])
+    return max(set(lista), key=lista.count)
+
+def calendarizador_lineal(K, delta, i):
+    return K - delta*i
+
+def calendarizador_exponencial(K, delta, i):
+    return math.exp(-delta/K*i)
 
 
 def main():
