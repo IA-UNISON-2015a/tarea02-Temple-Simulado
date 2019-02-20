@@ -12,6 +12,7 @@ __author__ = 'juliowaissman'
 
 
 import blocales
+import time
 from random import shuffle
 from random import sample
 from itertools import combinations
@@ -108,11 +109,18 @@ def prueba_temple_simulado(problema=ProblemaNreinas(8)):
     print("Y la solución es: ")
     print(solucion)
 
+def prueba_temple_simulado_lineal(problema=ProblemaNreinas(8)):
+    """ Prueba el algoritmo de temple simulado """
+
+    solucion = blocales.temple_simulado(problema, calendarizador=(problema.n - i/3 for i in range(int(1e10))))
+    print("\n\nTemple simulado con calendarización (To - i).")
+    print("Costo de la solución: ", problema.costo(solucion))
+    print("Y la solución es: ")
+    print(solucion)
+
 
 if __name__ == "__main__":
-
-    prueba_descenso_colinas(ProblemaNreinas(32), 10)
-    prueba_temple_simulado(ProblemaNreinas(32))
+    #prueba_descenso_colinas(ProblemaNreinas(64), 10)
 
     ##########################################################################
     #                          20 PUNTOS
@@ -133,5 +141,19 @@ if __name__ == "__main__":
     #
     # Escribe aqui tus conclusiones
     #
+    # dependiendo del metodo de calendarizacion pero, en mi computadora
+    # con 250 ya tardaba bastante
+    #
+    # Con el calendarizador de T0 / (1+i) es muy porbalbe que se llegue a
+    # una solucion con consto 0, pero en un tiempo bastate largo. En cambio
+    # con una calendarizacion lineal de T0 - i, se puede el algoritmo
+    # termina e un tiempo significativamente mas corto, pero con un costo
+    # mucho mas elevado.
+    # 
+    # 
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
     #
+    t_inicial = time.time()
+    prueba_temple_simulado(ProblemaNreinas(128))
+    t_final = time.time()
+    print("Tiempo de ejecución en segundos: {}".format(t_final - t_inicial))

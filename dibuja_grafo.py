@@ -27,7 +27,13 @@ import itertools
 import math
 import time
 from PIL import Image, ImageDraw
+import numpy as np
 
+#Metodos auxiliares
+def angulo_entre_vec(v1, v2):
+    v1_u = v1 / np.linalg.norm(v1)
+    v2_u = v2 / np.linalg.norm(v2)
+    return np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0))
 
 class problema_grafica_grafo(blocales.Problema):
 
@@ -94,10 +100,10 @@ class problema_grafica_grafo(blocales.Problema):
 
         """
         vecino = list(estado)
-        i = random.randint(0, len(vecino) - 1)
-        vecino[i] = max(10,
-                        min(self.dim - 10,
-                            vecino[i] + random.randint(-dmax,  dmax)))
+        for i in random.choices(range(len(vecino)), k=random.randint(0, len(vecino))):
+            vecino[i] = max(10,
+                            min(self.dim - 10,
+                                vecino[i] + random.randint(-dmax,  dmax)))
         return tuple(vecino)
 
         #######################################################################
@@ -124,18 +130,21 @@ class problema_grafica_grafo(blocales.Problema):
 
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
-        K1 = 1.0
-        K2 = 0.0
-        K3 = 0.0
-        K4 = 0.0
+        K1 = 2.0
+        K2 = 0.009
+        K3 = 0.09
+        K4 = 0.06
 
         # Genera un diccionario con el estado y la posición
         estado_dic = self.estado2dic(estado)
 
+        # se modificaron los metodos de separacion entre vertices
+        # y angulo entre aristas de tal manera que se busca maximizar
+        # la distancia entre los vertices y el angulo entre las aristas
         return (K1 * self.numero_de_cruces(estado_dic) +
                 K2 * self.separacion_vertices(estado_dic) +
                 K3 * self.angulo_aristas(estado_dic) +
-                K4 * self.criterio_propio(estado_dic))
+                K4 * self.centralizacion_vertices(estado_dic))
 
         # Como podras ver en los resultados, el costo inicial
         # propuesto no hace figuras particularmente bonitas, y esto es
@@ -175,8 +184,8 @@ class problema_grafica_grafo(blocales.Problema):
         for (aristaA, aristaB) in itertools.combinations(self.aristas, 2):
 
             # Encuentra los valores de (x0A,y0A), (xFA, yFA) para los
-            # vertices de una arista y los valores (x0B,y0B), (x0B,
-            # y0B) para los vertices de la otra arista
+            # vertices de una arista y los valores (x0B,y0B), (xFB,
+            # yFB) para los vertices de la otra arista
             (x0A, y0A) = estado_dic[aristaA[0]]
             (xFA, yFA) = estado_dic[aristaA[1]]
             (x0B, y0B) = estado_dic[aristaB[0]]
@@ -228,9 +237,8 @@ class problema_grafica_grafo(blocales.Problema):
             dist = math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
 
             # Penaliza la distancia si es menor a min_dist
-            if dist < min_dist:
-                total += (1.0 - (dist / min_dist))
-        return total
+            total += dist
+        return -total
 
     def angulo_aristas(self, estado_dic):
         """
@@ -256,13 +264,41 @@ class problema_grafica_grafo(blocales.Problema):
         # lograr que el sistema realice gráficas "bonitas"
         #
         # ¿Que valores de diste a K1, K2 y K3 respectivamente?
-        #
+        # Se obtuvo mejores resultados con los valores de k1 = k2 = k3 = 1
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
-        #
-        return 0
+        # 
+        costo = 1
 
-    def criterio_propio(self, estado_dic):
+        for v in self.vertices:
+            vecinos_v = []
+            for e in self.aristas:
+                if v in e:
+                    vecinos_v.append(e[e.index(v)-1])
+
+            if vecinos_v == []:
+                continue
+            
+            v_init = vecinos_v[0]
+
+            for i in range(len(vecinos_v)):
+                x1, y1 = estado_dic[v_init]
+                x2, y2 = estado_dic[vecinos_v[i]]
+                xc, yc = estado_dic[v]
+
+                x1, y1, x2, y2 = x1 - xc, y1 - yc, x2 - xc, y2 - yc
+                vecinos_v[i] =(vecinos_v[i], angulo_entre_vec([x1,y1], [x2,y2]))
+
+            vecinos_v.sort(key=lambda e: e[1])
+
+            for i in range(len(vecinos_v)-1):
+                costo *= vecinos_v[i+1][1] - vecinos_v[i][1]
+            
+        return -costo
+            
+        
+
+    def centralizacion_vertices(self, estado_dic):
         """
         Implementa y comenta correctamente un criterio de costo que sea
         conveniente para que un grafo luzca bien.
@@ -287,7 +323,13 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+
+        p = 0
+        for v in self.vertices:
+            x, y = estado_dic[v]
+            p += x + y
+
+        return p
 
     def estado2dic(self, estado):
         """
@@ -383,7 +425,7 @@ def main():
 
     # Ahora vamos a encontrar donde deben de estar los puntos
     t_inicial = time.time()
-    solucion = blocales.temple_simulado(grafo_sencillo)
+    solucion = blocales.temple_simulado(grafo_sencillo, calendarizador=(4000-i/6 for i in range(int(1e10))))
     t_final = time.time()
     costo_final = grafo_sencillo.costo(solucion)
 
@@ -410,7 +452,8 @@ def main():
     # menor tiempo posible.
     #
     # Escribe aqui tus conclusiones
-    #
+    # Por motivos de tiempo se tuvo que usar una funcion de calendarizacion lineal
+    # ya que era la que normalmente se usa tardaba demasiado.
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
     #
 
