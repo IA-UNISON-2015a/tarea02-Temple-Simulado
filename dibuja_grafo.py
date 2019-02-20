@@ -260,7 +260,26 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+        total = 0
+        angulo_minimo =30
+        for (aristaA, aristaB) in itertools.combinations(self.aristas, 2):
+            if not aristaA[0] in aristaB and not aristaA[1] in aristaB:
+                continue
+            (x0A, y0A) = estado_dic[aristaA[0]]
+            (xFA, yFA) = estado_dic[aristaA[1]]
+            (x0B, y0B) = estado_dic[aristaB[0]]
+            (xFB, yFB) = estado_dic[aristaB[1]]
+            angulo=0
+            try:
+                m1 = (yFA - y0A) / (xFA - x0A)
+                m2 = (yFB - y0B) / (xFB - x0B)
+                angulo = math.degrees(math.atan(abs((m2 - m1) / (1+(m1*m2)))))
+            except ZeroDivisionError:
+                None
+            if angulo > angulo_minimo:
+                continue    
+            total += 1.0 - angulo/angulo_minimo
+        return total
 
     def criterio_propio(self, estado_dic):
         """
