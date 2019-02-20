@@ -14,6 +14,7 @@ from itertools import takewhile
 from math import exp
 from random import random
 
+
 class Problema(object):
     """
     Definición formal de un problema de búsqueda local. Es necesario
