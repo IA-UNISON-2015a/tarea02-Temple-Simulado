@@ -154,9 +154,9 @@ class problema_grafica_grafo(blocales.Problema):
 
         # Inicializa fáctores lineales para los criterios más importantes
         # (default solo cuanta el criterio 1)
-        K1 = 3.0
+        K1 = 2.0
         K2 = 4.0
-        K3 = 2.0
+        K3 = 3.0
         K4 = 1.0
 
         # Genera un diccionario con el estado y la posición
@@ -286,7 +286,7 @@ class problema_grafica_grafo(blocales.Problema):
         # lograr que el sistema realice gráficas "bonitas"
         #
         # ¿Que valores de diste a K1, K2 y K3 respectivamente?
-        # 1,4,3
+        # 2,4,3
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
@@ -306,8 +306,8 @@ class problema_grafica_grafo(blocales.Problema):
                     m2 = (float(yB2) - yA2)/(float(xB2) - xA2)
                     #Se calcula el ángulo
                     angulo = (math.degrees(abs(math.atan(((m2-m1)/(1.0+(m1*m2)))))))
-                    if angulo < 36:
-	                        total += 1.0 - (angulo/36)
+                    if angulo < 24:
+	                        total += 1.0 - (angulo/24)
                 except ZeroDivisionError: "division 0"
         #'''
         return total
@@ -466,12 +466,12 @@ def main():
     # Ahora vamos a encontrar donde deben de estar los puntos
     t_inicial = time.time()
     #solucion = blocales.temple_simulado(grafo_sencillo)
-    solucion = blocales.temple_simulado(grafo_sencillo, "Logaritmo", 0.0001)
+    solucion = blocales.temple_simulado(grafo_sencillo, "Logaritmo", 0.0004)
     t_final = time.time()
     costo_final = grafo_sencillo.costo(solucion)
 
     grafo_sencillo.dibuja_grafo(solucion, "prueba_final.gif")
-    print("\nUtilizando la calendarización por Exponencial")
+    print("\nUtilizando la calendarización por T_ini/(1 + i*log(i))")
     print("Costo de la solución encontrada: {}".format(costo_final))
     print("Tiempo de ejecución en segundos: {}".format(t_final - t_inicial))
 
@@ -480,7 +480,7 @@ def main():
     ##########################################################################
     # ¿Que valores para ajustar el temple simulado son los que mejor
     # resultado dan?
-    # Ajustando la tolerancia a 0.0001 arriesga un poco el tiempo, pero genera resultados
+    # Ajustando la tolerancia a 0.0004 arriesga un poco el tiempo, pero genera resultados
     # mejores, grafos mas visulamente agredables, y usando la calendarización del
     # logaritmo reduces mucho el tiempo.
     #
