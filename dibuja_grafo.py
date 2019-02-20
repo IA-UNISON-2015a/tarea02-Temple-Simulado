@@ -19,7 +19,7 @@ $pip install pillow
 
 """
 
-__author__ = 'Escribe aquí tu nombre'
+__author__ = 'Lizeth Soto Félix'
 
 import blocales
 import random
@@ -92,14 +92,12 @@ class problema_grafica_grafo(blocales.Problema):
 
         @return: Una tupla con un estado vecino al estado de entrada.
 
-        """
+        """"""
         vecino = list(estado)
         i = random.randint(0, len(vecino) - 1)
-        vecino[i] = max(10,
-                        min(self.dim - 10,
-                            vecino[i] + random.randint(-dmax,  dmax)))
+        vecino[i] = max(10,min(self.dim - 10, vecino[i] + random.randint(-dmax,  dmax)))
         return tuple(vecino)
-
+        """
         #######################################################################
         #                          20 PUNTOS
         #######################################################################
@@ -107,6 +105,15 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # Propon una manera alternativa de vecino_aleatorio y muestra que
         # con tu propuesta se obtienen resultados mejores o en menor tiempo
+        
+        vecino = list(estado)
+        i = random.randint(0, len(vecino) - 1)
+        vecino[i] = max(10,min(self.dim - 10, vecino[i] + random.randint(-dmax,  dmax)))
+        if i%2 is 0:
+            vecino[i+1]=max(10,min(self.dim - 10,vecino[i+1] + random.randint(-dmax,  dmax)))
+        else:
+            vecino[i-1]=max(10,min(self.dim - 10,vecino[i-1] + random.randint(-dmax,  dmax)))
+        return tuple(vecino)
 
     def costo(self, estado):
         """
@@ -126,8 +133,8 @@ class problema_grafica_grafo(blocales.Problema):
         # (default solo cuanta el criterio 1)
         K1 = 1.0
         K2 = 2
-        K3 =-2
-        K4 = 0.0
+        K3 = 4
+        K4 = 4
 
         # Genera un diccionario con el estado y la posición
         estado_dic = self.estado2dic(estado)
@@ -257,7 +264,7 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # ¿Que valores de diste a K1, K2 y K3 respectivamente?
         #
-        #
+        # Con valores de 1, 2, 4 y 4 respectivamente obtuve muy buenos resultados.
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
         total = 0
@@ -303,10 +310,31 @@ class problema_grafica_grafo(blocales.Problema):
         # costo total con K4 ¿Mejora el resultado? ¿En que mejora el
         # resultado final?
         #
-        #
+        #Si, considerablemente. Hay una mejor dispersión.
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+        
+        minimo = 10
+        maximo = self.dim - 10
+        cuadrante = (minimo + maximo)/2
+        costo = 0
+        
+        primero,segundo,tercero,cuarto = 0,0,0,0
+        for v in self.vertices:
+            x,y = estado_dic[v]
+            if x > cuadrante and y > cuadrante:
+                primero+=1
+            elif x < cuadrante and y > cuadrante:
+                segundo+=1
+            elif x < cuadrante and y < cuadrante:
+                tercero +=1
+            elif x >cuadrante and y < cuadrante:
+                cuarto +=1
+            mayor = max(primero,segundo,tercero,cuarto)
+            menor = min(primero,segundo,tercero,cuarto)
+            if mayor > menor*2:
+                costo+=1-(menor/mayor)
+        return costo
 
     def estado2dic(self, estado):
         """
@@ -351,6 +379,21 @@ class problema_grafica_grafo(blocales.Problema):
 
         imagen.save(filename)
 
+def calendarizacionLogartmica(problema):
+    costos = [problema.costo(problema.estado_aleatorio())
+                  for _ in range(10 * len(problema.estado_aleatorio()))]
+    minimo,  maximo = min(costos), max(costos)
+    T_ini = 2 * (maximo - minimo)
+    calendarizador = (T_ini/(1+i*math.log(i+1)) for i in range(int(1e10)))
+    return calendarizador
+    
+def calendarizacionCuadratica(problema):
+    costos = [problema.costo(problema.estado_aleatorio())
+                  for _ in range(10 * len(problema.estado_aleatorio()))]
+    minimo,  maximo = min(costos), max(costos)
+    T_ini = 2 * (maximo - minimo)
+    calendarizador = (T_ini/i**2 for i in range(1,int(1e10)))
+    return calendarizador
 
 def main():
     """
@@ -400,7 +443,8 @@ def main():
     grafo_sencillo.dibuja_grafo(estado_aleatorio, "prueba_inicial.gif")
     print("Costo del estado aleatorio: {}".format(costo_inicial))
 
-    # Ahora vamos a encontrar donde deben de estar los puntos
+    # Utilizando la calendarización default
+    
     t_inicial = time.time()
     solucion = blocales.temple_simulado(grafo_sencillo)
     t_final = time.time()
@@ -409,6 +453,31 @@ def main():
     grafo_sencillo.dibuja_grafo(solucion, "prueba_final.gif")
     print("\nUtilizando la calendarización por default")
     print("Costo de la solución encontrada: {}".format(costo_final))
+    print("Tiempo de ejecución en segundos: {}".format(t_final - t_inicial))
+    
+    #Utilizando calendarización logaritmica
+    
+    t_inicial = time.time()
+    solucion = blocales.temple_simulado(grafo_sencillo,calendarizacionLogartmica(grafo_sencillo))
+    t_final = time.time()
+    costo_final_log = grafo_sencillo.costo(solucion)
+
+    grafo_sencillo.dibuja_grafo(solucion, "prueba_log.gif")
+    print("\nUtilizando la calendarización logaritmica")
+    print("Costo de la solución encontrada: {}".format(costo_final_log))
+    print("Tiempo de ejecución en segundos: {}".format(t_final - t_inicial))
+    
+    
+    #Utilizando calendarización cuadratica
+    
+    t_inicial = time.time()
+    solucion = blocales.temple_simulado(grafo_sencillo,calendarizacionCuadratica(grafo_sencillo))
+    t_final = time.time()
+    costo_final_cuad = grafo_sencillo.costo(solucion)
+
+    grafo_sencillo.dibuja_grafo(solucion, "prueba_cuad.gif")
+    print("\nUtilizando la calendarización cuadrática")
+    print("Costo de la solución encontrada: {}".format(costo_final_cuad))
     print("Tiempo de ejecución en segundos: {}".format(t_final - t_inicial))
 
     ##########################################################################
@@ -431,7 +500,11 @@ def main():
     # Escribe aqui tus conclusiones
     #
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
-    #
+    # 
+    #Obtuve mis mejores resultados con la funcion de calendarización logaritmica, con los valores 1,2,4,4 respetivamente
+    #para mis valores de Ks. A mi parecer los criterios mas importantes fueron el ángulo entre vertices y la distribucion
+    #de vertices en cuadrantes, ya que conlleva un poco de que tengan algo de separación los vertices (mientras no salgan todos
+    #alrededor del origen)
 
 
 if __name__ == '__main__':
