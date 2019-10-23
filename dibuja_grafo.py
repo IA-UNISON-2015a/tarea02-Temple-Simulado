@@ -12,14 +12,14 @@ gráfos por computadora pero da una idea de la utilidad de los métodos de
 optimización en un problema divertido.
 
 Para realizar este problema es necesario contar con el módulo Pillow
-instalado (en Anaconda se instala por default. Si no se encuentr instalado,
-desde la termnal se puede instalar utilizando
+instalado (en Anaconda se instala por default. Si no se encuentra instalado,
+desde la terminal se puede instalar utilizando
 
 $pip install pillow
 
 """
 
-__author__ = 'Escribe aquí tu nombre'
+__author__ = 'Miguel Romero Valdés'
 
 import blocales
 import random
@@ -27,6 +27,7 @@ import itertools
 import math
 import time
 from PIL import Image, ImageDraw
+from nreinas import exponential_multiplicative_cooling
 
 
 class problema_grafica_grafo(blocales.Problema):
@@ -60,14 +61,20 @@ class problema_grafica_grafo(blocales.Problema):
     def estado_aleatorio(self):
         """
         Devuelve un estado aleatorio.
+        
+        Un estado en este problema es una asignación de
+        coordenadas (x,y) a cada nodo.
 
-        Un estado para este problema de define como:
+        Un estado para este problema se define como:
 
            s = [s(1), s(2),..., s(2*len(vertices))],
 
         en donde s(i) \in {10, 11, ..., self.dim - 10} es la posición
         en x del nodo i/2 si i es par, o la posicion en y
         del nodo (i-1)/2 si i es non y(osease las parejas (x,y)).
+
+        Se deja un margen de 10 pixeles en cada lado de la ventana
+        para que no quede un vértice en un borde.
 
         @return: Una tupla con las posiciones (x1, y1, x2, y2, ...) de
                  cada vertice en la imagen.
@@ -78,7 +85,7 @@ class problema_grafica_grafo(blocales.Problema):
 
     def vecino_aleatorio(self, estado, dmax=10):
         """
-        Encuentra un vecino en forma aleatoria. En estea primera
+        Encuentra un vecino en forma aleatoria. En esta primera
         versión lo que hacemos es tomar un valor aleatorio, y
         sumarle o restarle x pixeles al azar.
 
@@ -87,18 +94,18 @@ class problema_grafica_grafo(blocales.Problema):
         hacer un mejor vecino en el algoritmo de temple simulado.
 
         @param estado: Una tupla con el estado.
-        @param dispersion: Un flotante con el valor de dispersión para el
-                           vertice seleccionado
+        @param dmax: Máximo desplazamiento de alguna de las coordenadas.
 
         @return: Una tupla con un estado vecino al estado de entrada.
 
         """
-        vecino = list(estado)
-        i = random.randint(0, len(vecino) - 1)
-        vecino[i] = max(10,
-                        min(self.dim - 10,
-                            vecino[i] + random.randint(-dmax,  dmax)))
-        return tuple(vecino)
+        
+##        vecino = list(estado)
+##        i = random.randint(0, len(vecino) - 1)
+##        vecino[i] = max(10,
+##                        min(self.dim - 10,
+##                            vecino[i] + random.randint(-dmax,  dmax)))
+##        return tuple(vecino)
 
         #######################################################################
         #                          20 PUNTOS
@@ -107,6 +114,25 @@ class problema_grafica_grafo(blocales.Problema):
         #
         # Propon una manera alternativa de vecino_aleatorio y muestra que
         # con tu propuesta se obtienen resultados mejores o en menor tiempo
+
+
+        #Una alternativa es seleccionar un vértice de manera aleatoria y moverlo
+        #tanto en las dirección x como en la y de manera aleatoria también.
+
+        vecino = list(estado)
+
+        i = random.randint(0, len(self.vertices) - 1)*2
+
+        vecino[i] = max(10,
+                        min(self.dim - 10,
+                            vecino[i] + random.randint(-dmax,  dmax)))
+
+        vecino[i+1] = max(10,
+                        min(self.dim - 10,
+                            vecino[i+1] + random.randint(-dmax,  dmax)))
+        
+        return tuple(vecino)
+        
 
     def costo(self, estado):
         """
@@ -122,12 +148,12 @@ class problema_grafica_grafo(blocales.Problema):
 
         """
 
-        # Inicializa fáctores lineales para los criterios más importantes
-        # (default solo cuanta el criterio 1)
+        # Inicializa factores lineales para los criterios más importantes
+        # (default solo cuenta el criterio 1)
         K1 = 1.0
-        K2 = 0.0
-        K3 = 0.0
-        K4 = 0.0
+        K2 = 2.0
+        K3 = 0.5
+        K4 = 1.0
 
         # Genera un diccionario con el estado y la posición
         estado_dic = self.estado2dic(estado)
@@ -147,7 +173,7 @@ class problema_grafica_grafo(blocales.Problema):
         # (positivo o negativo). Igualemtente se puede penalizar el
         # que dos nodos estén muy cercanos entre si en la gráfica
         #
-        # Así, vamos a calcular el costo en trescuatro partes, una es el
+        # Así, vamos a calcular el costo en cuatro partes, una es el
         # numero de cruces (ya programada), otra la distancia entre
         # nodos (ya programada) y otro el angulo entre arista de cada
         # nodo (para programar). Por último, un criterio propio
@@ -255,12 +281,62 @@ class problema_grafica_grafo(blocales.Problema):
         # cada vertice. Dale diferente peso a cada criterio hasta
         # lograr que el sistema realice gráficas "bonitas"
         #
-        # ¿Que valores de diste a K1, K2 y K3 respectivamente?
+        # ¿Que valores le diste a K1, K2 y K3 respectivamente?
         #
+        # RESPUESTA:
+        # K1 = 1.0, K2 = 2, K3 = 0.5.
+        # Le di 1.0 a el cruze de aristas porque si le doy más el algoritmo
+        # tarda mucho en terminar y con 1.0 es suficiente para que el grafo
+        # se vea decente.
+        # Le di 2 a la separación de los vértices porque en un criterio importante
+        # respecto a la estética del grafo, el cual influye de alguna manera en los
+        # demás criterios.
+        # Le di 0.5 al ángulo entre aristas porque por la manera en que programé
+        # la penalización, el costo puede volverse muy elevado si le doy más peso.
+        #
+        # Tomando en cuenta el tiempo que tarda el programa en terminar y el
+        # resultado obtenido, los pesos a los criterios funcionan de manera
+        # aceptable desde mi punto de vista.
         #
         # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
         #
-        return 0
+
+
+        penalizacion = 0
+
+        for i in self.vertices:
+            verts_adj = []          #Lista con los vertices adjacentes del vertice i.
+            for j in self.aristas:
+                if i == j[0]:
+                    verts_adj.append(j[1])
+                elif i == j[1]:
+                    verts_adj.append(j[0])
+
+            x0, y0 = estado_dic[i]
+            for (v1, v2) in itertools.combinations(verts_adj, 2):
+                x1, y1 = estado_dic[v1]
+                x2, y2 = estado_dic[v2]
+		
+                x1 = x1 - x0
+                y1 = y1 + y0
+                x2 = x2 - x0
+                y2 = y2 + y0
+
+                cos_del_angulo = (x1*x2+y1*y2)/(math.sqrt(x1**2 + y1**2) * math.sqrt(x2**2 + y2**2))
+                
+                #Si el coseno del ángulo es mayor a 0.9 se le asigna el valor 1 porque en el redondeo
+                #puede que sea mayor a 1 y la función acos() lanza una excepción de math domain error.
+                if cos_del_angulo > 0.9:
+                    cos_del_angulo = 1
+        
+                angulo = math.acos(cos_del_angulo) + 0.5
+                
+                if angulo < math.pi/6:
+                    penalizacion += (1.0/angulo)
+                    
+
+        return penalizacion
+
 
     def criterio_propio(self, estado_dic):
         """
@@ -278,16 +354,44 @@ class problema_grafica_grafo(blocales.Problema):
         #######################################################################
         #                          20 PUNTOS
         #######################################################################
-        # ¿Crees que hubiera sido bueno incluir otro criterio? ¿Cual?
+        # ¿Crees que hubiera sido bueno incluir otro criterio? ¿Cuál?
         #
         # Desarrolla un criterio propio y ajusta su importancia en el
-        # costo total con K4 ¿Mejora el resultado? ¿En que mejora el
+        # costo total con K4 ¿Mejora el resultado? ¿En qué mejora el
         # resultado final?
         #
+        # RESPUESTA:
+        # El criterio que elegí es la distancia de los vértices al origen situado
+        # en el centro de la ventana con coordenadas (200, 200).
+        # El efecto que tiene es que los vértices tienden a estar más dispersos
+        # en la ventana lo cual es más agradable a la vista, ya que se se puede
+        # distinguir mejor la conexión de los vértices mediante las aristas.
         #
-        # ------ IMPLEMENTA AQUI TU CÓDIGO ------------------------------------
+        # La penalización es invesamente proporcional a la distancia de un vertice
+        # al origen. Entre más alejado esté un vértice a la coordenada (200,200)
+        # menor es la penalización.
         #
-        return 0
+        # ------ IMPLEMENTA AQUÍ TU CÓDIGO ------------------------------------
+        #
+
+
+        
+
+        #Coordenadas del origen
+        x0, y0 = 200, 200
+
+        penalizacion = 0
+        for i in estado_dic:
+            x, y = estado_dic[i]
+
+            distancia = math.sqrt((x-x0)**2 + (x-y0)**2)
+
+            if distancia < 20:
+                penalizacion += 1.0/(distancia + 0.1)
+            
+        return penalizacion
+
+    
 
     def estado2dic(self, estado):
         """
@@ -382,15 +486,15 @@ def main():
     print("Costo del estado aleatorio: {}".format(costo_inicial))
 
     # Ahora vamos a encontrar donde deben de estar los puntos
-    t_inicial = time.time()
-    solucion = blocales.temple_simulado(grafo_sencillo)
-    t_final = time.time()
-    costo_final = grafo_sencillo.costo(solucion)
-
-    grafo_sencillo.dibuja_grafo(solucion, "prueba_final.gif")
-    print("\nUtilizando la calendarización por default")
-    print("Costo de la solución encontrada: {}".format(costo_final))
-    print("Tiempo de ejecución en segundos: {}".format(t_final - t_inicial))
+##    t_inicial = time.time()
+##    solucion = blocales.temple_simulado(grafo_sencillo, calen)
+##    t_final = time.time()
+##    costo_final = grafo_sencillo.costo(solucion)
+##
+##    grafo_sencillo.dibuja_grafo(solucion, "prueba_final.gif")
+##    print("\nUtilizando la calendarización por default")
+##    print("Costo de la solución encontrada: {}".format(costo_final))
+##    print("Tiempo de ejecución en segundos: {}".format(t_final - t_inicial))
 
     ##########################################################################
     #                          20 PUNTOS
@@ -411,8 +515,34 @@ def main():
     #
     # Escribe aqui tus conclusiones
     #
+    # RESPUESTA:
+    # La calendarización exponential_multiplicative_cooling fue la que mejor
+    # funcionó. Se tuvo que establecer una temperatura inicial de 40 para
+    # que el programa obtuviera un resultado aceptable en un tiempo razonable.
+    #
+    # En el resultado de la imagen final se puede apreciar una diferencia
+    # importante en cuanto a la estética del grafo. Tal vez no sea perfecto
+    # pero se ve mucho mejor que la imagen inicial.
+    #
+    # El criterio más importante probablemente sea la separación entre
+    # vértices, ya que influye de alguna manera en todos los demás. Al
+    # estar los vértices separados, las aristas se pueden distinguir mejor.
+    #
     # ------ IMPLEMENTA AQUI TU CÓDIGO ---------------------------------------
     #
+
+    calen = blocales.exponential_multiplicative_cooling(40, 0.999, 1e10)
+    #calen = blocales.calendarizador_uno(0.7, 0.001, 1e6)
+    t_inicial = time.time()
+    solucion = blocales.temple_simulado(grafo_sencillo, calen)
+    t_final = time.time()
+    costo_final = grafo_sencillo.costo(solucion)
+
+    grafo_sencillo.dibuja_grafo(solucion, "prueba_final.gif")
+    print("\nUtilizando la calendarización exponential_multiplicative_cooling.")
+    #print("\nUtilizando la calendarización calendarizador_uno.")
+    print("Costo de la solución encontrada: {}".format(costo_final))
+    print("Tiempo de ejecución en segundos: {}".format(t_final - t_inicial))
 
 
 if __name__ == '__main__':
